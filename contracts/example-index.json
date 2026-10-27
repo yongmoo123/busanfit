@@ -1,0 +1,22 @@
+{
+  "examples/01-session.request.json": "SessionRequest",
+  "examples/01-session.response.json": "SessionResponse",
+  "examples/02-chat.request.json": "ChatRequest",
+  "examples/02-chat.ready.response.json": "ChatResponse",
+  "examples/02-chat.needs-input.response.json": "ChatResponse",
+  "examples/03-profile.request.json": "ProfileUpdateRequest",
+  "examples/03-profile.response.json": "ProfileResponse",
+  "examples/04-course.request.json": "CourseRequest",
+  "examples/04-course.success.response.json": "CourseResponse",
+  "examples/04-course.insufficient.response.json": "CourseResponse",
+  "examples/05-place.response.json": "PlaceResponse",
+  "examples/error-422-unsupported.response.json": "ErrorResponse",
+  "examples/error-409-revision.response.json": "ErrorResponse",
+  "examples/error-410-session.response.json": "ErrorResponse",
+  "examples/error-422-incomplete.response.json": "ErrorResponse",
+  "examples/error-503-ai.response.json": "ErrorResponse",
+  "examples/error-400-request.response.json": "ErrorResponse",
+  "examples/error-404-place.response.json": "ErrorResponse",
+  "examples/error-429-limit.response.json": "ErrorResponse",
+  "examples/error-500-internal.response.json": "ErrorResponse"
+}

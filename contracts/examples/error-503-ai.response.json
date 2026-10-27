@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "AI_UNAVAILABLE",
+    "message": "조건을 확실하게 해석하지 못했습니다. 조건 카드에서 직접 입력해 주세요.",
+    "retryable": true,
+    "details": []
+  },
+  "requestId": "22222222-2222-4222-8222-222222222222"
+}

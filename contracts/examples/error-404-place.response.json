@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "장소를 찾을 수 없습니다.",
+    "retryable": false,
+    "details": []
+  },
+  "requestId": "22222222-2222-4222-8222-222222222222"
+}

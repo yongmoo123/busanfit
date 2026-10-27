@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "RATE_LIMITED",
+    "message": "요청이 많습니다. 잠시 후 다시 시도해 주세요.",
+    "retryable": true,
+    "details": []
+  },
+  "requestId": "22222222-2222-4222-8222-222222222222"
+}

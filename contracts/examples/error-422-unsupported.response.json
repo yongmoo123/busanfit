@@ -1,0 +1,14 @@
+{
+  "error": {
+    "code": "UNSUPPORTED_CONSTRAINT",
+    "message": "이 배포 버전에서는 요청한 조건을 처리할 수 없습니다.",
+    "retryable": false,
+    "details": [
+      {
+        "field": "mobility",
+        "reason": "휠체어 접근성 검증이 아직 지원되지 않습니다. 조건을 제거하거나 일반 코스로 자동 생성하지 않습니다."
+      }
+    ]
+  },
+  "requestId": "22222222-2222-4222-8222-222222222222"
+}

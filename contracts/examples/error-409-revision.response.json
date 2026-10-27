@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "REVISION_CONFLICT",
+    "message": "다른 요청에서 조건이 변경되었습니다. 마지막 성공 응답의 조건을 확인해 주세요.",
+    "retryable": false,
+    "details": []
+  },
+  "requestId": "22222222-2222-4222-8222-222222222222"
+}

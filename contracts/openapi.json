@@ -1,0 +1,2634 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "BusanFit — 첫 주 공통 API 계약",
+    "version": "0.1.0",
+    "description": "팀 합의용 초안. 서버 구현물이 아닙니다. 모든 예시는 가상 fixture입니다. 첫 주 5개 작업만 정의하며 미지원 조건은 422로 거절합니다. 날짜는 Asia/Seoul 기준 offset 포함 RFC3339, ID는 불투명 문자열. 상세 의미 규칙은 API_CONTRACT.md 참고."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "로컬 개발 서버 예시"
+    }
+  ],
+  "paths": {
+    "/api/sessions": {
+      "post": {
+        "operationId": "createSession",
+        "summary": "세션 생성",
+        "tags": [
+          "Session"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionRequest"
+              },
+              "examples": {
+                "01-session-request": {
+                  "value": {}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "성공 — 본문 status도 확인",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                },
+                "examples": {
+                  "01-session-response": {
+                    "value": {
+                      "sessionId": "11111111-1111-4111-8111-111111111111",
+                      "expiresAt": "2026-11-05T10:30:00+09:00",
+                      "capabilities": {
+                        "supportedAreas": [
+                          "HAEUNDAE"
+                        ],
+                        "supportedTransports": [
+                          "WALK"
+                        ],
+                        "supportedProfileFields": [
+                          "area",
+                          "timeWindow",
+                          "transport",
+                          "indoorPreference",
+                          "companions",
+                          "excludedCategories"
+                        ],
+                        "supportsUnknownAccessibilityInclusion": false,
+                        "supportsCourseAdjustment": false,
+                        "supportsWeather": false
+                      },
+                      "requestId": "22222222-2222-4222-8222-222222222222"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "유효하지 않거나 지원하지 않는 조건",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "요청 제한 초과",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat": {
+      "post": {
+        "operationId": "analyzeChat",
+        "summary": "대화로 조건 갱신",
+        "tags": [
+          "Profile"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              },
+              "examples": {
+                "02-chat-request": {
+                  "value": {
+                    "sessionId": "11111111-1111-4111-8111-111111111111",
+                    "message": "2026년 11월 6일 해운대에서 오후 1시부터 5시까지 친구와 둘이 실내 위주로 놀고 싶어.",
+                    "expectedProfileRevision": 0
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공 — 본문 status도 확인",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponse"
+                },
+                "examples": {
+                  "02-chat-ready-response": {
+                    "value": {
+                      "status": "READY",
+                      "reply": "조건을 확인해 주세요. 이동수단은 도보를 기본값으로 적용했어요.",
+                      "profile": {
+                        "area": {
+                          "value": "HAEUNDAE",
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "timeWindow": {
+                          "value": {
+                            "startAt": "2026-11-06T13:00:00+09:00",
+                            "endAt": "2026-11-06T17:00:00+09:00"
+                          },
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "transport": {
+                          "value": "WALK",
+                          "source": "DEFAULT",
+                          "strength": "SOFT"
+                        },
+                        "mobility": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "budget": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "indoorPreference": {
+                          "value": "INDOOR",
+                          "source": "USER",
+                          "strength": "SOFT"
+                        },
+                        "companions": {
+                          "value": {
+                            "type": "FRIENDS",
+                            "count": 2,
+                            "hasInfant": false
+                          },
+                          "source": "USER",
+                          "strength": "SOFT"
+                        },
+                        "excludedCategories": {
+                          "value": [],
+                          "source": "DEFAULT",
+                          "strength": "HARD"
+                        },
+                        "preferenceTags": {
+                          "value": [],
+                          "source": "DEFAULT",
+                          "strength": "SOFT"
+                        },
+                        "includeUnknownAccessibility": false
+                      },
+                      "profileRevision": 1,
+                      "questions": [],
+                      "warnings": [],
+                      "sessionExpiresAt": "2026-11-05T10:30:00+09:00",
+                      "requestId": "22222222-2222-4222-8222-222222222222"
+                    }
+                  },
+                  "02-chat-needs-input-response": {
+                    "value": {
+                      "status": "NEEDS_INPUT",
+                      "reply": "방문 날짜와 이용할 시간을 알려주세요.",
+                      "profile": {
+                        "area": {
+                          "value": "HAEUNDAE",
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "timeWindow": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "transport": {
+                          "value": "WALK",
+                          "source": "DEFAULT",
+                          "strength": "SOFT"
+                        },
+                        "mobility": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "budget": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "indoorPreference": {
+                          "value": "INDOOR",
+                          "source": "USER",
+                          "strength": "SOFT"
+                        },
+                        "companions": {
+                          "value": {
+                            "type": "FRIENDS",
+                            "count": 2,
+                            "hasInfant": false
+                          },
+                          "source": "USER",
+                          "strength": "SOFT"
+                        },
+                        "excludedCategories": {
+                          "value": [],
+                          "source": "DEFAULT",
+                          "strength": "HARD"
+                        },
+                        "preferenceTags": {
+                          "value": [],
+                          "source": "DEFAULT",
+                          "strength": "SOFT"
+                        },
+                        "includeUnknownAccessibility": false
+                      },
+                      "profileRevision": 1,
+                      "questions": [
+                        {
+                          "field": "timeWindow",
+                          "message": "언제 방문하고, 몇 시부터 몇 시까지 이용하시나요?"
+                        }
+                      ],
+                      "warnings": [],
+                      "sessionExpiresAt": "2026-11-05T10:30:00+09:00",
+                      "requestId": "22222222-2222-4222-8222-222222222222"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "프로필 버전 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "세션 없음 또는 만료",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "유효하지 않거나 지원하지 않는 조건",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "요청 제한 초과",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AI 해석 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sessions/{sessionId}/profile": {
+      "put": {
+        "operationId": "replaceProfile",
+        "summary": "조건 전체 교체",
+        "tags": [
+          "Profile"
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileUpdateRequest"
+              },
+              "examples": {
+                "03-profile-request": {
+                  "value": {
+                    "expectedProfileRevision": 1,
+                    "profile": {
+                      "area": {
+                        "value": "HAEUNDAE",
+                        "source": "USER",
+                        "strength": "HARD"
+                      },
+                      "timeWindow": {
+                        "value": {
+                          "startAt": "2026-11-06T13:00:00+09:00",
+                          "endAt": "2026-11-06T17:00:00+09:00"
+                        },
+                        "source": "USER",
+                        "strength": "HARD"
+                      },
+                      "transport": {
+                        "value": "WALK",
+                        "source": "DEFAULT",
+                        "strength": "SOFT"
+                      },
+                      "mobility": {
+                        "value": null,
+                        "source": "UNSET",
+                        "strength": "HARD"
+                      },
+                      "budget": {
+                        "value": null,
+                        "source": "UNSET",
+                        "strength": "HARD"
+                      },
+                      "indoorPreference": {
+                        "value": "INDOOR",
+                        "source": "USER",
+                        "strength": "HARD"
+                      },
+                      "companions": {
+                        "value": {
+                          "type": "FRIENDS",
+                          "count": 2,
+                          "hasInfant": false
+                        },
+                        "source": "USER",
+                        "strength": "SOFT"
+                      },
+                      "excludedCategories": {
+                        "value": [],
+                        "source": "DEFAULT",
+                        "strength": "HARD"
+                      },
+                      "preferenceTags": {
+                        "value": [],
+                        "source": "DEFAULT",
+                        "strength": "SOFT"
+                      },
+                      "includeUnknownAccessibility": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공 — 본문 status도 확인",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                },
+                "examples": {
+                  "03-profile-response": {
+                    "value": {
+                      "status": "READY",
+                      "profile": {
+                        "area": {
+                          "value": "HAEUNDAE",
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "timeWindow": {
+                          "value": {
+                            "startAt": "2026-11-06T13:00:00+09:00",
+                            "endAt": "2026-11-06T17:00:00+09:00"
+                          },
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "transport": {
+                          "value": "WALK",
+                          "source": "DEFAULT",
+                          "strength": "SOFT"
+                        },
+                        "mobility": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "budget": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "indoorPreference": {
+                          "value": "INDOOR",
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "companions": {
+                          "value": {
+                            "type": "FRIENDS",
+                            "count": 2,
+                            "hasInfant": false
+                          },
+                          "source": "USER",
+                          "strength": "SOFT"
+                        },
+                        "excludedCategories": {
+                          "value": [],
+                          "source": "DEFAULT",
+                          "strength": "HARD"
+                        },
+                        "preferenceTags": {
+                          "value": [],
+                          "source": "DEFAULT",
+                          "strength": "SOFT"
+                        },
+                        "includeUnknownAccessibility": false
+                      },
+                      "profileRevision": 2,
+                      "questions": [],
+                      "warnings": [],
+                      "sessionExpiresAt": "2026-11-05T10:30:00+09:00",
+                      "requestId": "22222222-2222-4222-8222-222222222222"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "프로필 버전 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "세션 없음 또는 만료",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "유효하지 않거나 지원하지 않는 조건",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "요청 제한 초과",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/courses": {
+      "post": {
+        "operationId": "createCourse",
+        "summary": "확인한 조건으로 코스 생성",
+        "tags": [
+          "Course"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CourseRequest"
+              },
+              "examples": {
+                "04-course-request": {
+                  "value": {
+                    "sessionId": "11111111-1111-4111-8111-111111111111",
+                    "profileRevision": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공 — 본문 status도 확인",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseResponse"
+                },
+                "examples": {
+                  "04-course-success-response": {
+                    "value": {
+                      "status": "SUCCESS",
+                      "course": {
+                        "id": "33333333-3333-4333-8333-333333333333",
+                        "profileRevision": 1,
+                        "createdAt": "2026-11-05T10:00:00+09:00",
+                        "availableWindow": {
+                          "startAt": "2026-11-06T13:00:00+09:00",
+                          "endAt": "2026-11-06T17:00:00+09:00"
+                        },
+                        "startAt": "2026-11-06T13:00:00+09:00",
+                        "endAt": "2026-11-06T15:10:00+09:00",
+                        "items": [
+                          {
+                            "id": "item-01",
+                            "order": 1,
+                            "place": {
+                              "id": "mock-place-001",
+                              "name": "[가상] 실내 전시공간 A",
+                              "category": "EXHIBITION",
+                              "area": "HAEUNDAE",
+                              "address": "부산광역시 해운대구 — 테스트용 가상 주소",
+                              "coordinates": {
+                                "latitude": 35.16,
+                                "longitude": 129.16
+                              },
+                              "indoor": true,
+                              "openHours": {
+                                "status": "KNOWN",
+                                "description": "테스트 설정: 10:00~18:00"
+                              },
+                              "price": {
+                                "status": "UNKNOWN",
+                                "amount": null,
+                                "currency": "KRW",
+                                "basis": "UNKNOWN"
+                              },
+                              "defaultStayMinutes": 60,
+                              "accessibility": {
+                                "grade": "UNKNOWN",
+                                "wheelchair": null,
+                                "stroller": null,
+                                "elevator": null,
+                                "accessibleToilet": null,
+                                "evidence": []
+                              },
+                              "sourceIds": [
+                                "mock-source-01"
+                              ]
+                            },
+                            "startAt": "2026-11-06T13:00:00+09:00",
+                            "endAt": "2026-11-06T14:00:00+09:00",
+                            "stayMinutes": 60,
+                            "reason": "실내 전시공간으로 실내 위주 선호에 부합합니다.",
+                            "reasonMethod": "TEMPLATE",
+                            "isAnchor": false
+                          },
+                          {
+                            "id": "item-02",
+                            "order": 2,
+                            "place": {
+                              "id": "mock-place-002",
+                              "name": "[가상] 카페 B",
+                              "category": "CAFE",
+                              "area": "HAEUNDAE",
+                              "address": "부산광역시 해운대구 — 테스트용 가상 주소",
+                              "coordinates": {
+                                "latitude": 35.162,
+                                "longitude": 129.163
+                              },
+                              "indoor": true,
+                              "openHours": {
+                                "status": "KNOWN",
+                                "description": "테스트 설정: 10:00~18:00"
+                              },
+                              "price": {
+                                "status": "UNKNOWN",
+                                "amount": null,
+                                "currency": "KRW",
+                                "basis": "UNKNOWN"
+                              },
+                              "defaultStayMinutes": 60,
+                              "accessibility": {
+                                "grade": "UNKNOWN",
+                                "wheelchair": null,
+                                "stroller": null,
+                                "elevator": null,
+                                "accessibleToilet": null,
+                                "evidence": []
+                              },
+                              "sourceIds": [
+                                "mock-source-01"
+                              ]
+                            },
+                            "startAt": "2026-11-06T14:10:00+09:00",
+                            "endAt": "2026-11-06T15:10:00+09:00",
+                            "stayMinutes": 60,
+                            "reason": "실내에서 쉬어갈 수 있는 카페입니다.",
+                            "reasonMethod": "TEMPLATE",
+                            "isAnchor": false
+                          }
+                        ],
+                        "legs": [
+                          {
+                            "fromItemId": "item-01",
+                            "toItemId": "item-02",
+                            "mode": "WALK",
+                            "minutes": 10,
+                            "method": "DISTANCE_ESTIMATE",
+                            "isEstimate": true
+                          }
+                        ],
+                        "summary": {
+                          "totalStayMinutes": 120,
+                          "totalTravelMinutes": 10,
+                          "totalWaitingMinutes": 0,
+                          "totalMinutes": 130,
+                          "estimatedCost": {
+                            "status": "UNKNOWN",
+                            "amount": null,
+                            "currency": "KRW",
+                            "basis": "UNKNOWN"
+                          }
+                        },
+                        "validation": {
+                          "status": "PASSED",
+                          "checkedHardConstraints": [
+                            "area",
+                            "timeWindow",
+                            "excludedCategories"
+                          ],
+                          "unverifiedFields": [
+                            "price",
+                            "routeAccessibility"
+                          ],
+                          "routeAccessibility": "UNVERIFIED"
+                        },
+                        "sources": [
+                          {
+                            "id": "mock-source-01",
+                            "provider": "테스트용 가상 기관",
+                            "datasetName": "API 연결용 가상 장소 데이터",
+                            "url": "https://example.invalid/busanfit/mock-data",
+                            "license": "MOCK_ONLY — 실제 공공데이터·이용허락의 증거가 아님",
+                            "baseDate": "2026-11-01",
+                            "retrievedAt": "2026-11-05T09:00:00+09:00"
+                          }
+                        ]
+                      },
+                      "suggestions": [],
+                      "warnings": [
+                        {
+                          "code": "TRAVEL_TIME_ESTIMATED",
+                          "message": "이동시간은 추정치이며, 실제 보행 경로와 경로 접근성은 확인되지 않았습니다.",
+                          "placeIds": []
+                        }
+                      ],
+                      "excludedUnknown": {
+                        "count": 0,
+                        "fields": []
+                      },
+                      "sessionExpiresAt": "2026-11-05T10:30:00+09:00",
+                      "requestId": "22222222-2222-4222-8222-222222222222"
+                    }
+                  },
+                  "04-course-insufficient-response": {
+                    "value": {
+                      "status": "INSUFFICIENT_PLACES",
+                      "course": null,
+                      "suggestions": [
+                        {
+                          "id": "suggestion-01",
+                          "type": "EDIT_PROFILE",
+                          "label": "방문 시간을 다시 설정하기",
+                          "field": "timeWindow"
+                        }
+                      ],
+                      "warnings": [
+                        {
+                          "code": "INSUFFICIENT_PLACES",
+                          "message": "현재 조건으로 방문 가능한 장소가 두 곳 미만입니다. 조건을 직접 변경한 뒤 다시 요청해 주세요.",
+                          "placeIds": []
+                        }
+                      ],
+                      "excludedUnknown": {
+                        "count": 3,
+                        "fields": [
+                          "openHours"
+                        ]
+                      },
+                      "sessionExpiresAt": "2026-11-05T10:30:00+09:00",
+                      "requestId": "22222222-2222-4222-8222-222222222222"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "프로필 버전 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "세션 없음 또는 만료",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "유효하지 않거나 지원하지 않는 조건",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "요청 제한 초과",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/places/{placeId}": {
+      "get": {
+        "operationId": "getPlace",
+        "summary": "장소 상세 및 근거 조회",
+        "tags": [
+          "Place"
+        ],
+        "parameters": [
+          {
+            "name": "placeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공 — 본문 status도 확인",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaceResponse"
+                },
+                "examples": {
+                  "05-place-response": {
+                    "value": {
+                      "place": {
+                        "id": "mock-place-001",
+                        "name": "[가상] 실내 전시공간 A",
+                        "category": "EXHIBITION",
+                        "area": "HAEUNDAE",
+                        "address": "부산광역시 해운대구 — 테스트용 가상 주소",
+                        "coordinates": {
+                          "latitude": 35.16,
+                          "longitude": 129.16
+                        },
+                        "indoor": true,
+                        "openHours": {
+                          "status": "KNOWN",
+                          "description": "테스트 설정: 10:00~18:00"
+                        },
+                        "price": {
+                          "status": "UNKNOWN",
+                          "amount": null,
+                          "currency": "KRW",
+                          "basis": "UNKNOWN"
+                        },
+                        "defaultStayMinutes": 60,
+                        "accessibility": {
+                          "grade": "UNKNOWN",
+                          "wheelchair": null,
+                          "stroller": null,
+                          "elevator": null,
+                          "accessibleToilet": null,
+                          "evidence": []
+                        },
+                        "sourceIds": [
+                          "mock-source-01"
+                        ]
+                      },
+                      "sources": [
+                        {
+                          "id": "mock-source-01",
+                          "provider": "테스트용 가상 기관",
+                          "datasetName": "API 연결용 가상 장소 데이터",
+                          "url": "https://example.invalid/busanfit/mock-data",
+                          "license": "MOCK_ONLY — 실제 공공데이터·이용허락의 증거가 아님",
+                          "baseDate": "2026-11-01",
+                          "retrievedAt": "2026-11-05T09:00:00+09:00"
+                        }
+                      ],
+                      "warnings": [],
+                      "requestId": "22222222-2222-4222-8222-222222222222"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "장소 없음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "유효하지 않거나 지원하지 않는 조건",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "요청 제한 초과",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Warning": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "placeIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "placeIds"
+        ],
+        "additionalProperties": false
+      },
+      "Source": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "datasetName": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "license": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "baseDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "retrievedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "provider",
+          "datasetName",
+          "url",
+          "license",
+          "baseDate",
+          "retrievedAt"
+        ],
+        "additionalProperties": false
+      },
+      "TimeWindow": {
+        "type": "object",
+        "properties": {
+          "startAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "startAt",
+          "endAt"
+        ],
+        "additionalProperties": false
+      },
+      "Budget": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "KRW"
+            ]
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "PER_PERSON",
+              "TOTAL"
+            ]
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ADMISSION",
+                "FOOD",
+                "TRANSPORT"
+              ]
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "amount",
+          "currency",
+          "basis",
+          "includes"
+        ],
+        "additionalProperties": false
+      },
+      "Companions": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "SOLO",
+              "FRIENDS",
+              "COUPLE",
+              "FAMILY",
+              "OTHER"
+            ]
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "hasInfant": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "type",
+          "count",
+          "hasInfant"
+        ],
+        "additionalProperties": false
+      },
+      "Profile": {
+        "type": "object",
+        "properties": {
+          "area": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "HAEUNDAE",
+                      "SEOMYEON",
+                      "GWANGALLI",
+                      "NAMPO"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "USER",
+                  "DEFAULT",
+                  "UNSET"
+                ]
+              },
+              "strength": {
+                "type": "string",
+                "enum": [
+                  "HARD",
+                  "SOFT"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "source",
+              "strength"
+            ],
+            "additionalProperties": false
+          },
+          "timeWindow": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/TimeWindow"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "USER",
+                  "DEFAULT",
+                  "UNSET"
+                ]
+              },
+              "strength": {
+                "type": "string",
+                "enum": [
+                  "HARD",
+                  "SOFT"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "source",
+              "strength"
+            ],
+            "additionalProperties": false
+          },
+          "transport": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "WALK",
+                      "PUBLIC",
+                      "CAR"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "USER",
+                  "DEFAULT",
+                  "UNSET"
+                ]
+              },
+              "strength": {
+                "type": "string",
+                "enum": [
+                  "HARD",
+                  "SOFT"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "source",
+              "strength"
+            ],
+            "additionalProperties": false
+          },
+          "mobility": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "WHEELCHAIR",
+                        "STROLLER",
+                        "INJURY"
+                      ]
+                    },
+                    "uniqueItems": true
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "USER",
+                  "DEFAULT",
+                  "UNSET"
+                ]
+              },
+              "strength": {
+                "type": "string",
+                "enum": [
+                  "HARD",
+                  "SOFT"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "source",
+              "strength"
+            ],
+            "additionalProperties": false
+          },
+          "budget": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/Budget"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "USER",
+                  "DEFAULT",
+                  "UNSET"
+                ]
+              },
+              "strength": {
+                "type": "string",
+                "enum": [
+                  "HARD",
+                  "SOFT"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "source",
+              "strength"
+            ],
+            "additionalProperties": false
+          },
+          "indoorPreference": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "INDOOR",
+                      "OUTDOOR",
+                      "ANY"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "USER",
+                  "DEFAULT",
+                  "UNSET"
+                ]
+              },
+              "strength": {
+                "type": "string",
+                "enum": [
+                  "HARD",
+                  "SOFT"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "source",
+              "strength"
+            ],
+            "additionalProperties": false
+          },
+          "companions": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/Companions"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "USER",
+                  "DEFAULT",
+                  "UNSET"
+                ]
+              },
+              "strength": {
+                "type": "string",
+                "enum": [
+                  "HARD",
+                  "SOFT"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "source",
+              "strength"
+            ],
+            "additionalProperties": false
+          },
+          "excludedCategories": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "CAFE",
+                        "FOOD",
+                        "EXHIBITION",
+                        "ATTRACTION",
+                        "PARK",
+                        "SHOPPING",
+                        "OTHER"
+                      ]
+                    },
+                    "uniqueItems": true
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "USER",
+                  "DEFAULT",
+                  "UNSET"
+                ]
+              },
+              "strength": {
+                "type": "string",
+                "enum": [
+                  "HARD",
+                  "SOFT"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "source",
+              "strength"
+            ],
+            "additionalProperties": false
+          },
+          "preferenceTags": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "uniqueItems": true
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "USER",
+                  "DEFAULT",
+                  "UNSET"
+                ]
+              },
+              "strength": {
+                "type": "string",
+                "enum": [
+                  "HARD",
+                  "SOFT"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "source",
+              "strength"
+            ],
+            "additionalProperties": false
+          },
+          "includeUnknownAccessibility": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "area",
+          "timeWindow",
+          "transport",
+          "mobility",
+          "budget",
+          "indoorPreference",
+          "companions",
+          "excludedCategories",
+          "preferenceTags",
+          "includeUnknownAccessibility"
+        ],
+        "additionalProperties": false
+      },
+      "Capabilities": {
+        "type": "object",
+        "properties": {
+          "supportedAreas": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "HAEUNDAE",
+                "SEOMYEON",
+                "GWANGALLI",
+                "NAMPO"
+              ]
+            }
+          },
+          "supportedTransports": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "WALK",
+                "PUBLIC",
+                "CAR"
+              ]
+            }
+          },
+          "supportedProfileFields": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "area",
+                "timeWindow",
+                "transport",
+                "mobility",
+                "budget",
+                "indoorPreference",
+                "companions",
+                "excludedCategories",
+                "preferenceTags"
+              ]
+            }
+          },
+          "supportsUnknownAccessibilityInclusion": {
+            "type": "boolean"
+          },
+          "supportsCourseAdjustment": {
+            "type": "boolean"
+          },
+          "supportsWeather": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "supportedAreas",
+          "supportedTransports",
+          "supportedProfileFields",
+          "supportsUnknownAccessibilityInclusion",
+          "supportsCourseAdjustment",
+          "supportsWeather"
+        ],
+        "additionalProperties": false
+      },
+      "Question": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": [
+              "area",
+              "timeWindow",
+              "transport",
+              "mobility",
+              "budget",
+              "indoorPreference",
+              "companions",
+              "excludedCategories",
+              "preferenceTags"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "ErrorDetail": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "INVALID_REQUEST",
+                  "INVALID_PROFILE",
+                  "PROFILE_INCOMPLETE",
+                  "UNSUPPORTED_CONSTRAINT",
+                  "SESSION_EXPIRED",
+                  "REVISION_CONFLICT",
+                  "NOT_FOUND",
+                  "RATE_LIMITED",
+                  "AI_UNAVAILABLE",
+                  "INTERNAL_ERROR"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "retryable": {
+                "type": "boolean"
+              },
+              "details": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                }
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "retryable",
+              "details"
+            ],
+            "additionalProperties": false
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "error",
+          "requestId"
+        ],
+        "additionalProperties": false
+      },
+      "SessionRequest": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "SessionResponse": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/Capabilities"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "sessionId",
+          "expiresAt",
+          "capabilities",
+          "requestId"
+        ],
+        "additionalProperties": false
+      },
+      "ChatRequest": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "expectedProfileRevision": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "sessionId",
+          "message",
+          "expectedProfileRevision"
+        ],
+        "additionalProperties": false
+      },
+      "ChatResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "NEEDS_INPUT",
+              "READY"
+            ]
+          },
+          "reply": {
+            "type": "string"
+          },
+          "profile": {
+            "$ref": "#/components/schemas/Profile"
+          },
+          "profileRevision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Question"
+            },
+            "maxItems": 2
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            }
+          },
+          "sessionExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "status",
+          "reply",
+          "profile",
+          "profileRevision",
+          "questions",
+          "warnings",
+          "sessionExpiresAt",
+          "requestId"
+        ],
+        "additionalProperties": false
+      },
+      "ProfileUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "expectedProfileRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "profile": {
+            "$ref": "#/components/schemas/Profile"
+          }
+        },
+        "required": [
+          "expectedProfileRevision",
+          "profile"
+        ],
+        "additionalProperties": false
+      },
+      "ProfileResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "NEEDS_INPUT",
+              "READY"
+            ]
+          },
+          "profile": {
+            "$ref": "#/components/schemas/Profile"
+          },
+          "profileRevision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Question"
+            },
+            "maxItems": 2
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            }
+          },
+          "sessionExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "status",
+          "profile",
+          "profileRevision",
+          "questions",
+          "warnings",
+          "sessionExpiresAt",
+          "requestId"
+        ],
+        "additionalProperties": false
+      },
+      "CourseRequest": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "profileRevision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "sessionId",
+          "profileRevision"
+        ],
+        "additionalProperties": false
+      },
+      "Coordinates": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "additionalProperties": false
+      },
+      "Price": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "KNOWN",
+              "UNKNOWN"
+            ]
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "KRW"
+            ]
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "PER_PERSON",
+              "TOTAL",
+              "UNKNOWN"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "amount",
+          "currency",
+          "basis"
+        ],
+        "additionalProperties": false
+      },
+      "Accessibility": {
+        "type": "object",
+        "properties": {
+          "grade": {
+            "type": "string",
+            "enum": [
+              "VERIFIED",
+              "UNKNOWN",
+              "UNSUITABLE"
+            ]
+          },
+          "wheelchair": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stroller": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "elevator": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "accessibleToilet": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "enum": [
+                    "wheelchair",
+                    "stroller",
+                    "elevator",
+                    "accessibleToilet"
+                  ]
+                },
+                "sourceId": {
+                  "type": "string"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "field",
+                "sourceId",
+                "note"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "grade",
+          "wheelchair",
+          "stroller",
+          "elevator",
+          "accessibleToilet",
+          "evidence"
+        ],
+        "additionalProperties": false
+      },
+      "OpenHours": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "KNOWN",
+              "UNKNOWN"
+            ]
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "description"
+        ],
+        "additionalProperties": false
+      },
+      "Place": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "CAFE",
+              "FOOD",
+              "EXHIBITION",
+              "ATTRACTION",
+              "PARK",
+              "SHOPPING",
+              "OTHER"
+            ]
+          },
+          "area": {
+            "type": "string",
+            "enum": [
+              "HAEUNDAE",
+              "SEOMYEON",
+              "GWANGALLI",
+              "NAMPO"
+            ]
+          },
+          "address": {
+            "type": "string"
+          },
+          "coordinates": {
+            "$ref": "#/components/schemas/Coordinates"
+          },
+          "indoor": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "openHours": {
+            "$ref": "#/components/schemas/OpenHours"
+          },
+          "price": {
+            "$ref": "#/components/schemas/Price"
+          },
+          "defaultStayMinutes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "accessibility": {
+            "$ref": "#/components/schemas/Accessibility"
+          },
+          "sourceIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "category",
+          "area",
+          "address",
+          "coordinates",
+          "indoor",
+          "openHours",
+          "price",
+          "defaultStayMinutes",
+          "accessibility",
+          "sourceIds"
+        ],
+        "additionalProperties": false
+      },
+      "PlaceResponse": {
+        "type": "object",
+        "properties": {
+          "place": {
+            "$ref": "#/components/schemas/Place"
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Source"
+            },
+            "minItems": 1
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            }
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "place",
+          "sources",
+          "warnings",
+          "requestId"
+        ],
+        "additionalProperties": false
+      },
+      "CourseItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "place": {
+            "$ref": "#/components/schemas/Place"
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "stayMinutes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "reason": {
+            "type": "string"
+          },
+          "reasonMethod": {
+            "type": "string",
+            "enum": [
+              "LLM",
+              "TEMPLATE"
+            ]
+          },
+          "isAnchor": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "order",
+          "place",
+          "startAt",
+          "endAt",
+          "stayMinutes",
+          "reason",
+          "reasonMethod",
+          "isAnchor"
+        ],
+        "additionalProperties": false
+      },
+      "Leg": {
+        "type": "object",
+        "properties": {
+          "fromItemId": {
+            "type": "string"
+          },
+          "toItemId": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "WALK",
+              "PUBLIC",
+              "CAR"
+            ]
+          },
+          "minutes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "DISTANCE_ESTIMATE",
+              "STATION_DATA",
+              "ROUTING_API"
+            ]
+          },
+          "isEstimate": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "fromItemId",
+          "toItemId",
+          "mode",
+          "minutes",
+          "method",
+          "isEstimate"
+        ],
+        "additionalProperties": false
+      },
+      "Validation": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PASSED",
+              "CONDITIONAL"
+            ]
+          },
+          "checkedHardConstraints": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "unverifiedFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "routeAccessibility": {
+            "type": "string",
+            "enum": [
+              "UNVERIFIED",
+              "VERIFIED"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "checkedHardConstraints",
+          "unverifiedFields",
+          "routeAccessibility"
+        ],
+        "additionalProperties": false
+      },
+      "Course": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "profileRevision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "availableWindow": {
+            "$ref": "#/components/schemas/TimeWindow"
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourseItem"
+            },
+            "minItems": 2,
+            "maxItems": 6
+          },
+          "legs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Leg"
+            }
+          },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "totalStayMinutes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "totalTravelMinutes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "totalWaitingMinutes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "totalMinutes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "estimatedCost": {
+                "$ref": "#/components/schemas/Price"
+              }
+            },
+            "required": [
+              "totalStayMinutes",
+              "totalTravelMinutes",
+              "totalWaitingMinutes",
+              "totalMinutes",
+              "estimatedCost"
+            ],
+            "additionalProperties": false
+          },
+          "validation": {
+            "$ref": "#/components/schemas/Validation"
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Source"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "profileRevision",
+          "createdAt",
+          "availableWindow",
+          "startAt",
+          "endAt",
+          "items",
+          "legs",
+          "summary",
+          "validation",
+          "sources"
+        ],
+        "additionalProperties": false
+      },
+      "Suggestion": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "EDIT_PROFILE"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string",
+            "enum": [
+              "area",
+              "timeWindow",
+              "transport",
+              "mobility",
+              "budget",
+              "indoorPreference",
+              "companions",
+              "excludedCategories",
+              "preferenceTags"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "label",
+          "field"
+        ],
+        "additionalProperties": false
+      },
+      "CourseSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "SUCCESS"
+            ]
+          },
+          "course": {
+            "$ref": "#/components/schemas/Course"
+          },
+          "suggestions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Suggestion"
+            },
+            "maxItems": 3
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            }
+          },
+          "excludedUnknown": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "fields": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "count",
+              "fields"
+            ],
+            "additionalProperties": false
+          },
+          "sessionExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "status",
+          "course",
+          "suggestions",
+          "warnings",
+          "excludedUnknown",
+          "sessionExpiresAt",
+          "requestId"
+        ],
+        "additionalProperties": false
+      },
+      "CourseInsufficient": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "INSUFFICIENT_PLACES"
+            ]
+          },
+          "course": {
+            "type": "null"
+          },
+          "suggestions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Suggestion"
+            },
+            "maxItems": 3
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            }
+          },
+          "excludedUnknown": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "fields": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "count",
+              "fields"
+            ],
+            "additionalProperties": false
+          },
+          "sessionExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "status",
+          "course",
+          "suggestions",
+          "warnings",
+          "excludedUnknown",
+          "sessionExpiresAt",
+          "requestId"
+        ],
+        "additionalProperties": false
+      },
+      "CourseResponse": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/CourseSuccess"
+          },
+          {
+            "$ref": "#/components/schemas/CourseInsufficient"
+          }
+        ]
+      }
+    }
+  }
+}

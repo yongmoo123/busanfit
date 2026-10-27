@@ -1,0 +1,72 @@
+# 부산핏 (BusanFit)
+
+사용자의 지역·시간·이동수단·이동제약·예산·선호·동행 조건에 맞춰 실제 부산 공공데이터로 놀거리 코스를 구성하는 소프트웨어공학 팀프로젝트입니다.
+LLM은 조건 해석과 설명, DB와 규칙 엔진은 장소 선택·시간 계산·필수 조건 검증을 담당합니다. VLM은 범위 밖입니다.
+
+**현재 상태: 협업 구조와 FastAPI 실행 골격.** 실제 서비스 API 5개, LLM·DB·지도는 아직 미구현입니다. 기존 계약과 개발 일정은 합의용 초안이며, 가상 예시를 실제 부산 데이터로 사용하지 않습니다.
+
+## 팀 작업 영역
+
+| 담당 | 영역 | 시작 문서 |
+|---|---|---|
+| 김세민 | PM·일정·문서·평가 정답·검수·발표 | [docs](docs/README.md), [evaluation](evaluation/README.md) |
+| 이찬용 | 데이터 수집·정규화·DB·검색·이동시간·날씨 | [pipelines](pipelines/README.md), [data](backend/app/data/README.md) |
+| 김영무 | API·세션·LLM·코스 생성·수정·검증 | [backend](backend/README.md) |
+| 배진호 | 채팅·조건 카드·지도·타임라인·모바일 | [frontend](frontend/README.md) |
+| 공동 | API 계약·통합·자동 검사 | [contracts](contracts/README.md), [협업 규칙](CONTRIBUTING.md) |
+
+```text
+frontend/             배진호 — 화면 구현 영역
+backend/app/api/      김영무 — HTTP API·공통 오류
+backend/app/sessions/ 김영무 — 세션·TTL·revision
+backend/app/ai/       김영무 — 조건 분석·AIService·설명
+backend/app/courses/  김영무 — 배치·검증·수정
+backend/app/data/     이찬용 — DB·Repository·검색
+backend/app/travel/   이찬용 — 이동시간
+backend/app/weather/  이찬용 — 날씨
+backend/tests/        구현 담당 — 자동 테스트
+pipelines/            이찬용 — 수집·정규화·적재
+contracts/            공동 — 기존 OpenAPI·가상 예시·검사
+evaluation/           김세민 — 평가 입력·정답·실행 결과
+docs/sources/         기존 참고자료의 보존 사본
+.github/              이슈·PR 양식·CI
+```
+
+각 영역 README는 구현 책임과 다음 작업을 설명합니다. 영역별 서버를 따로 띄우지 않고 하나의 FastAPI 앱 안에서 통합합니다.
+
+## 시작하기 (Python 3.12)
+
+저장소 루트에서 실행합니다. 아래는 Windows PowerShell 기준이며 가상환경 활성화는 필요하지 않습니다.
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r backend/requirements-lock.txt
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir backend --reload --no-access-log
+```
+
+Linux/macOS에서는 `.venv/Scripts/python.exe` 대신 `.venv/bin/python`을 사용합니다.
+브라우저에서 http://127.0.0.1:8000/docs 를 확인합니다. 현재 업무 API 목록은 비어 있습니다. 계약 초안은 [contracts/openapi.json](contracts/openapi.json)이며, 구현 전 계약을 서버의 구현 목록에 덮어씌우지 않습니다.
+서버 종료는 Ctrl+C입니다. 프론트엔드 실행 명령은 배진호 담당 구현 후 추가합니다.
+
+## 검사
+
+```powershell
+.\.venv\Scripts\python.exe contracts/validate_contract.py
+.\.venv\Scripts\python.exe contracts/validate_source_sync.py
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+계약 검사는 전체 OpenAPI 표준 검증이 아니며 HTTP 테스트는 공통 오류 경계만 검증합니다. 실제 API·LLM·DB 성공을 뜻하지 않습니다. `python -O`는 기존 assert 검사를 끄므로 사용하지 않습니다.
+GitHub Actions는 main/develop push와 PR에서 같은 검사를 실행합니다. 원격 CI의 실제 결과는 Actions에서 확인합니다.
+
+## 다음 작업
+
+1. 팀원 초대·리뷰 규칙 및 첫 주 범위 검토: 김세민 + 전체.
+2. 공통 모델·세션 생성/만료·원자적 revision: 김영무.
+3. 실제 데이터 표본·이용조건·DB 매핑: 이찬용.
+4. 가상 예시로 화면 상태 연결: 배진호.
+5. 가상 평가 입력·정답 작성: 김세민.
+
+[연결 지점과 작업 목록](docs/INTEGRATION.md), [결정 및 현재 상태](docs/DECISIONS.md)를 읽고 시작합니다.
+비밀 키는 실행 환경에 설정하고 커밋하지 않습니다. 건강 원문·세션·프로필은 저장소·로그·브라우저 영구 저장소에 보관하지 않습니다.
+프로젝트 라이선스는 아직 선택하지 않았으며, 데이터 이용조건은 데이터별로 확인합니다.

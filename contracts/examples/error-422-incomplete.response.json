@@ -1,0 +1,14 @@
+{
+  "error": {
+    "code": "PROFILE_INCOMPLETE",
+    "message": "코스를 생성하기 전에 날짜와 시간을 입력해 주세요.",
+    "retryable": false,
+    "details": [
+      {
+        "field": "timeWindow",
+        "reason": "방문 시간 미입력"
+      }
+    ]
+  },
+  "requestId": "22222222-2222-4222-8222-222222222222"
+}

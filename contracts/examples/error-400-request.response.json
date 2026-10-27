@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "INVALID_REQUEST",
+    "message": "JSON 요청 형식이 올바르지 않습니다.",
+    "retryable": false,
+    "details": []
+  },
+  "requestId": "22222222-2222-4222-8222-222222222222"
+}

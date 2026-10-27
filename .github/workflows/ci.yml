@@ -1,0 +1,20 @@
+name: Contract and backend checks
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [develop, main]
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r backend/requirements-lock.txt
+      - run: python contracts/validate_contract.py
+      - run: python contracts/validate_source_sync.py
+      - run: python -m pytest -q

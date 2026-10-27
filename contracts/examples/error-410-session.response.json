@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "SESSION_EXPIRED",
+    "message": "세션이 없거나 만료되었습니다. 새 세션을 시작해 주세요.",
+    "retryable": false,
+    "details": []
+  },
+  "requestId": "22222222-2222-4222-8222-222222222222"
+}
