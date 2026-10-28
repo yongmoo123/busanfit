@@ -1,6 +1,6 @@
 # 백엔드
 
-하나의 FastAPI 앱으로 통합합니다. 김영무는 api/sessions/ai/courses, 이찬용은 data/travel/weather를 담당합니다.
+하나의 FastAPI 앱으로 통합합니다. 김영무는 api/application/sessions/constraints/explanations/ai/courses, 이찬용은 retrieval/data/travel/weather를 담당합니다. domain은 공유 모델을 검토하는 위치입니다.
 실행·검사 명령은 루트 README에 있습니다.
 
 현재 구현: 앱 팩토리, 400/422 입력 오류·404·500 공통 응답, 오류 requestId 생성·no-store. 입력·예외 원문을 오류 응답에 반영하지 않습니다.

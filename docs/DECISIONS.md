@@ -10,7 +10,7 @@
 
 ## 미합의 유지
 - SRS 대중교통 기본값과 첫 주 WALK 예외, 첫 권역 및 capabilities.
-- DB 선택·출처 관계 매핑·건강 원문 외부 전송 전 처리.
+- 출처 관계 매핑·건강 원문 외부 전송 전 처리. DB는 원본 대조 후 PostgreSQL+PostGIS 기준으로 정정(아래 기록).
 - 명시적 세션 종료 API/폐기 방식, UNKNOWN 접근성 포함 정책.
 - 팀원 GitHub 계정·CODEOWNERS, 저장소 보호 규칙, 프로젝트 라이선스.
 
@@ -26,3 +26,14 @@
 - 최초 HTTP 검사는 Windows 샌드박스의 asyncio 로컬 소켓 생성에서 정지하여, 권한 승인 후 샌드박스 밖에서 실행해 통과.
 - Starlette가 TestClient의 httpx 사용에 대해 deprecation 경고 1건을 출력함. 테스트 실패는 아니며 향후 테스트 의존성 갱신 시 검토.
 - 실LLM·DB·지도·5개 업무 API 및 GitHub Actions 실행 결과는 위 로컬 통과에 포함하지 않음.
+
+## 2026-10-28 — 원본 대조 후 구조 보완
+상태: 김영무의 원본 기준 구조화 요청에 따른 수정, 미합의 정책의 새 승인 아님.
+- 10월 27일 원본 DOCX 3개의 본문·표 및 SRS 도식 2개·SDD 도식 9개 검토. 중지 후 28일 재개.
+- application/constraints/explanations/retrieval/domain과 deployment 안내를 추가해 SDD의 책임을 구분. 역할 담당·단일 앱 구조 유지.
+- SRS 2.3·SDD ADR-007은 PostgreSQL+PostGIS 기준임을 확인. 초기 안내에서 DB 전체를 미정으로 표시한 부분을 정정. 상세 DB/API 매핑은 미합의 유지.
+- 원본 Python 3.11과 로컬 검증 3.12를 구분하고 CI에 두 버전 정의.
+- SRS 전체 FR 20개·NFR 9개·AI 요구사항 7개의 위치와 미완료 상태를 등록. SDD 추적표에서 빠진 FR-018도 포함.
+- 기존 API 계약·가상 JSON·실행 코드 변경 없음. 첫 주 5개 API가 원본 전체 기능을 대체하지 않음.
+- 원본과 후속 초안의 기본값·영유아·UNKNOWN·실패 처리 차이는 ORIGINAL_REVIEW.md에 기록. 임의로 정책을 확정하지 않음.
+- 원본 파일과 무가공 추출본은 저장소에 올리지 않음. 원본 DOCX 변경 없음.
