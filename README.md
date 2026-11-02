@@ -3,7 +3,7 @@
 사용자의 지역·시간·이동수단·이동제약·예산·선호·동행 조건에 맞춰 실제 부산 공공데이터로 놀거리 코스를 구성하는 소프트웨어공학 팀프로젝트입니다.
 LLM은 조건 해석과 설명, DB와 규칙 엔진은 장소 선택·시간 계산·필수 조건 검증을 담당합니다. VLM은 범위 밖입니다.
 
-**현재 상태: 협업 구조와 FastAPI 실행 골격.** 실제 서비스 API 5개, LLM·DB·지도는 아직 미구현입니다. 기존 계약과 개발 일정은 합의용 초안이며, 가상 예시를 실제 부산 데이터로 사용하지 않습니다.
+**현재 상태: 세션 생성 API와 메모리 세션 저장소 구현.** 나머지 업무 API·LLM·DB·지도는 아직 미구현입니다. 기존 계약과 개발 일정은 합의용 초안이며, 가상 예시를 실제 부산 데이터로 사용하지 않습니다.
 
 ## 팀 작업 영역
 
@@ -52,11 +52,12 @@ deployment/           공동 — 원본 배포 초안의 구현 예정 위치
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r backend/requirements-lock.txt
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir backend --reload --no-access-log
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir backend --reload --no-access-log --no-proxy-headers
 ```
 
 Linux/macOS에서는 `.venv/Scripts/python.exe` 대신 `.venv/bin/python`을 사용합니다.
-브라우저에서 http://127.0.0.1:8000/docs 를 확인합니다. 현재 업무 API 목록은 비어 있습니다. 계약 초안은 [contracts/openapi.json](contracts/openapi.json)이며, 구현 전 계약을 서버의 구현 목록에 덮어씌우지 않습니다.
+브라우저에서 http://127.0.0.1:8000/docs 를 열고 **POST /api/sessions → Try it out → 본문 `{}` → Execute**를 누릅니다. 201 응답의 sessionId·expiresAt·requestId를 확인합니다. 추천 기능이 연결되지 않아 capabilities의 배열은 비어 있고 지원 여부는 false입니다.
+계약 초안은 [contracts/openapi.json](contracts/openapi.json)이며, 서버 문서에는 구현한 경로만 표시합니다. 단일 worker로 실행하며 재시작·reload 시 세션이 사라집니다. 프록시 연결 전에는 신뢰할 프록시와 IP 제한 정책을 별도 설정해야 합니다.
 서버 종료는 Ctrl+C입니다. 프론트엔드 실행 명령은 배진호 담당 구현 후 추가합니다.
 
 ## 검사
@@ -67,13 +68,13 @@ Linux/macOS에서는 `.venv/Scripts/python.exe` 대신 `.venv/bin/python`을 사
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
-계약 검사는 전체 OpenAPI 표준 검증이 아니며 HTTP 테스트는 공통 오류 경계만 검증합니다. 실제 API·LLM·DB 성공을 뜻하지 않습니다. `python -O`는 기존 assert 검사를 끄므로 사용하지 않습니다.
+계약 검사는 전체 OpenAPI 표준 검증이 아닙니다. 테스트는 공통 오류·세션 생성 응답·만료·revision 동시성·요청 제한을 검증하며 LLM·DB 성공을 뜻하지 않습니다. `python -O`는 기존 assert 검사를 끄므로 사용하지 않습니다.
 GitHub Actions는 main/develop push와 PR에서 같은 검사를 실행합니다. 원격 CI의 실제 결과는 Actions에서 확인합니다.
 
 ## 다음 작업
 
 1. 팀원 초대·리뷰 규칙 및 첫 주 범위 검토: 김세민 + 전체.
-2. 공통 모델·세션 생성/만료·원자적 revision: 김영무.
+2. 세션 저장소를 조건 카드 수정·LLM 조건 분석 흐름에 연결: 김영무. 종료 API 정책은 별도 합의.
 3. 실제 데이터 표본·이용조건·DB 매핑: 이찬용.
 4. 가상 예시로 화면 상태 연결: 배진호.
 5. 가상 평가 입력·정답 작성: 김세민.
