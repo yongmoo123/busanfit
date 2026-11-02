@@ -3,8 +3,8 @@
 하나의 FastAPI 앱으로 통합합니다. 김영무는 api/application/sessions/constraints/explanations/ai/courses, 이찬용은 retrieval/data/travel/weather를 담당합니다. domain은 공유 모델을 검토하는 위치입니다.
 실행·검사 명령은 루트 README에 있습니다.
 
-현재 구현: 앱 팩토리, 400/422 입력 오류·404·500 공통 응답, 오류 requestId 생성·no-store. 입력·예외 원문을 오류 응답에 반영하지 않습니다.
-업무 API·세션·rate limit·DB·LLM·CORS 설정은 아직 구현하지 않았습니다. 기능이 없는데 READY/SUCCESS를 반환하는 대체 코드를 넣지 않습니다.
+현재 구현: POST /api/sessions, 메모리 세션 저장소, 30분 비활동 만료·주기적 정리·원자적 revision 갱신·요청 제한 및 공통 오류 응답. 입력·예외 원문을 오류 응답에 반영하지 않습니다.
+chat/profile/course/place API·DB·LLM·CORS 설정은 아직 구현하지 않았습니다. 내부 저장소의 409·410 처리는 테스트했으며 실제 업무 API 연결은 다음 단계입니다. 기능이 없는데 READY/SUCCESS를 반환하는 대체 코드를 넣지 않습니다.
 테스트 전용 경로는 테스트 코드에서만 등록합니다. 운영 앱에는 없습니다.
 
 ## 첫 구현 작업 — 김영무
