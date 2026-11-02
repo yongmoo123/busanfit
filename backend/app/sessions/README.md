@@ -1,6 +1,6 @@
 # 세션 — 김영무
 FR-001·006, NFR-003·008의 일부 구현. 전체 요구사항 완료가 아닙니다.
-인메모리 TTL 30분, 생성 revision=0, 성공 변경만 원자 증가, 충돌 409·만료 410. 외부 경로는 POST /api/sessions만 구현했습니다.
+인메모리 TTL 30분, 생성 revision=0, 성공 변경만 원자 증가, 충돌 409·만료 410. POST /api/sessions 및 PUT /api/sessions/{sessionId}/profile에 연결했습니다.
 
 후속 업무 흐름은 `begin(session_id, expected_revision)`으로 복사본을 얻고, 검증을 마친 프로필·이력은 `commit_profile`로 함께 반영합니다. 저장소는 프로필 스키마 검증을 대신하지 않습니다. LLM/DB 호출은 저장소 잠금 밖에서 수행합니다. 코스 생성 완료 시 `finish_read`로 revision을 다시 확인합니다. 실패한 작업은 TTL·프로필·이력·revision을 변경하지 않습니다.
 성공 commit/finish만 TTL을 갱신합니다. 만료 시점부터 접근을 거절하며 요청이 없어도 기본 1초 간격으로 저장소 참조를 제거합니다. 종료 시 저장소를 비웁니다. 세션 토큰을 아는 요청을 사용하는 임시 세션이며 사용자 계정 인증을 구현한 것은 아닙니다.
