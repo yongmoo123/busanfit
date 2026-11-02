@@ -1,7 +1,7 @@
 from uuid import uuid4
 from fastapi import APIRouter, Request, Response
 
-from app.api.session_models import Capabilities, SessionRequest, SessionResponse
+from app.api.session_models import SessionRequest, SessionResponse
 
 router = APIRouter()
 
@@ -14,9 +14,5 @@ def create_session(body: SessionRequest, request: Request, response: Response):
     response.headers['Cache-Control'] = 'no-store'
     return SessionResponse(
         sessionId=session.session_id, expiresAt=session.expires_at, requestId=uuid4(),
-        capabilities=Capabilities(
-            supportedAreas=[], supportedTransports=[], supportedProfileFields=[],
-            supportsUnknownAccessibilityInclusion=False,
-            supportsCourseAdjustment=False, supportsWeather=False,
-        ),
+        capabilities=request.app.state.capabilities,
     )

@@ -6,20 +6,25 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException
 from app.sessions.store import SessionError
+from app.constraints.profile import ProfileError
 
 
-def error_response(status: int, code: str, message: str, retryable: bool = False):
+def error_response(status: int, code: str, message: str, retryable: bool = False, details=None):
     return JSONResponse(
         status_code=status,
         headers={"Cache-Control": "no-store"},
         content={
-            "error": {"code": code, "message": message, "retryable": retryable, "details": []},
+            "error": {"code": code, "message": message, "retryable": retryable, "details": details or []},
             "requestId": str(uuid4()),
         },
     )
 
 
 def install_error_handlers(app: FastAPI) -> None:
+    @app.exception_handler(ProfileError)
+    async def profile_error(request: Request, exc: ProfileError):
+        return error_response(422, exc.code, '조건 카드를 확인해 주세요.', details=exc.details)
+
     @app.exception_handler(SessionError)
     async def session_error(request: Request, exc: SessionError):
         messages = {
