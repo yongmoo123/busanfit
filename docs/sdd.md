@@ -41,7 +41,7 @@ Software Design Document (SDD)
 | 품질 속성 | 목표 | 설계 대응 | 관련 NFR |
 |----|----|----|----|
 | Correctness (정확성) | 하드 제약 위반 0%, DB에 없는 장소 0건 | 장소 선택·시간 계산은 규칙 엔진이 수행하고 CourseValidator가 검증, LLM은 추출·설명만 담당 | NFR-009, AI-REQ-01, AI-REQ-05 |
-| Performance | 코스 생성 15초 이내 | 공공데이터 사전 적재 + PostGIS 공간 인덱스, 후보 상위 20개 제한, 날씨 1시간 캐시, 코스 1회당 LLM 호출 3회 이내 | NFR-001 |
+| Performance | 코스 생성 15초 이내 | 공공데이터 사전 적재 + 위경도 인덱스 기반 사각형 1차 필터·하버사인 2차 필터, 후보 상위 20개 제한, 날씨 1시간 캐시, 코스 1회당 LLM 호출 3회 이내 | NFR-001 |
 | Reliability | LLM·외부 API 장애 시에도 결과 제공 | 재시도 1회 후 규칙 기반·템플릿 대체, 공공데이터는 DB 캐시 사용 | NFR-002 |
 | Maintainability | LLM 제공자 교체 시 AIService 외 수정 없음 | AIService 인터페이스 + Provider 분리(Strategy), 계층형 구조 | NFR-006 |
 | Privacy / Security | 건강 정보 영구 저장 0건, API 키 노출 0건 | 비로그인 + 인메모리 세션(TTL 30분), 로그 마스킹, 환경변수·Secrets | NFR-003, NFR-008 |
@@ -65,7 +65,7 @@ Software Design Document (SDD)
 
 ## 2.1 전체 아키텍처
 
-![](images/sdd/media/fig1_architecture.png)
+![](images/sdd-2-1-architecture.png)
 
 그림 2-1. 부산핏 전체 아키텍처 (계층형 + Client-Server). 프론트엔드는 REST API로 Orchestrator만 호출하고, Orchestrator가 Domain 계층 컴포넌트를 순서대로 호출한다. Domain 계층은 Infrastructure 계층(AIService, PlaceRepository, WeatherProvider)을 통해서만 외부 API와 DB에 접근하며, 공공데이터는 DataCollector가 배치로 DB에 적재한다.
 
@@ -79,7 +79,8 @@ Software Design Document (SDD)
 | ADR-004 | 구조화 DB 검색 기반 근거 제공 (Vector DB 미사용) | 장소 데이터가 정형이라 필터 정확도가 높고, 출처 연결이 쉬움 | "분위기" 같은 모호한 선호 검색은 약함 → 확장 시 임베딩 검색 추가 | AI-REQ-01 |
 | ADR-005 | 비로그인 + 인메모리 세션 (TTL 30분) | 건강 관련 정보를 서버에 영구 저장하지 않음 | 서버 재시작 시 세션 소실, 수평 확장 시 Redis 필요 | NFR-003 |
 | ADR-006 | AIService 추상화 (Strategy) | 무료 티어(개발) → 유료 API(시연) 전환을 설정으로 처리 | 인터페이스 설계·테스트 비용 | NFR-006 |
-| ADR-007 | PostgreSQL + PostGIS | 반경·동선 기반 공간 검색 | 설정 복잡도 (대안: SQLite + 좌표 계산) | NFR-001, FR-007 |
+| ADR-007 | PostgreSQL + PostGIS — 대체됨(ADR-008, DEC-005) | 반경·동선 기반 공간 검색 | 설정 복잡도 (대안: SQLite + 좌표 계산) | NFR-001, FR-007 |
+| ADR-008 | SQLite + 애플리케이션 좌표 계산 (DEC-005) | 장소 데이터가 수천~1만 건 규모라 공간 인덱스의 성능 이점이 없고(전체 탐색도 수 ms), 설치가 필요 없어 로컬·CI·배포가 단순함 | 공간 질의 직접 구현(위경도 사각형 1차 필터 + 하버사인 2차 필터), 쓰기 동시성 약함(읽기 전용 서비스라 영향 없음), 데이터 갱신은 새 DB 파일 생성 후 교체 | NFR-001, FR-007 |
 
 # 3. 컴포넌트 설계 (Component Design)
 
@@ -94,7 +95,7 @@ Software Design Document (SDD)
 | COMP-07 | CourseValidator<br>(담당: 김영무) | 하드 제약 위반·장소 실존·영업시간 검증, 위반 항목 반환 | 코스 초안, 프로필 | 검증 결과 / 경고 | COMP-10 | FR-009, AI-REQ-01, AI-REQ-05 |
 | COMP-08 | ExplanationGenerator<br>(담당: 김영무) | 장소별 추천 이유 생성, 출처 첨부, 실패 시 템플릿 대체 | 검증된 코스 + 장소 정보 | 이유·출처가 포함된 코스 | COMP-09, COMP-10 | FR-012, AI-REQ-01, AI-REQ-02 |
 | COMP-09 | AIService<br>(담당: 김영무) | LLM 제공자 추상화, 타임아웃·재시도, JSON 스키마 검증, 민감정보 범주화 | 프롬프트, 스키마 | JSON / 텍스트 | 외부 LLM API | AI-REQ-02, AI-REQ-03, NFR-006 |
-| COMP-10 | PlaceRepository<br>(담당: 이찬용) | 장소·접근성·역·편의시설·출처 조회(공간 질의 포함) | 검색 조건 | 엔티티 목록 | PostgreSQL + PostGIS | FR-007, FR-017, NFR-009 |
+| COMP-10 | PlaceRepository<br>(담당: 이찬용) | 장소·접근성·역·편의시설·출처 조회(공간 질의 포함) | 검색 조건 | 엔티티 목록 | SQLite | FR-007, FR-017, NFR-009 |
 | COMP-11 | DataCollector (배치)<br>(담당: 이찬용) | 공공 API·파일 수집, 정제·중복 제거, 좌표 변환(EPSG:5174→WGS84), 접근성 등급 산출, 출처 기록 | 공공데이터 | DB 레코드, 배치 로그 | 공공데이터 API, COMP-10 | FR-020, NFR-009 |
 | COMP-12 | WeatherProvider<br>(담당: 이찬용) | 방문일 예보 조회, 실외 제외·감점 판단값 제공, 1시간 캐시 | 날짜, 지역 | 강수확률·특보 | 기상청 API | FR-016 |
 
@@ -140,9 +141,9 @@ Software Design Document (SDD)
 
 ## 5.1 ER Diagram / Data Model
 
-![](images/sdd/media/fig7_er_diagram.png)
+![](images/sdd-5-1-er.png)
 
-그림 5-1. ER 다이어그램 (PostgreSQL + PostGIS). 제약 프로필·대화 이력 등 세션 데이터는 개인정보 보호를 위해 DB에 저장하지 않고 서버 메모리(SessionStore)에만 보관한다(NFR-003). 공유 코스(shared_courses)는 건강 관련 항목을 제거한 코스만 저장한다.
+그림 5-1. ER 다이어그램 (SQLite). 제약 프로필·대화 이력 등 세션 데이터는 개인정보 보호를 위해 DB에 저장하지 않고 서버 메모리(SessionStore)에만 보관한다(NFR-003). 공유 코스(shared_courses)는 건강 관련 항목을 제거한 코스만 저장한다.
 
 *관련 요구사항: FR-007, FR-008, FR-017, FR-019, FR-020, NFR-003, NFR-009*
 
@@ -150,39 +151,41 @@ Software Design Document (SDD)
 
 | **테이블/컬렉션** | **필드** | **타입** | **PK/FK** | **Null** | **설명** | **관련 요구사항** |
 |----|----|----|----|----|----|----|
-| data_sources | id | INT | PK | N | 출처 식별자 | NFR-009 |
-| data_sources | provider / dataset_name | VARCHAR | \- | N | 제공기관, 데이터명 | NFR-009 |
-| data_sources | license / url / base_date | VARCHAR / DATE | \- | Y | 이용조건(공공누리 유형), 원본 URL, 기준일 | NFR-009 |
-| places | id | BIGINT | PK | N | 장소 식별자 | FR-007 |
-| places | name / category / area | VARCHAR | \- | N | 장소명, 카테고리(관광·문화·체험·야외·음식·카페), 권역 | FR-007 |
-| places | address | VARCHAR | \- | Y | 주소 | FR-012 |
-| places | geom | GEOGRAPHY(Point) | \- | N | WGS84 좌표 (GiST 인덱스) | FR-007, NFR-001 |
-| places | indoor | BOOLEAN | \- | Y | 실내 여부 (날씨 필터) | FR-016 |
-| places | open_hours | JSONB | \- | Y | 요일별 운영시간, 없으면 '정보 없음' | FR-009 |
-| places | price_level | SMALLINT | \- | Y | 가격대 1~4, 없으면 예산 하드 제약 미적용 | FR-007 |
-| places | default_stay_min | SMALLINT | \- | N | 기본 체류시간 (카페 60, 식사 70, 전시 시설별 또는 60) | FR-005 |
-| places | source_id | INT | FK | N | data_sources.id | NFR-009 |
-| places | updated_at | TIMESTAMP | \- | N | 최종 수집 시각 | FR-020 |
-| accessibility | place_id | BIGINT | PK, FK | N | places.id (1:0..1) | FR-008 |
-| accessibility | grade | VARCHAR | \- | N | VERIFIED / UNKNOWN / UNSUITABLE | FR-008, FR-013 |
-| accessibility | wheelchair / stroller / elevator / accessible_toilet | BOOLEAN | \- | Y | 항목별 무장애 정보 | FR-008 |
-| accessibility | raw | JSONB | \- | Y | 원본 무장애 정보 | NFR-009 |
-| accessibility | source_id | INT | FK | N | data_sources.id (무장애 정보 출처) | NFR-009 |
-| stations | id | VARCHAR | PK | N | 역 코드 | FR-009 |
-| stations | name / line / geom | VARCHAR / GEOGRAPHY | \- | N | 역명, 호선, 좌표 | FR-009 |
-| stations | has_elevator / has_locker | BOOLEAN | \- | N | 엘리베이터·물품보관함 유무 | FR-009, FR-017 |
-| stations | source_id | INT | FK | N | data_sources.id | NFR-009 |
-| station_travel | from_station, to_station | VARCHAR | PK, FK | N | stations.id 쌍 (복합키) | FR-009 |
-| station_travel | minutes / transfer | SMALLINT / BOOLEAN | \- | N | 역간 표준 소요시간, 환승 여부 | FR-009 |
-| facilities | id | BIGINT | PK | N | 편의시설 식별자 | FR-017 |
-| facilities | type | VARCHAR | \- | N | PARKING / LOCKER / BIKE / ELEVATOR | FR-017 |
-| facilities | name / geom / open_hours | VARCHAR / GEOGRAPHY / JSONB | \- | Y | 시설명, 좌표, 운영시간 | FR-017 |
-| facilities | disabled_parking / fee_info | BOOLEAN / VARCHAR | \- | Y | 장애인 주차구역 여부, 요금 정보 | FR-017 |
-| facilities | station_id / source_id | VARCHAR / INT | FK | Y / N | stations.id(역 내 시설), data_sources.id | FR-017, NFR-009 |
-| shared_courses | id | UUID | PK | N | 추측 불가능한 공유 ID | FR-019 |
-| shared_courses | course_json / created_at / expires_at | JSONB / TIMESTAMP | \- | N | 건강 항목 제거된 코스, 생성·만료(7일) 시각 | FR-019, NFR-003 |
-| batch_logs | id / job / started_at | BIGINT / VARCHAR / TIMESTAMP | PK / - / - | N | 배치 실행 이력 | FR-020 |
-| batch_logs | success_count / fail_count / message | INT / INT / TEXT | \- | Y | 수집·실패 건수, 오류 메시지 | FR-020, NFR-005 |
+| data_sources | id | INTEGER | PK | N | 출처 식별자 | NFR-009 |
+| data_sources | provider / dataset_name | TEXT | \- | N | 제공기관, 데이터명 | NFR-009 |
+| data_sources | license / url / base_date | TEXT | \- | Y | 이용조건(공공누리 유형), 원본 URL, 기준일(ISO 8601 날짜) | NFR-009 |
+| places | id | INTEGER | PK | N | 장소 식별자 | FR-007 |
+| places | name / category / area | TEXT | \- | N | 장소명, 카테고리(관광·문화·체험·야외·음식·카페), 권역 | FR-007 |
+| places | address | TEXT | \- | Y | 주소 | FR-012 |
+| places | latitude / longitude | REAL | \- | N | WGS84 위도·경도 (일반 인덱스, 반경 검색은 위경도 사각형 1차 필터 후 하버사인 2차 필터) | FR-007, NFR-001 |
+| places | indoor | INTEGER | \- | Y | 실내 여부 (0/1 불리언, 날씨 필터) | FR-016 |
+| places | open_hours | TEXT | \- | Y | 요일별 운영시간 (JSON 문자열), 없으면 '정보 없음' | FR-009 |
+| places | price_level | INTEGER | \- | Y | 가격대 1~4, 없으면 예산 하드 제약 미적용 | FR-007 |
+| places | default_stay_min | INTEGER | \- | N | 기본 체류시간 (카페 60, 식사 70, 전시 시설별 또는 60) | FR-005 |
+| places | source_id | INTEGER | FK | N | data_sources.id | NFR-009 |
+| places | updated_at | TEXT | \- | N | 최종 수집 시각 (ISO 8601 시각) | FR-020 |
+| accessibility | place_id | INTEGER | PK, FK | N | places.id (1:0..1) | FR-008 |
+| accessibility | grade | TEXT | \- | N | VERIFIED / UNKNOWN / UNSUITABLE | FR-008, FR-013 |
+| accessibility | wheelchair / stroller / elevator / accessible_toilet | INTEGER | \- | Y | 항목별 무장애 정보 (0/1 불리언) | FR-008 |
+| accessibility | raw | TEXT | \- | Y | 원본 무장애 정보 (JSON 문자열) | NFR-009 |
+| accessibility | source_id | INTEGER | FK | N | data_sources.id (무장애 정보 출처) | NFR-009 |
+| stations | id | TEXT | PK | N | 역 코드 | FR-009 |
+| stations | name / line | TEXT | \- | N | 역명, 호선 | FR-009 |
+| stations | latitude / longitude | REAL | \- | N | WGS84 위도·경도 | FR-009 |
+| stations | has_elevator / has_locker | INTEGER | \- | N | 엘리베이터·물품보관함 유무 (0/1 불리언) | FR-009, FR-017 |
+| stations | source_id | INTEGER | FK | N | data_sources.id | NFR-009 |
+| station_travel | from_station, to_station | TEXT | PK, FK | N | stations.id 쌍 (복합키) | FR-009 |
+| station_travel | minutes / transfer | INTEGER | \- | N | 역간 표준 소요시간(분), 환승 여부 (0/1 불리언) | FR-009 |
+| facilities | id | INTEGER | PK | N | 편의시설 식별자 | FR-017 |
+| facilities | type | TEXT | \- | N | PARKING / LOCKER / BIKE / ELEVATOR | FR-017 |
+| facilities | name / open_hours | TEXT | \- | Y | 시설명, 운영시간 (JSON 문자열) | FR-017 |
+| facilities | latitude / longitude | REAL | \- | Y | WGS84 위도·경도 | FR-017 |
+| facilities | disabled_parking / fee_info | INTEGER / TEXT | \- | Y | 장애인 주차구역 여부 (0/1 불리언), 요금 정보 | FR-017 |
+| facilities | station_id / source_id | TEXT / INTEGER | FK | Y / N | stations.id(역 내 시설), data_sources.id | FR-017, NFR-009 |
+| shared_courses | id | TEXT | PK | N | 추측 불가능한 공유 ID (UUID 문자열) | FR-019 |
+| shared_courses | course_json / created_at / expires_at | TEXT | \- | N | 건강 항목 제거된 코스 (JSON 문자열), 생성·만료(7일) 시각 (ISO 8601 시각) | FR-019, NFR-003 |
+| batch_logs | id / job / started_at | INTEGER / TEXT / TEXT | PK / - / - | N | 배치 실행 이력, 시작 시각 (ISO 8601 시각) | FR-020 |
+| batch_logs | success_count / fail_count / message | INTEGER / INTEGER / TEXT | \- | Y | 수집·실패 건수, 오류 메시지 | FR-020, NFR-005 |
 
 # 6. API 설계
 
@@ -282,9 +285,9 @@ Software Design Document (SDD)
 
 ## 10.1 Deployment Diagram
 
-![](images/sdd/media/fig9_deployment.png)
+![](images/sdd-10-1-deployment.png)
 
-그림 10-1. 배포 다이어그램. 단일 클라우드 VM에 Docker Compose로 nginx(정적 파일·HTTPS), api(FastAPI), db(PostgreSQL+PostGIS), batch(DataCollector) 컨테이너를 운영한다.
+그림 10-1. 배포 다이어그램. 단일 클라우드 VM에 Docker Compose로 nginx(정적 파일·HTTPS), api(FastAPI), batch(DataCollector) 컨테이너를 운영한다. DB는 별도 컨테이너 없이 SQLite 파일을 사용하며, api는 이 파일을 읽고 batch는 새 DB 파일을 만들어 교체한다(DEC-005).
 
 *관련 요구사항: NFR-001, NFR-002, NFR-008, FR-020*
 
@@ -335,7 +338,7 @@ Software Design Document (SDD)
 | FR-017 | UC-004 | COMP-10, COMP-01 | facilities | API-007 | \- | TC-017 | Draft |
 | FR-019 | \- | COMP-02 | shared_courses | API-008, 009 | \- | TC-019 | Draft |
 | FR-020 | UC-007 | COMP-11 | DataCollector / batch_logs | API-010 | \- | TC-020 | Draft |
-| NFR-001 | \- | COMP-02 / Cache | PostGIS 인덱스, 후보 상한 20 | \- | \- | TC-021 | Draft |
+| NFR-001 | \- | COMP-02 / Cache | 위경도 인덱스·하버사인 필터, 후보 상한 20 | \- | \- | TC-021 | Draft |
 | NFR-003 | \- | COMP-02 (SessionStore) | 세션 비저장 설계 | API-001 | \- | TC-023 | Draft |
 | NFR-006 | \- | COMP-09 | AIService (Strategy) | \- | \- | TC-024 | Draft |
 | AI-REQ-01 | UC-003 | COMP-07, COMP-08 / DB 근거 | places / data_sources | API-004 | SD-01 | TC-026, AI-TC-03 | Draft |

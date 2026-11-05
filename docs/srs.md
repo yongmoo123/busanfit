@@ -76,7 +76,7 @@ Software Requirements Specification (SRS)
 
 - External AI/API: LLM API(개발 단계 Gemini Flash 계열 무료 티어, 시연 단계 Claude Haiku 5.5 또는 GPT-5 mini 중 선택), 한국관광공사 TourAPI, 공공데이터포털 API, 기상청 단기예보 API, 카카오맵 JavaScript API
 
-- Database: PostgreSQL(+PostGIS 공간 검색) — Vector DB는 사용하지 않으며 확장 시 검토
+- Database: SQLite (좌표는 위도·경도 숫자 컬럼, 반경 검색은 애플리케이션에서 계산, DEC-005) — Vector DB는 사용하지 않으며 확장 시 검토
 
 ## 2.4 제약사항 (Constraints)
 

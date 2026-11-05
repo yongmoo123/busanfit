@@ -154,7 +154,7 @@ Oct 24, 2026 · @세민
 |----|----|----|
 | 프론트엔드 | React(또는 Next.js) + 카카오맵 JavaScript API | 반응형 웹, 국내 지도 표시 |
 | 백엔드 | Python FastAPI | 데이터 처리·LLM 연동 라이브러리 풍부 |
-| DB | PostgreSQL(+PostGIS) 또는 SQLite | 좌표 기반 반경 검색 |
+| DB | SQLite (DEC-005) | 좌표 기반 반경 검색을 애플리케이션에서 계산, 설치 없이 로컬·CI·배포 환경이 같음 |
 | LLM | 개발: Gemini Flash 계열(무료 티어) / 시연·최종: 유료 소형 모델(Claude Haiku 5.5 또는 GPT-5 mini) | 비용 최소화, AIService 추상화로 교체 가능 |
 | 협업·배포 | GitHub, GitHub Actions | 과제 필수조건, 자동 빌드·테스트 |
 
