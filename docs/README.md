@@ -56,8 +56,10 @@ SDD 6장 API 표는 개요만 두고, 필드·상태·오류의 상세는 API �
 원본은 Markdown이고, 제출용 docx는 pandoc으로 만든다. 기존 docx를 서식 기준으로 쓰면 표·제목 스타일이 유지된다.
 
 ```text
-pandoc docs/sdd.md -o build/02_설계서SDD_5팀_부산핏_v0.2.docx --reference-doc=docs/templates/reference.docx --resource-path=docs
+pandoc docs/sdd.md -f gfm -o build/02_설계서SDD_5팀_부산핏_v0.2.docx --reference-doc=docs/templates/reference.docx --resource-path=docs --lua-filter=docs/templates/br-to-linebreak.lua
 ```
+
+`br-to-linebreak.lua`는 표 셀 안의 `<br>`을 Word 줄바꿈으로 바꾼다. 이 필터를 빼면 pandoc이 `<br>`을 버려 여러 줄 셀이 한 줄로 붙는다.
 
 생성한 docx/PDF는 저장소에 커밋하지 않고 Release에 첨부한다.
 
