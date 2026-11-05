@@ -217,7 +217,7 @@ Software Design Document (SDD)
 | **AI 요소** | **모델/서비스** | **역할** | **입력/출력** | **교체 가능성/추상화** | **관련 요구사항** |
 |----|----|----|----|----|----|
 | LLM (추출) | 개발: Gemini Flash 계열(무료 티어) / 시연: Claude Haiku 5.5 또는 GPT-5 mini | 제약 프로필 추출, 하드/소프트 태깅 | 대화 이력 Text → JSON(ConstraintProfile) | AIService.complete(), Provider 설정으로 교체 | FR-002, FR-003, AI-REQ-04, AI-REQ-06 |
-| LLM (수정 해석) | 동일 | 수정 요청 → 변경 연산 | 메시지 + 코스 요약 → JSON(ChangeOp) | 동일 | FR-015, AI-REQ-07 |
+| LLM (수정 해석) | 동일 | 수정 요청 → 변경 연산 | 메시지 + 코스 요약(건강 정보는 범주값만, DEC-006) → JSON(ChangeOp) | 동일 | FR-015, AI-REQ-07 |
 | LLM (설명) | 동일 | 장소별 추천 이유 1~2문장 | 장소 정보 Context → Text | 동일, 실패 시 템플릿 대체 | FR-012, AI-REQ-01 |
 | VLM | 구현 범위 제외 (향후 동일 제공자의 멀티모달 모델) | 사진 분위기 분석 → 유사 장소 검색 | Image + Text → JSON(분위기 태그) | AIService에 completeWithImage() 추가로 확장 | 향후 확장 |
 
@@ -269,7 +269,7 @@ Software Design Document (SDD)
 
 - 입력/출력 검증: Pydantic 스키마로 요청을 검증(메시지 1,000자 제한)하고, LLM 출력은 JSON 스키마·장소 ID 대조로 검증한다. 화면 출력 시 HTML 이스케이프를 적용한다.
 
-- 로그에 민감정보를 남기지 않음: 사용자 원문 메시지와 이동제약 상세값은 기록하지 않고, 세션 ID는 해시로 기록한다. LLM 프롬프트에는 건강 정보를 범주값(wheelchair, injury 등)으로만 전달한다.
+- 로그에 민감정보를 남기지 않음: 사용자 원문 메시지와 이동제약 상세값은 기록하지 않고, 세션 ID는 해시로 기록한다. 사용자 원문은 사용자가 쓴 말을 해석하는 LLM 호출(조건 추출, 수정 의도 해석)에만 전달하고, 시스템이 만든 데이터를 넘기는 호출(코스 요약, 추천 이유 생성)에는 건강 정보를 범주값(wheelchair, stroller, injury 등)으로만 전달한다. 원문·프롬프트·응답의 건강 정보는 로그에 남기지 않는다(DEC-006).
 
 ## 관련 요구사항 매핑
 
