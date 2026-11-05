@@ -201,6 +201,7 @@ Software Design Document (SDD)
 | API-008 | POST | /api/courses/{courseId}/share | 코스 공유 링크 생성 | {sessionId} | {shareUrl, expiresAt} | FR-019 |
 | API-009 | GET | /api/share/{shareId} | 공유 코스 조회 | \- | {course} | FR-019 |
 | API-010 | CLI | python -m batch.collect --source all | 공공데이터 갱신 (관리자, HTTP 미노출) | 옵션 | 배치 로그 | FR-020 |
+| API-011 | DELETE | /api/sessions/{sessionId} | 세션 종료(세션 데이터 즉시 폐기, DEC-009) | \- | 204 (이미 없는 세션도 204) | NFR-003 |
 
 # 7. AI / LLM / VLM 설계
 
@@ -339,7 +340,7 @@ Software Design Document (SDD)
 | FR-019 | \- | COMP-02 | shared_courses | API-008, 009 | \- | TC-019 | Draft |
 | FR-020 | UC-007 | COMP-11 | DataCollector / batch_logs | API-010 | \- | TC-020 | Draft |
 | NFR-001 | \- | COMP-02 / Cache | 위경도 인덱스·하버사인 필터, 후보 상한 20 | \- | \- | TC-021 | Draft |
-| NFR-003 | \- | COMP-02 (SessionStore) | 세션 비저장 설계 | API-001 | \- | TC-023 | Draft |
+| NFR-003 | \- | COMP-02 (SessionStore) | 세션 비저장 설계 | API-001, API-011 | \- | TC-023 | Draft |
 | NFR-006 | \- | COMP-09 | AIService (Strategy) | \- | \- | TC-024 | Draft |
 | AI-REQ-01 | UC-003 | COMP-07, COMP-08 / DB 근거 | places / data_sources | API-004 | SD-01 | TC-026, AI-TC-03 | Draft |
 | AI-REQ-05 | UC-003 | COMP-07 | CourseValidator | API-004 | SD-01 | TC-028, AI-TC-05 | Draft |
