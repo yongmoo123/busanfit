@@ -167,9 +167,11 @@ Software Design Document (SDD)
 | accessibility | grade | VARCHAR | \- | N | VERIFIED / UNKNOWN / UNSUITABLE | FR-008, FR-013 |
 | accessibility | wheelchair / stroller / elevator / accessible_toilet | BOOLEAN | \- | Y | 항목별 무장애 정보 | FR-008 |
 | accessibility | raw | JSONB | \- | Y | 원본 무장애 정보 | NFR-009 |
+| accessibility | source_id | INT | FK | N | data_sources.id (무장애 정보 출처) | NFR-009 |
 | stations | id | VARCHAR | PK | N | 역 코드 | FR-009 |
 | stations | name / line / geom | VARCHAR / GEOGRAPHY | \- | N | 역명, 호선, 좌표 | FR-009 |
 | stations | has_elevator / has_locker | BOOLEAN | \- | N | 엘리베이터·물품보관함 유무 | FR-009, FR-017 |
+| stations | source_id | INT | FK | N | data_sources.id | NFR-009 |
 | station_travel | from_station, to_station | VARCHAR | PK, FK | N | stations.id 쌍 (복합키) | FR-009 |
 | station_travel | minutes / transfer | SMALLINT / BOOLEAN | \- | N | 역간 표준 소요시간, 환승 여부 | FR-009 |
 | facilities | id | BIGINT | PK | N | 편의시설 식별자 | FR-017 |
@@ -191,7 +193,7 @@ Software Design Document (SDD)
 | API-003 | PUT | /api/sessions/{id}/profile | 제약 확인·수정 | {profile} | {profile} | FR-006 |
 | API-004 | POST | /api/courses | 코스 생성 | {sessionId} | {course, suggestions\[\], warnings\[\], excludedUnknown} | FR-007~012, FR-016 |
 | API-005 | POST | /api/courses/{courseId}/adjust | 조정 제안·대화형 수정 | {sessionId, chipId \| message} | {course, changes\[\], suggestions\[\]} | FR-013~015 |
-| API-006 | GET | /api/places/{placeId} | 장소 상세·출처 | \- | {place, accessibility, source} | FR-008, FR-012 |
+| API-006 | GET | /api/places/{placeId} | 장소 상세·출처 | \- | {place, sources\[\], warnings\[\]} | FR-008, FR-012 |
 | API-007 | GET | /api/facilities?bbox=&types= | 주변 편의시설 | query | {facilities\[\]} | FR-017 |
 | API-008 | POST | /api/courses/{courseId}/share | 코스 공유 링크 생성 | {sessionId} | {shareUrl, expiresAt} | FR-019 |
 | API-009 | GET | /api/share/{shareId} | 공유 코스 조회 | \- | {course} | FR-019 |
@@ -224,7 +226,7 @@ Software Design Document (SDD)
 
 - Top-k 또는 Retrieval 기준: 하드 필터(권역, 영업시간, 접근성, 예산, 제외 카테고리, 날씨) 통과 후 소프트 점수 상위 20개를 스케줄러에 투입한다. 검색 반경은 도보 권역 중심 기준 1.5km(설정값, 데이터 확인 후 조정, DEC-001), 대중교통 2km, 자차 5km이며, 설명 생성 LLM에는 최종 코스 장소(3~6개)만 전달한다.
 
-- 출처 표시 방식: LLM 출력에는 출처를 쓰지 않고, 시스템이 places.source_id → data_sources를 조인해 장소 카드에 "출처: 제공기관·데이터명(기준일)"을 첨부한다.
+- 출처 표시 방식: LLM 출력에는 출처를 쓰지 않고, 시스템이 places.source_id(기본 정보 출처)와 accessibility.source_id(무장애 정보 출처)를 각각 data_sources와 조인해 중복 없이 모은 출처 목록을 장소 카드에 "출처: 제공기관·데이터명(기준일)"으로 첨부한다(DEC-003).
 
 - Hallucination 완화 방법: (1) LLM은 장소를 선택·생성하지 않음(규칙 엔진 담당) (2) 출력에 포함된 장소 ID를 DB와 대조해 불일치 시 제거 (3) JSON 스키마 강제(structured output) (4) temperature 0~0.3 (5) 설명 문장의 숫자(가격·시간)는 LLM이 쓰지 않고 시스템이 DB 값으로 삽입.
 
