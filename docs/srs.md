@@ -72,7 +72,7 @@ Software Requirements Specification (SRS)
 
 - Client: PC Chrome/Edge 최신 버전, 모바일 브라우저(Chrome·Safari, 화면 폭 360px 이상 반응형)
 
-- Server: Linux / Docker, Python 3.11 + FastAPI
+- Server: Linux / Docker, Python 3.12 + FastAPI (DEC-011)
 
 - External AI/API: LLM API(개발 단계 Gemini Flash 계열 무료 티어, 시연 단계 Claude Haiku 5.5 또는 GPT-5 mini 중 선택), 한국관광공사 TourAPI, 공공데이터포털 API, 기상청 단기예보 API, 카카오맵 JavaScript API
 
