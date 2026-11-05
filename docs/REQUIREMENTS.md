@@ -1,7 +1,7 @@
 # 원본 요구사항 등록부와 구현 추적
 
 기준: 원본 SRS v0.1 3·4·8장, SDD 3장. 작성일 2026-10-28.
-아래 제목·기준은 요약이며 원문 상세 조건은 docs/sources/01의 SRS 부록을 함께 읽는다. 원본과 후속 계약의 차이는 ORIGINAL_REVIEW.md에서 관리한다.
+아래 제목·기준은 요약이며 상세 조건은 [srs.md](srs.md)(v0.2)를 함께 읽는다. 이 등록부는 v0.1 기준으로 작성되었으므로 srs.md·[DECISIONS.md](DECISIONS.md)와 다르면 그쪽이 우선한다. 원본과 후속 계약의 차이는 ORIGINAL_REVIEW.md에서 관리한다.
 **모든 업무 요구사항은 미완료다.** 아래 검증은 앞으로 수행할 계획이며 테스트 통과 기록이 아니다. 기존 HTTP 오류 테스트 6개는 일부 기술 골격 검증이며 NFR 전체 완료를 뜻하지 않는다. 김세민은 전 항목의 검수·증거 관리를 총괄한다.
 
 ## 기능 요구사항
@@ -26,7 +26,7 @@
 | FR-015 | Should 부분 수정 | 김영무 constraints/courses/application | 변경 연산·부분 재계산·비변경 구간 유지. 불가 시 대안 / TC-015 |
 | FR-016 | Should 날씨 | 이찬용 weather/retrieval, 김영무 courses | 강수 60% 이상·특보 실외 제외, 기타 감점·실패 표시 / TC-016 |
 | FR-017 | Should 편의시설 | 이찬용 data, 김영무 api, 배진호 frontend | 자차 주차장·운영시간·장애인 주차·역 엘리베이터·보관함 / TC-017 |
-| FR-018 | Must 동행 | 김영무 constraints/courses | 동행별 가중치. 영유아→유모차 원본/계약 충돌 해결 필요 / TC-018 |
+| FR-018 | Must 동행 | 김영무 constraints/courses | 동행별 가중치. 영유아→유모차 자동 HARD(source=DEFAULT, 해제 가능)로 결정(DEC-002), 계약 반영은 이슈 #6 / TC-018 |
 | FR-019 | Could 공유 | 김영무 application/api, 이찬용 data, 배진호 frontend | 읽기 전용·건강정보 제외·만료 / TC-019 |
 | FR-020 | Should 데이터 갱신 | 이찬용 pipelines/data | 수집·정제·중복·좌표·DB 갱신·비민감 배치 로그 / TC-020 |
 
