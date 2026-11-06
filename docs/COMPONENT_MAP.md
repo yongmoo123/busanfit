@@ -38,7 +38,7 @@ flowchart LR
   O --> E[ExplanationGenerator]
   E --> AI
   E --> DB
-  DB --> PG[(PostgreSQL + PostGIS)]
+  DB --> PG[(SQLite DB 파일)]
   B[DataCollector] --> PG
 ```
 
@@ -50,7 +50,7 @@ API는 입출력·오류를 처리하고 application이 실행 순서·실패·�
 - 편의시설: data의 시설 조회 + api 라우터 + frontend UI-05, FR-017. 별도 마이크로서비스 불필요.
 - 공유: application/api + data 저장 + frontend UI-06, FR-019 Could. 민감 항목 제거·만료 정책 검토 후 착수.
 - 수집: pipelines, SDD API-010은 `python -m batch.collect --source all` 예시. 현재 실행 가능 명령이 아니며 패키지 경로는 구현 시 문서와 함께 맞춘다.
-- 배포: deployment/, SDD 10장 초안의 단일 VM·Docker Compose·nginx/API/DB/batch 배치. 아직 배포 파일 없음.
+- 배포: deployment/, SDD 10장의 단일 VM·Docker Compose·nginx/API/batch 배치. DB는 별도 컨테이너 없이 SQLite 파일을 사용한다(DEC-005). 아직 배포 파일 없음.
 
 ## API 추적
 | SDD ID | 경로/작업 | 현 계약 |

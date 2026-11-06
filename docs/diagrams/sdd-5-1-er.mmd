@@ -1,0 +1,86 @@
+%% 그림 5-1. ER 다이어그램 (SQLite) (SDD 5.1) — 타입은 SQLite 실제 타입, 의미는 SDD 5.2 설명 칸 참조 (DEC-005)
+%% PNG 생성 (저장소 루트): npx -p @mermaid-js/mermaid-cli@11.4.2 mmdc -c docs/diagrams/mermaid.config.json -s 2 -b white -i docs/diagrams/sdd-5-1-er.mmd -o docs/images/sdd-5-1-er.png
+erDiagram
+  data_sources ||--|{ places : "source_id"
+  data_sources ||--o{ accessibility : "source_id"
+  data_sources ||--|{ stations : "source_id"
+  data_sources ||--|{ facilities : "source_id"
+  places ||--o| accessibility : "place_id"
+  stations ||--|{ station_travel : "from_station, to_station"
+  stations |o--o{ facilities : "station_id"
+
+  data_sources {
+    INTEGER id PK
+    TEXT provider
+    TEXT dataset_name
+    TEXT license
+    TEXT url
+    TEXT base_date
+  }
+  places {
+    INTEGER id PK
+    TEXT name
+    TEXT category
+    TEXT area
+    TEXT address
+    REAL latitude
+    REAL longitude
+    INTEGER indoor
+    TEXT open_hours
+    INTEGER price_level
+    INTEGER default_stay_min
+    INTEGER source_id FK
+    TEXT updated_at
+  }
+  accessibility {
+    INTEGER place_id PK, FK
+    TEXT grade
+    INTEGER wheelchair
+    INTEGER stroller
+    INTEGER elevator
+    INTEGER accessible_toilet
+    TEXT raw
+    INTEGER source_id FK
+  }
+  stations {
+    TEXT id PK
+    TEXT name
+    TEXT line
+    REAL latitude
+    REAL longitude
+    INTEGER has_elevator
+    INTEGER has_locker
+    INTEGER source_id FK
+  }
+  station_travel {
+    TEXT from_station PK, FK
+    TEXT to_station PK, FK
+    INTEGER minutes
+    INTEGER transfer
+  }
+  facilities {
+    INTEGER id PK
+    TEXT type
+    TEXT name
+    REAL latitude
+    REAL longitude
+    TEXT open_hours
+    INTEGER disabled_parking
+    TEXT fee_info
+    TEXT station_id FK
+    INTEGER source_id FK
+  }
+  shared_courses {
+    TEXT id PK
+    TEXT course_json
+    TEXT created_at
+    TEXT expires_at
+  }
+  batch_logs {
+    INTEGER id PK
+    TEXT job
+    TEXT started_at
+    INTEGER success_count
+    INTEGER fail_count
+    TEXT message
+  }
