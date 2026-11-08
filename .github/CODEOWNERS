@@ -1,0 +1,44 @@
+# Issue #8 / DEC-010: review responsibility, not exclusive edit permission.
+# Proposal: effective only after merge into the PR base branch and
+# when the repository plan supports CODEOWNERS. Last matching rule wins.
+# Multiple owners on a line do not require approval from every owner.
+
+# Shared files and infrastructure: all four members.
+* @trigo1245 @yongmoo123 @cksdyd3786 @Baejinho03
+
+# PM: project documents and evaluation.
+/docs/ @trigo1245
+/evaluation/ @trigo1245
+
+# Requirements and shared design: PM plus implementation owners.
+/docs/srs.md @trigo1245 @yongmoo123 @cksdyd3786 @Baejinho03
+/docs/sdd.md @trigo1245 @yongmoo123 @cksdyd3786 @Baejinho03
+/docs/REQUIREMENTS.md @trigo1245 @yongmoo123 @cksdyd3786 @Baejinho03
+/docs/COMPONENT_MAP.md @trigo1245 @yongmoo123 @cksdyd3786 @Baejinho03
+
+# Frontend.
+/frontend/ @Baejinho03
+
+# Backend API, sessions, AI, orchestration, course generation and tests.
+/backend/ @yongmoo123
+
+# Data, retrieval and travel interfaces are jointly reviewed by their caller.
+/backend/app/data/ @cksdyd3786 @yongmoo123
+/backend/app/retrieval/ @cksdyd3786 @yongmoo123
+/backend/app/travel/ @cksdyd3786 @yongmoo123
+/backend/app/weather/ @cksdyd3786
+/pipelines/ @cksdyd3786
+/backend/tests/test_data*.py @cksdyd3786 @yongmoo123
+/backend/tests/test_repository*.py @cksdyd3786 @yongmoo123
+/backend/tests/test_retrieval*.py @cksdyd3786 @yongmoo123
+/backend/tests/test_travel*.py @cksdyd3786 @yongmoo123
+/backend/tests/test_weather*.py @cksdyd3786
+
+# Shared backend models and API contract (including place/source schemas).
+/backend/app/domain/ @yongmoo123 @cksdyd3786 @Baejinho03
+/contracts/ @yongmoo123 @Baejinho03 @cksdyd3786
+
+# Workflow/security changes and shared repository configuration.
+/.github/ @trigo1245 @yongmoo123 @cksdyd3786 @Baejinho03
+/AGENTS.md @trigo1245
+/CLAUDE.md @trigo1245
