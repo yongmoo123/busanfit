@@ -62,6 +62,11 @@ class SessionStore:
             self._entries.clear()
             self._clients.clear()
 
+    def delete(self, session_id: str) -> None:
+        """Idempotently drop session state; do not renew TTL or allow resurrection."""
+        with self._lock:
+            self._entries.pop(session_id, None)
+
     def _limit(self, requests, now, limit):
         requests[:] = [t for t in requests if t > now - 60]
         if len(requests) >= limit:
