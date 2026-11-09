@@ -162,7 +162,7 @@ Software Design Document (SDD)
 | places | address | TEXT | \- | Y | 주소 | FR-012 |
 | places | latitude / longitude | REAL | \- | N | WGS84 위도·경도 (일반 인덱스 idx_places_lat_lon, 반경 검색은 위경도 사각형 1차 필터 후 하버사인 2차 필터) | FR-007, NFR-001 |
 | places | indoor | INTEGER | \- | Y | 실내 여부 (0/1 불리언, 날씨 필터) | FR-016 |
-| places | open_hours | TEXT | \- | Y | 요일별 운영시간 (원문을 파싱한 JSON 문자열). 구조(제안·임시, 김영무 확인 대기, PR #15): 요일 키 mon·tue·wed·thu·fri·sat·sun, 값은 구간 목록 `[{"open":"09:00","close":"18:00"}]`(하루 여러 구간 허용), 시각은 24시간제 "HH:mm"·Asia/Seoul 고정. 자정을 넘는 구간은 close를 open보다 작게 적어 다음 날로 해석하고 시작한 요일에 넣음. 빈 목록 `[]`은 그 요일 휴무 확정, 키 없음은 그 요일 미확인. 공휴일 규칙은 다루지 않고 원문으로만 보존. 원문이 없거나 파싱에 실패하면 NULL로 두고 화면에 '정보 없음'으로 표시 (가정, 이슈 #7) | FR-009 |
+| places | open_hours | TEXT | \- | Y | 요일별 운영시간 (원문을 파싱한 JSON 문자열). 구조(제안·임시, 김영무 확인 대기, PR #15): 요일 키 mon·tue·wed·thu·fri·sat·sun, 값은 구간 목록 `[{"open":"09:00","close":"18:00"}]`(하루 여러 구간 허용), 시각은 24시간제 "HH:mm"·Asia/Seoul 고정. 자정을 넘는 구간은 close를 open보다 작게 적어 다음 날로 해석하고 시작한 요일에 넣음. "24:00"은 close에만 허용(open에 쓰면 오류): 24시간 영업은 open "00:00"·close "24:00", open이 "00:00"이 아닌데 close가 "24:00"이면 그날 끝까지 영업하는 구간. 빈 목록 `[]`은 그 요일 휴무 확정, 키 없음은 그 요일 미확인, 모든 요일이 미확인이면 빈 객체 `{}` 대신 NULL(`{}`는 오류). 공휴일 규칙은 다루지 않고 원문으로만 보존. 원문이 없거나 파싱에 실패하면 NULL로 두고 화면에 '정보 없음'으로 표시 (가정, 이슈 #7) | FR-009 |
 | places | open_hours_text | TEXT | \- | Y | 운영시간 원문. 원문은 있고 open_hours가 NULL이면 HARD 검증에서는 미확인 (가정, 이슈 #7) | FR-009, FR-012 |
 | places | price_level | INTEGER | \- | Y | 가격대 1~4, 없으면 예산 하드 제약 미적용 | FR-007 |
 | places | default_stay_min | INTEGER | \- | N | 기본 체류시간 (카페 60, 식사 70, 전시 시설별 또는 60) | FR-005 |
