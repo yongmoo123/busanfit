@@ -3,6 +3,7 @@
 -- 새 DB 파일에 한 번 적용한다(CREATE TABLE, IF NOT EXISTS 없음). 갱신은 새 파일을 만든 뒤 교체한다.
 -- places.category는 계약의 7개 값(DEC-013), 가격은 금액·기준·원문(DEC-014).
 -- places.source_place_id / overview / open_hours_text, data_sources.retrieved_at은 DEC-017.
+-- SQLite는 STRICT가 아니면 INTEGER 컬럼에 소수·문자열을 그대로 저장하므로 정수 수치는 typeof로 검사한다.
 -- 외래 키는 연결마다 PRAGMA foreign_keys = ON 이 필요하다(app.data.db.connect가 설정).
 
 PRAGMA user_version = 1;
@@ -30,10 +31,10 @@ CREATE TABLE places (
     indoor            INTEGER CHECK (indoor IN (0, 1)),
     open_hours        TEXT CHECK (open_hours IS NULL OR json_valid(open_hours)),
     open_hours_text   TEXT,
-    price_amount      INTEGER,
+    price_amount      INTEGER CHECK (price_amount IS NULL OR typeof(price_amount) = 'integer'),
     price_basis       TEXT CHECK (price_basis IN ('PER_PERSON', 'TOTAL')),
     price_text        TEXT,
-    default_stay_min  INTEGER NOT NULL CHECK (default_stay_min > 0),
+    default_stay_min  INTEGER NOT NULL CHECK (typeof(default_stay_min) = 'integer' AND default_stay_min > 0),
     overview          TEXT,
     source_id         INTEGER NOT NULL REFERENCES data_sources (id),
     updated_at        TEXT NOT NULL,
@@ -68,7 +69,7 @@ CREATE TABLE stations (
 CREATE TABLE station_travel (
     from_station  TEXT NOT NULL REFERENCES stations (id),
     to_station    TEXT NOT NULL REFERENCES stations (id),
-    minutes       INTEGER NOT NULL CHECK (minutes >= 0),
+    minutes       INTEGER NOT NULL CHECK (typeof(minutes) = 'integer' AND minutes >= 0),
     transfer      INTEGER NOT NULL CHECK (transfer IN (0, 1)),
     PRIMARY KEY (from_station, to_station)
 );
@@ -97,7 +98,7 @@ CREATE TABLE batch_logs (
     id             INTEGER PRIMARY KEY,
     job            TEXT NOT NULL,
     started_at     TEXT NOT NULL,
-    success_count  INTEGER,
-    fail_count     INTEGER,
+    success_count  INTEGER CHECK (success_count IS NULL OR typeof(success_count) = 'integer'),
+    fail_count     INTEGER CHECK (fail_count IS NULL OR typeof(fail_count) = 'integer'),
     message        TEXT
 );

@@ -159,11 +159,56 @@ def test_price_fields_stored(conn, basis):
     {"price_basis": "UNKNOWN"}, {"source_place_id": None}, {"default_stay_min": 0},
     {"latitude": 91}, {"longitude": -181}, {"open_hours": "not json"}, {"name": None},
     {"latitude": None}, {"source_id": 999},
+    {"default_stay_min": 1.5}, {"default_stay_min": "unknown"},
+    {"price_amount": 1.5}, {"price_amount": "unknown"},
 ])
 def test_invalid_place_rejected(conn, overrides):
     values = {"source_id": add_source(conn), **overrides}
     with pytest.raises(sqlite3.IntegrityError):
         add_place(conn, **values)
+
+
+def add_station(conn, station_id, source_id):
+    conn.execute("INSERT INTO stations (id, name, line, latitude, longitude, has_elevator, "
+                 "has_locker, source_id) VALUES (?, '[가상] 역', '[가상] 호선', 35.16, 129.16, 0, 0, ?)",
+                 (station_id, source_id))
+
+
+TRAVEL_SQL = "INSERT INTO station_travel (from_station, to_station, minutes, transfer) " \
+             "VALUES ('A', 'B', ?, 0)"
+
+
+def test_station_travel_minutes_accepts_integer(conn):
+    source_id = add_source(conn)
+    add_station(conn, "A", source_id)
+    add_station(conn, "B", source_id)
+    conn.execute(TRAVEL_SQL, (5,))
+    row = conn.execute("SELECT minutes, typeof(minutes) AS kind FROM station_travel").fetchone()
+    assert (row["minutes"], row["kind"]) == (5, "integer")
+
+
+@pytest.mark.parametrize("minutes", [1.5, "unknown", -1])
+def test_station_travel_minutes_must_be_integer(conn, minutes):
+    source_id = add_source(conn)
+    add_station(conn, "A", source_id)
+    add_station(conn, "B", source_id)
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(TRAVEL_SQL, (minutes,))
+
+
+BATCH_SQL = "INSERT INTO batch_logs (job, started_at, success_count, fail_count) " \
+            "VALUES ('[가상]', 'x', ?, ?)"
+
+
+def test_batch_log_counts_accept_null_and_integer(conn):
+    conn.execute(BATCH_SQL, (None, None))
+    conn.execute(BATCH_SQL, (3, 0))
+
+
+@pytest.mark.parametrize("counts", [(1.5, 0), ("unknown", 0), (0, 1.5), (0, "unknown")])
+def test_batch_log_counts_must_be_integer(conn, counts):
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(BATCH_SQL, counts)
 
 
 def test_duplicate_source_place_id_rejected(conn):
