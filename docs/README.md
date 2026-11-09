@@ -63,6 +63,8 @@ pandoc docs/sdd.md -f gfm -o build/02_설계서SDD_5팀_부산핏_v0.2.docx --re
 
 생성한 docx/PDF는 저장소에 커밋하지 않고 Release에 첨부한다.
 
+저장소는 공개 상태이므로 Markdown 원본에는 학번 등 개인정보를 쓰지 않는다. 제출용 docx의 표지에 학번이 필요하면 변환 후 docx에서만 추가한다.
+
 ## 7. 최초 이관 (v0.1 → Markdown)
 
 v0.1 docx를 그대로 Markdown으로 바꿔 **먼저 커밋한 뒤** v0.2 수정을 시작한다. 그래야 v0.1→v0.2 변경이 diff로 남는다.
