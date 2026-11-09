@@ -154,19 +154,22 @@ Software Design Document (SDD)
 |----|----|----|----|----|----|----|
 | data_sources | id | INTEGER | PK | N | 출처 식별자 | NFR-009 |
 | data_sources | provider / dataset_name | TEXT | \- | N | 제공기관, 데이터명 | NFR-009 |
-| data_sources | license / url / base_date | TEXT | \- | Y | 이용조건(공공누리 유형), 원본 URL, 기준일(ISO 8601 날짜) | NFR-009 |
-| data_sources | retrieved_at | TEXT | \- | N | 조회 시각 (ISO 8601 시각, API Source.retrievedAt). 제공기관의 기준일(base_date)과 구분 (가정, 이슈 #7) | NFR-009 |
-| places | id | INTEGER | PK | N | 장소 식별자 (API에서는 문자열로 변환) | FR-007 |
-| places | source_place_id | TEXT | \- | Y | 원본 데이터의 장소 ID (예: TourAPI contentid). (source_id, source_place_id) 중복 금지 (가정, 이슈 #7) | FR-020, NFR-009 |
-| places | name / category / area | TEXT | \- | N | 장소명, 카테고리(관광·문화·체험·야외·음식·카페), 권역 | FR-007 |
+| data_sources | license / base_date | TEXT | \- | Y | 이용조건(공공누리 유형), 기준일(ISO 8601 날짜) | NFR-009 |
+| data_sources | url | TEXT | \- | N | 원본 URL (API Source.url, DEC-018) | NFR-009 |
+| data_sources | retrieved_at | TEXT | \- | N | 조회 시각 (ISO 8601 시각, API Source.retrievedAt). 제공기관의 기준일(base_date)과 구분 (DEC-017) | NFR-009 |
+| places | id | INTEGER | PK | N | DB 내부 장소 식별자. DB 파일을 새로 만들면 바뀔 수 있으므로 API place.id로 그대로 내보내지 않는다. API place.id는 재적재해도 같은 값이 나오도록 source_place_id 기반 문자열로 만든다 (DEC-017) | FR-007 |
+| places | source_place_id | TEXT | \- | N | 원본 데이터의 장소 ID (예: TourAPI contentid). (source_id, source_place_id) 중복 금지. 재적재 후에도 유지되는 장소 식별의 기준 (DEC-017) | FR-020, NFR-009 |
+| places | name / category / area | TEXT | \- | N | 장소명, 카테고리(CAFE·FOOD·EXHIBITION·ATTRACTION·PARK·SHOPPING·OTHER, DEC-013. 대응: 관광→ATTRACTION, 문화→EXHIBITION, 야외→PARK, 음식→FOOD, 카페→CAFE, 체험→ATTRACTION), 권역 | FR-007 |
 | places | address | TEXT | \- | Y | 주소 | FR-012 |
 | places | latitude / longitude | REAL | \- | N | WGS84 위도·경도 (일반 인덱스 idx_places_lat_lon, 반경 검색은 위경도 사각형 1차 필터 후 하버사인 2차 필터) | FR-007, NFR-001 |
 | places | indoor | INTEGER | \- | Y | 실내 여부 (0/1 불리언, 날씨 필터) | FR-016 |
-| places | open_hours | TEXT | \- | Y | 요일별 운영시간 (원문을 파싱한 JSON 문자열). 구조(제안·임시, 김영무 확인 대기, PR #15): 요일 키 mon·tue·wed·thu·fri·sat·sun, 값은 구간 목록 `[{"open":"09:00","close":"18:00"}]`(하루 여러 구간 허용), 시각은 24시간제 "HH:mm"·Asia/Seoul 고정. 자정을 넘는 구간은 close를 open보다 작게 적어 다음 날로 해석하고 시작한 요일에 넣음. "24:00"은 close에만 허용(open에 쓰면 오류): 24시간 영업은 open "00:00"·close "24:00", open이 "00:00"이 아닌데 close가 "24:00"이면 그날 끝까지 영업하는 구간. 빈 목록 `[]`은 그 요일 휴무 확정, 키 없음은 그 요일 미확인, 모든 요일이 미확인이면 빈 객체 `{}` 대신 NULL(`{}`는 오류). 공휴일 규칙은 다루지 않고 원문으로만 보존. 원문이 없거나 파싱에 실패하면 NULL로 두고 화면에 '정보 없음'으로 표시 (가정, 이슈 #7) | FR-009 |
-| places | open_hours_text | TEXT | \- | Y | 운영시간 원문. 원문은 있고 open_hours가 NULL이면 HARD 검증에서는 미확인 (가정, 이슈 #7) | FR-009, FR-012 |
-| places | price_level | INTEGER | \- | Y | 가격대 1~4, 없으면 예산 하드 제약 미적용 | FR-007 |
-| places | default_stay_min | INTEGER | \- | N | 기본 체류시간 (카페 60, 식사 70, 전시 시설별 또는 60) | FR-005 |
-| places | overview | TEXT | \- | Y | 장소 개요 원문. LLM 컨텍스트에는 200자 이내로 잘라 사용(7.3) (가정, 이슈 #7) | FR-012 |
+| places | open_hours | TEXT | \- | Y | 요일별 운영시간 (원문을 파싱한 JSON 문자열). 구조(제안·임시, 김영무 확인 대기, PR #15): 요일 키 mon·tue·wed·thu·fri·sat·sun, 값은 구간 목록 `[{"open":"09:00","close":"18:00"}]`(하루 여러 구간 허용), 시각은 24시간제 "HH:mm"·Asia/Seoul 고정. 자정을 넘는 구간은 close를 open보다 작게 적어 다음 날로 해석하고 시작한 요일에 넣음. "24:00"은 close에만 허용(open에 쓰면 오류): 24시간 영업은 open "00:00"·close "24:00", open이 "00:00"이 아닌데 close가 "24:00"이면 그날 끝까지 영업하는 구간. 빈 목록 `[]`은 그 요일 휴무 확정, 키 없음은 그 요일 미확인, 모든 요일이 미확인이면 빈 객체 `{}` 대신 NULL(`{}`는 오류). 공휴일 규칙은 다루지 않고 원문으로만 보존. 원문이 없거나 파싱에 실패하면 NULL로 두고 화면에 '정보 없음'으로 표시 (DEC-017) | FR-009 |
+| places | open_hours_text | TEXT | \- | Y | 운영시간 원문. 원문은 있고 open_hours가 NULL이면 HARD 검증에서는 미확인 (DEC-017) | FR-009, FR-012 |
+| places | price_amount | INTEGER | \- | Y | 가격(원). 스프린트 2는 비워 두고 API는 Price.status UNKNOWN으로 내보낸다. 없으면 무료로 취급하지 않는다 (DEC-014) | FR-007 |
+| places | price_basis | TEXT | \- | Y | 금액 기준 PER_PERSON / TOTAL (DEC-014) | FR-007 |
+| places | price_text | TEXT | \- | Y | 가격 원문 (DEC-014) | FR-007, NFR-009 |
+| places | default_stay_min | INTEGER | \- | N | 기본 체류시간 (카페 60, 식사 70, 전시·문화시설 시설별 관람소요시간 또는 60, 그 외 카테고리 60. 설정값이며 TourAPI 관람소요시간이 있으면 우선, DEC-018) | FR-005 |
+| places | overview | TEXT | \- | Y | 장소 개요 원문. LLM 컨텍스트에는 200자 이내로 잘라 사용(7.3) (DEC-017) | FR-012 |
 | places | source_id | INTEGER | FK | N | data_sources.id | NFR-009 |
 | places | updated_at | TEXT | \- | N | 이 장소 레코드의 최종 수집 시각 (ISO 8601 시각). 출처 단위 조회 시각은 data_sources.retrieved_at | FR-020 |
 | accessibility | place_id | INTEGER | PK, FK | N | places.id (1:0..1) | FR-008 |

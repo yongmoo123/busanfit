@@ -3,8 +3,8 @@
 erDiagram
   data_sources ||--|{ places : "source_id"
   data_sources ||--o{ accessibility : "source_id"
-  data_sources ||--|{ stations : "source_id"
-  data_sources ||--|{ facilities : "source_id"
+  data_sources ||--o{ stations : "source_id"
+  data_sources ||--o{ facilities : "source_id"
   places ||--o| accessibility : "place_id"
   stations ||--|{ station_travel : "from_station, to_station"
   stations |o--o{ facilities : "station_id"
@@ -30,7 +30,9 @@ erDiagram
     INTEGER indoor
     TEXT open_hours
     TEXT open_hours_text
-    INTEGER price_level
+    INTEGER price_amount
+    TEXT price_basis
+    TEXT price_text
     INTEGER default_stay_min
     TEXT overview
     INTEGER source_id FK
