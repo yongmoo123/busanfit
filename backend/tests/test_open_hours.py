@@ -5,7 +5,6 @@ from app.domain.place import WEEKDAY_KEYS, validate_open_hours
 
 
 @pytest.mark.parametrize("parsed", [
-    {},                                                                  # every day unknown
     {"mon": [{"open": "09:00", "close": "18:00"}]},                      # other days unknown
     {"tue": []},                                                         # confirmed closed
     {"wed": [{"open": "10:00", "close": "12:00"}, {"open": "13:00", "close": "18:00"}]},
@@ -25,13 +24,34 @@ def test_rejects_unknown_day_key(parsed):
         validate_open_hours(parsed)
 
 
-@pytest.mark.parametrize("value", ["9:00", "09:0", "0900", "24:00", "23:60", "09:00:00",
-                                   " 09:00", "09:00 ", "", None, 900])
+@pytest.mark.parametrize("value", ["9:00", "09:0", "0900", "24:01", "25:00", "23:60",
+                                   "09:00:00", " 09:00", "09:00 ", "", None, 900])
 def test_rejects_bad_hh_mm(value):
     with pytest.raises(ValueError, match="HH:mm"):
         validate_open_hours({"mon": [{"open": value, "close": "18:00"}]})
     with pytest.raises(ValueError, match="HH:mm"):
         validate_open_hours({"mon": [{"open": "09:00", "close": value}]})
+
+
+@pytest.mark.parametrize("interval", [
+    {"open": "00:00", "close": "24:00"},                                 # open 24 hours
+    {"open": "18:00", "close": "24:00"},                                 # until end of that day
+])
+def test_close_24_00_allowed(interval):
+    validate_open_hours({"thu": [interval]})
+
+
+@pytest.mark.parametrize("interval", [
+    {"open": "24:00", "close": "02:00"}, {"open": "24:00", "close": "24:00"},
+])
+def test_open_24_00_rejected(interval):
+    with pytest.raises(ValueError, match="24:00 only as close"):
+        validate_open_hours({"thu": [interval]})
+
+
+def test_empty_object_rejected_use_none():
+    with pytest.raises(ValueError, match="use None"):
+        validate_open_hours({})
 
 
 def test_rejects_open_equal_close():

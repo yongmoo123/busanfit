@@ -20,6 +20,7 @@ ACCESSIBILITY_GRADES = ("VERIFIED", "UNKNOWN", "UNSUITABLE")
 
 WEEKDAY_KEYS = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
 _HH_MM = re.compile(r"(?:[01]\d|2[0-3]):[0-5]\d")
+END_OF_DAY = "24:00"  # allowed only as ``close``
 
 
 @dataclass(frozen=True)
@@ -39,9 +40,13 @@ class OpenHoursRecord:
     - Several intervals per day are allowed. Times are 24-hour ``"HH:mm"``, Asia/Seoul.
     - ``close < open`` means the interval ends the next day (e.g. 18:00→02:00) and is stored
       under the day it starts.
+    - ``"24:00"`` is allowed only as ``close`` and means "until the end of that day".
+      Open 24 hours = ``{"open": "00:00", "close": "24:00"}``. ``"24:00"`` as ``open`` is an error.
+    - ``{}`` (every day unknown) is an error: use ``parsed = None`` (NULL) instead.
     - Unparseable source text: ``parsed`` is ``None`` and the text stays in ``text`` only.
     - Holidays are out of scope and kept only in ``text``.
-    ``validate_open_hours`` checks only day keys, ``"HH:mm"`` format and ``open != close``.
+    ``validate_open_hours`` checks only day keys, ``"HH:mm"`` format and ``open != close``
+    (plus the two rules above).
     """
     parsed: Mapping[str, Any] | None
     text: str | None
@@ -50,11 +55,14 @@ class OpenHoursRecord:
 def validate_open_hours(parsed: object) -> None:
     """Raise ``ValueError`` if ``parsed`` does not follow the proposed shape above.
 
-    Checks only: day keys, ``"HH:mm"`` (00:00–23:59) format, and ``open != close``.
+    Checks only: day keys, ``"HH:mm"`` format (00:00–23:59, and ``"24:00"`` for ``close`` only),
+    ``open != close``, and that the object is not empty (all-unknown must be ``None``).
     No overlap check and no "open at time t" logic (not agreed yet).
     """
     if not isinstance(parsed, Mapping):
         raise ValueError("open_hours must be an object keyed by weekday")
+    if not parsed:
+        raise ValueError("open_hours must not be empty; use None (NULL) when every day is unknown")
     for day, intervals in parsed.items():
         if day not in WEEKDAY_KEYS:
             raise ValueError(f"open_hours: unknown weekday key {day!r}")
@@ -65,8 +73,12 @@ def validate_open_hours(parsed: object) -> None:
                 raise ValueError(f"open_hours[{day!r}]: interval must have exactly open and close")
             for name in ("open", "close"):
                 value = interval[name]
+                if name == "close" and value == END_OF_DAY:
+                    continue
                 if not isinstance(value, str) or not _HH_MM.fullmatch(value):
-                    raise ValueError(f"open_hours[{day!r}].{name} must be 'HH:mm', got {value!r}")
+                    allowed = "'HH:mm' (00:00-23:59, or 24:00)" if name == "close" \
+                        else "'HH:mm' (00:00-23:59; 24:00 only as close)"
+                    raise ValueError(f"open_hours[{day!r}].{name} must be {allowed}, got {value!r}")
             if interval["open"] == interval["close"]:
                 raise ValueError(f"open_hours[{day!r}]: open and close must differ")
 
