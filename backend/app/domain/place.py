@@ -10,9 +10,7 @@ from dataclasses import dataclass
 import re
 from typing import Any
 
-# Contract (openapi Place.category) values. SDD 5.2 lists a different set
-# (관광·문화·체험·야외·음식·카페); the mapping is pending PM decision (issue #7 "정할 것 2"),
-# so the DB does not restrict the value and this tuple is informational.
+# Contract (openapi Place.category) values, shared by DB, API and UI (DEC-013).
 CONTRACT_CATEGORIES = ("CAFE", "FOOD", "EXHIBITION", "ATTRACTION", "PARK", "SHOPPING", "OTHER")
 
 ACCESSIBILITY_GRADES = ("VERIFIED", "UNKNOWN", "UNSUITABLE")
@@ -100,10 +98,13 @@ class PlaceRecord:
     """One ``places`` row plus its optional ``accessibility`` row.
 
     ``accessibility is None`` means there is no barrier-free row; the API reports grade UNKNOWN.
-    IDs are strings at this boundary even though SQLite stores INTEGER (contract: opaque string).
+    ``id`` is the opaque string the API exposes. It must survive a reload of the DB, so it is based
+    on ``source_place_id`` and is not the integer ``places.id`` (DEC-017).
+    ``price_amount`` is in won, ``price_basis`` is ``PER_PERSON`` or ``TOTAL``, ``price_text`` is the
+    original text. Sprint 2 stores only the text; ``None`` never means free (DEC-014).
     """
     id: str
-    source_place_id: str | None
+    source_place_id: str
     name: str
     category: str
     area: str
@@ -112,7 +113,9 @@ class PlaceRecord:
     longitude: float
     indoor: bool | None
     open_hours: OpenHoursRecord
-    price_level: int | None
+    price_amount: int | None
+    price_basis: str | None
+    price_text: str | None
     default_stay_min: int
     overview: str | None
     source_id: str
@@ -136,7 +139,7 @@ class DataSourceRecord:
     provider: str
     dataset_name: str
     license: str | None
-    url: str | None
+    url: str
     base_date: str | None
     retrieved_at: str
 

@@ -35,8 +35,8 @@ def place(place_id: str, meters_north: float, category: str, *, area: str = "HAE
     lat, lon = north(meters_north)
     values = dict(source_place_id=f"mock-{place_id}", name=f"[가상] 장소 {place_id}",
                   category=category, area=area, address=None, latitude=lat, longitude=lon,
-                  indoor=None, open_hours=UNKNOWN_HOURS, price_level=None, default_stay_min=60,
-                  overview=None, source_id="1", updated_at="2026-11-09T09:00:00+09:00",
+                  indoor=None, open_hours=UNKNOWN_HOURS, price_amount=None, price_basis=None,
+                  price_text=None, default_stay_min=60, overview=None, source_id="1", updated_at="2026-11-09T09:00:00+09:00",
                   accessibility=accessibility)
     values.update(fields)
     return PlaceRecord(id=place_id, **values)
@@ -45,7 +45,8 @@ def place(place_id: str, meters_north: float, category: str, *, area: str = "HAE
 PLACES = [
     place("10", 100, "CAFE", address="[가상] 주소", indoor=True,
           open_hours=OpenHoursRecord({"mon": [{"open": "10:00", "close": "18:00"}]}, "[가상] 10:00~18:00"),
-          price_level=2, overview="[가상] 개요",
+          price_amount=5000, price_basis="PER_PERSON", price_text="[가상] 1인 5,000원",
+          overview="[가상] 개요",
           accessibility=AccessibilityRecord("VERIFIED", True, None, False, None,
                                             '{"mock": true}', "2")),
     place("11", 1490, "FOOD", default_stay_min=70),            # every optional field unknown
@@ -110,7 +111,8 @@ class PlaceRepositoryContract:
 
     def test_unknown_values_stay_none(self, repo):
         found = repo.get_place("11")
-        assert (found.address, found.indoor, found.price_level, found.overview) == (None,) * 4
+        assert (found.address, found.indoor, found.price_amount, found.price_basis,
+                found.price_text, found.overview) == (None,) * 6
         assert found.open_hours == UNKNOWN_HOURS
         assert found.accessibility is None
         assert found.default_stay_min == 70
@@ -121,7 +123,9 @@ class PlaceRepositoryContract:
     def test_known_fields_and_partial_accessibility(self, repo):
         found = repo.get_place("10")
         assert found == PLACES[0]
-        assert found.indoor is True and found.price_level == 2
+        assert found.indoor is True
+        assert (found.price_amount, found.price_basis, found.price_text) \
+            == (5000, "PER_PERSON", "[가상] 1인 5,000원")
         access = found.accessibility
         assert (access.wheelchair, access.stroller, access.elevator, access.accessible_toilet) \
             == (True, None, False, None)
