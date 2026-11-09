@@ -100,6 +100,9 @@ class PlaceRepositoryContract:
         (("35.16", 129.16, 1500), {}), ((35.16, 129.16, 1500), {"limit": 0}),
         ((35.16, 129.16, 1500), {"limit": True}),
         ((35.16, 129.16, 1500), {"exclude_categories": "CAFE"}),
+        ((35.16, 129.16, 1500), {"exclude_categories": None}),
+        ((35.16, 129.16, 1500), {"exclude_categories": [[]]}),
+        ((35.16, 129.16, 1500), {"exclude_categories": [1]}),
     ])
     def test_invalid_query_raises_value_error(self, repo, args, kwargs):
         with pytest.raises(ValueError):
@@ -142,6 +145,26 @@ class PlaceRepositoryContract:
         assert repo.get_sources(["1"])[0] == SOURCES[0]
         with pytest.raises(RepositoryError):
             repo.get_sources(["1", "999"])
+
+    @pytest.mark.parametrize("bad", ["10", b"10", None, 10, [10], [None], [["10"]]])
+    @pytest.mark.parametrize("method", ["existing_place_ids", "get_sources"])
+    def test_id_list_rejects_bare_string_and_non_strings(self, repo, method, bad):
+        # A bare "10" must not be read as the IDs "1" and "0" (review on PR #15).
+        with pytest.raises(ValueError):
+            getattr(repo, method)(bad)
+
+    def test_results_are_isolated_from_callers(self):
+        def hours():
+            return OpenHoursRecord({"mon": [["10:00", "18:00"]]}, "[가상] 10:00~18:00")
+
+        given = place("20", 100, "CAFE", open_hours=hours())
+        repo = self.make_repo([given], SOURCES)
+        given.open_hours.parsed["mon"][0][0] = "00:00"  # caller mutates the record it passed in
+        repo.get_place("20").open_hours.parsed["mon"][0][0] = "01:00"
+        repo.find_within_radius(*CENTER, RADIUS_M)[0].place.open_hours.parsed["mon"].clear()
+        expected = hours()
+        assert repo.get_place("20").open_hours == expected
+        assert repo.find_within_radius(*CENTER, RADIUS_M)[0].place.open_hours == expected
 
     @pytest.mark.parametrize("call", [
         lambda r: r.find_within_radius(*CENTER, RADIUS_M),

@@ -64,19 +64,36 @@ def check_radius_query(center_lat: float, center_lon: float, radius_m: float,
 
 
 def check_categories(values: Iterable[str]) -> frozenset[str]:
-    """``exclude_categories`` as a set; a bare string is rejected (it would split into letters)."""
-    if isinstance(values, str):
-        raise ValueError("exclude_categories must be a collection of category values, not a string")
-    result = frozenset(values)
-    if not all(isinstance(value, str) for value in result):
-        raise ValueError("exclude_categories must contain strings")
-    return result
+    """``exclude_categories`` as a set of strings (see ``check_str_collection``)."""
+    return frozenset(check_str_collection(values, "exclude_categories"))
 
 
 def check_id(value: object, name: str = "place_id") -> str:
     if not isinstance(value, str):
         raise ValueError(f"{name} must be a string")
     return value
+
+
+def check_id_list(values: Iterable[str], name: str = "place_ids") -> list[str]:
+    """ID-list arguments (``existing_place_ids``, ``get_sources``) as a list of strings."""
+    return check_str_collection(values, name)
+
+
+def check_str_collection(values: object, name: str) -> list[str]:
+    """A collection of strings, in order.
+
+    A bare string is rejected because iterating it would split ``"10"`` into ``"1"``, ``"0"``.
+    ``None``, non-iterables and non-string items raise ``ValueError`` (never ``TypeError``).
+    """
+    if isinstance(values, (str, bytes)):
+        raise ValueError(f"{name} must be a collection of strings, not a single string")
+    try:
+        items = list(values)  # type: ignore[call-overload]
+    except TypeError:
+        raise ValueError(f"{name} must be a collection of strings") from None
+    if not all(isinstance(item, str) for item in items):
+        raise ValueError(f"{name} must contain only strings")
+    return items
 
 
 def _is_number(value: object) -> bool:
