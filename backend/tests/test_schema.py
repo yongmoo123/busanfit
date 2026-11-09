@@ -271,6 +271,59 @@ def test_create_database_refuses_existing_file(tmp_path):
         db.create_database(path)
 
 
+GOOD_SCHEMA = db.SCHEMA_PATH
+
+
+@pytest.fixture
+def broken_schema(tmp_path, monkeypatch):
+    path = tmp_path / "broken.sql"
+    path.write_text("PRAGMA user_version = 1; CREATE TABLE partial (id INTEGER); INVALID SQL;",
+                    encoding="utf-8")
+    monkeypatch.setattr(db, "SCHEMA_PATH", path)
+
+
+def test_failed_creation_leaves_no_file_and_can_retry(tmp_path, monkeypatch, broken_schema):
+    target = tmp_path / "db" / "x.sqlite3"
+    with pytest.raises(sqlite3.OperationalError):
+        db.create_database(target)
+    assert list(target.parent.iterdir()) == []
+
+    monkeypatch.setattr(db, "SCHEMA_PATH", GOOD_SCHEMA)
+    connection = db.connect(db.create_database(target))
+    try:
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1
+        assert connection.execute(
+            "SELECT count(*) FROM sqlite_master WHERE name = 'partial'").fetchone()[0] == 0
+    finally:
+        connection.close()
+    assert list(target.parent.iterdir()) == [target]
+
+
+def test_failed_creation_keeps_existing_file(tmp_path, broken_schema):
+    target = tmp_path / "db" / "x.sqlite3"
+    target.parent.mkdir()
+    target.write_bytes(b"[mock] existing")
+    with pytest.raises(FileExistsError):
+        db.create_database(target)
+    assert target.read_bytes() == b"[mock] existing"
+    assert list(target.parent.iterdir()) == [target]
+
+
+def test_file_created_meanwhile_is_not_overwritten(tmp_path, monkeypatch):
+    target = tmp_path / "db" / "x.sqlite3"
+    real_create_schema = db.create_schema
+
+    def create_schema_while_another_call_finishes(connection):
+        real_create_schema(connection)
+        target.write_bytes(b"[mock] other call")
+
+    monkeypatch.setattr(db, "create_schema", create_schema_while_another_call_finishes)
+    with pytest.raises(FileExistsError):
+        db.create_database(target)
+    assert target.read_bytes() == b"[mock] other call"
+    assert list(target.parent.iterdir()) == [target]
+
+
 def test_cli_create_uses_environment(tmp_path, monkeypatch, capsys):
     monkeypatch.delenv(db.ENV_DB_PATH, raising=False)
     assert db.main(["create"]) == 1

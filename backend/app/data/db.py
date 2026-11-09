@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import sqlite3
 import sys
+import uuid
 
 ENV_DB_PATH = "BUSANFIT_DB_PATH"
 SCHEMA_PATH = Path(__file__).with_name("schema.sql")
@@ -42,16 +43,26 @@ def create_schema(conn: sqlite3.Connection) -> None:
 
 
 def create_database(path: str | Path | None = None) -> Path:
-    """Create a new DB file with the schema. Refuses to touch an existing file."""
+    """Create a new DB file with the schema. Refuses to touch an existing file.
+
+    The schema is built in a temporary file next to the target, which appears only once complete.
+    ``os.link`` fails if the target exists, unlike ``os.replace``, so a file created by another
+    call in the meantime is never overwritten. On failure only our temporary file is removed.
+    """
     db_path = Path(path) if path is not None else get_db_path()
     if db_path.exists():
         raise FileExistsError(f"{db_path} already exists; remove it explicitly to rebuild")
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    conn = connect(db_path, create=True)
+    temp_path = db_path.with_name(f".{db_path.name}.{uuid.uuid4().hex}.tmp")
     try:
-        create_schema(conn)
+        conn = connect(temp_path, create=True)
+        try:
+            create_schema(conn)
+        finally:
+            conn.close()
+        os.link(temp_path, db_path)
     finally:
-        conn.close()
+        temp_path.unlink(missing_ok=True)
     return db_path
 
 
