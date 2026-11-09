@@ -7,6 +7,7 @@ Unknown stays unknown: ``None`` is never turned into "free", "accessible", "alwa
 """
 from collections.abc import Mapping
 from dataclasses import dataclass
+import re
 from typing import Any
 
 # Contract (openapi Place.category) values. SDD 5.2 lists a different set
@@ -17,17 +18,57 @@ CONTRACT_CATEGORIES = ("CAFE", "FOOD", "EXHIBITION", "ATTRACTION", "PARK", "SHOP
 ACCESSIBILITY_GRADES = ("VERIFIED", "UNKNOWN", "UNSUITABLE")
 
 
+WEEKDAY_KEYS = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
+_HH_MM = re.compile(r"(?:[01]\d|2[0-3]):[0-5]\d")
+
+
 @dataclass(frozen=True)
 class OpenHoursRecord:
     """Opening hours as stored.
 
     ``parsed``: normalized structure (``places.open_hours`` JSON) or ``None`` when absent or
-    not parseable. Its shape is not fixed yet (issue #7 assumption 6).
-    ``text``: original text from the source (``places.open_hours_text``) or ``None``.
-    ``text`` present but ``parsed`` ``None`` means "known to the user, unverified for HARD checks".
+    not parseable. ``text``: original text from the source (``places.open_hours_text``) or
+    ``None``. ``text`` present but ``parsed`` ``None`` means "known to the user, unverified for
+    HARD checks".
+
+    Shape of ``parsed`` — 이찬용 제안(임시), 김영무 확인 대기 (PR #15 review, issue #7 가정 6)::
+
+        {"mon": [{"open": "09:00", "close": "18:00"}], "tue": [], ...}
+
+    - Keys: ``mon``..``sun``. A missing key = that day is unknown; ``[]`` = closed (confirmed).
+    - Several intervals per day are allowed. Times are 24-hour ``"HH:mm"``, Asia/Seoul.
+    - ``close < open`` means the interval ends the next day (e.g. 18:00→02:00) and is stored
+      under the day it starts.
+    - Unparseable source text: ``parsed`` is ``None`` and the text stays in ``text`` only.
+    - Holidays are out of scope and kept only in ``text``.
+    ``validate_open_hours`` checks only day keys, ``"HH:mm"`` format and ``open != close``.
     """
     parsed: Mapping[str, Any] | None
     text: str | None
+
+
+def validate_open_hours(parsed: object) -> None:
+    """Raise ``ValueError`` if ``parsed`` does not follow the proposed shape above.
+
+    Checks only: day keys, ``"HH:mm"`` (00:00–23:59) format, and ``open != close``.
+    No overlap check and no "open at time t" logic (not agreed yet).
+    """
+    if not isinstance(parsed, Mapping):
+        raise ValueError("open_hours must be an object keyed by weekday")
+    for day, intervals in parsed.items():
+        if day not in WEEKDAY_KEYS:
+            raise ValueError(f"open_hours: unknown weekday key {day!r}")
+        if not isinstance(intervals, (list, tuple)):
+            raise ValueError(f"open_hours[{day!r}] must be a list of intervals")
+        for interval in intervals:
+            if not isinstance(interval, Mapping) or set(interval) != {"open", "close"}:
+                raise ValueError(f"open_hours[{day!r}]: interval must have exactly open and close")
+            for name in ("open", "close"):
+                value = interval[name]
+                if not isinstance(value, str) or not _HH_MM.fullmatch(value):
+                    raise ValueError(f"open_hours[{day!r}].{name} must be 'HH:mm', got {value!r}")
+            if interval["open"] == interval["close"]:
+                raise ValueError(f"open_hours[{day!r}]: open and close must differ")
 
 
 @dataclass(frozen=True)

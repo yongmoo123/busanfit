@@ -44,7 +44,7 @@ def place(place_id: str, meters_north: float, category: str, *, area: str = "HAE
 
 PLACES = [
     place("10", 100, "CAFE", address="[가상] 주소", indoor=True,
-          open_hours=OpenHoursRecord({"mon": [["10:00", "18:00"]]}, "[가상] 10:00~18:00"),
+          open_hours=OpenHoursRecord({"mon": [{"open": "10:00", "close": "18:00"}]}, "[가상] 10:00~18:00"),
           price_level=2, overview="[가상] 개요",
           accessibility=AccessibilityRecord("VERIFIED", True, None, False, None,
                                             '{"mock": true}', "2")),
@@ -155,12 +155,12 @@ class PlaceRepositoryContract:
 
     def test_results_are_isolated_from_callers(self):
         def hours():
-            return OpenHoursRecord({"mon": [["10:00", "18:00"]]}, "[가상] 10:00~18:00")
+            return OpenHoursRecord({"mon": [{"open": "10:00", "close": "18:00"}]}, "[가상] 10:00~18:00")
 
         given = place("20", 100, "CAFE", open_hours=hours())
         repo = self.make_repo([given], SOURCES)
-        given.open_hours.parsed["mon"][0][0] = "00:00"  # caller mutates the record it passed in
-        repo.get_place("20").open_hours.parsed["mon"][0][0] = "01:00"
+        given.open_hours.parsed["mon"][0]["open"] = "00:00"  # caller mutates the record it passed in
+        repo.get_place("20").open_hours.parsed["mon"][0]["open"] = "01:00"
         repo.find_within_radius(*CENTER, RADIUS_M)[0].place.open_hours.parsed["mon"].clear()
         expected = hours()
         assert repo.get_place("20").open_hours == expected
