@@ -30,7 +30,7 @@ EXPECTED = {
         ("source_id", "INTEGER", 1, 0),
     ],
     "stations": [
-        ("id", "TEXT", 0, 1), ("name", "TEXT", 1, 0), ("line", "TEXT", 1, 0),
+        ("id", "TEXT", 1, 1), ("name", "TEXT", 1, 0), ("line", "TEXT", 1, 0),
         ("latitude", "REAL", 1, 0), ("longitude", "REAL", 1, 0),
         ("has_elevator", "INTEGER", 1, 0), ("has_locker", "INTEGER", 1, 0),
         ("source_id", "INTEGER", 1, 0),
@@ -46,7 +46,7 @@ EXPECTED = {
         ("station_id", "TEXT", 0, 0), ("source_id", "INTEGER", 1, 0),
     ],
     "shared_courses": [
-        ("id", "TEXT", 0, 1), ("course_json", "TEXT", 1, 0), ("created_at", "TEXT", 1, 0),
+        ("id", "TEXT", 1, 1), ("course_json", "TEXT", 1, 0), ("created_at", "TEXT", 1, 0),
         ("expires_at", "TEXT", 1, 0),
     ],
     "batch_logs": [
@@ -194,6 +194,20 @@ def test_station_travel_minutes_must_be_integer(conn, minutes):
     add_station(conn, "B", source_id)
     with pytest.raises(sqlite3.IntegrityError):
         conn.execute(TRAVEL_SQL, (minutes,))
+
+
+@pytest.mark.parametrize("sql", [
+    "INSERT INTO stations (id, name, line, latitude, longitude, has_elevator, has_locker, source_id) "
+    "VALUES (NULL, '[가상]', '[가상]', 35.16, 129.16, 0, 0, :s)",
+    "INSERT INTO stations (name, line, latitude, longitude, has_elevator, has_locker, source_id) "
+    "VALUES ('[가상]', '[가상]', 35.16, 129.16, 0, 0, :s)",
+    "INSERT INTO shared_courses (id, course_json, created_at, expires_at) "
+    "VALUES (NULL, '{}', 'x', 'y')",
+    "INSERT INTO shared_courses (course_json, created_at, expires_at) VALUES ('{}', 'x', 'y')",
+])
+def test_text_primary_key_rejects_null_and_omitted(conn, sql):
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(sql, {"s": add_source(conn)})
 
 
 BATCH_SQL = "INSERT INTO batch_logs (job, started_at, success_count, fail_count) " \

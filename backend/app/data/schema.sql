@@ -56,9 +56,9 @@ CREATE TABLE accessibility (
 );
 
 CREATE TABLE stations (
-    id            TEXT PRIMARY KEY,
+    id            TEXT NOT NULL PRIMARY KEY,
     name          TEXT NOT NULL,
-    line          TEXT NOT NULL,
+    line         TEXT NOT NULL,
     latitude      REAL NOT NULL CHECK (latitude BETWEEN -90 AND 90),
     longitude     REAL NOT NULL CHECK (longitude BETWEEN -180 AND 180),
     has_elevator  INTEGER NOT NULL CHECK (has_elevator IN (0, 1)),
@@ -88,8 +88,8 @@ CREATE TABLE facilities (
 );
 
 CREATE TABLE shared_courses (
-    id           TEXT PRIMARY KEY,
-    course_json  TEXT NOT NULL CHECK (json_valid(course_json)),
+    id           TEXT NOT NULL PRIMARY KEY,
+    course_json TEXT NOT NULL CHECK (json_valid(course_json)),
     created_at   TEXT NOT NULL,
     expires_at   TEXT NOT NULL
 );
