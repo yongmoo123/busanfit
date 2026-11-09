@@ -1,8 +1,8 @@
 -- 부산핏 SQLite 스키마 — SDD 5.2 / 그림 5-1 (DEC-005)
 -- 타입은 SQLite 실제 타입만 사용: 불리언 INTEGER 0/1, 시각 TEXT ISO 8601, JSON TEXT, UUID TEXT.
 -- 새 DB 파일에 한 번 적용한다(CREATE TABLE, IF NOT EXISTS 없음). 갱신은 새 파일을 만든 뒤 교체한다.
--- 이슈 #7 미확정 가정으로 추가한 컬럼: places.source_place_id / overview / open_hours_text,
--- data_sources.retrieved_at. places.category는 값 제한 없음(정할 것 2 대기).
+-- places.category는 계약의 7개 값(DEC-013), 가격은 금액·기준·원문(DEC-014).
+-- places.source_place_id / overview / open_hours_text, data_sources.retrieved_at은 DEC-017.
 -- 외래 키는 연결마다 PRAGMA foreign_keys = ON 이 필요하다(app.data.db.connect가 설정).
 
 PRAGMA user_version = 1;
@@ -12,24 +12,27 @@ CREATE TABLE data_sources (
     provider      TEXT NOT NULL,
     dataset_name  TEXT NOT NULL,
     license       TEXT,
-    url           TEXT,
+    url           TEXT NOT NULL,
     base_date     TEXT,
     retrieved_at  TEXT NOT NULL
 );
 
 CREATE TABLE places (
     id                INTEGER PRIMARY KEY,
-    source_place_id   TEXT,
+    source_place_id   TEXT NOT NULL,
     name              TEXT NOT NULL,
-    category          TEXT NOT NULL,
-    area              TEXT NOT NULL,
+    category          TEXT NOT NULL CHECK (category IN ('CAFE', 'FOOD', 'EXHIBITION', 'ATTRACTION',
+                                                        'PARK', 'SHOPPING', 'OTHER')),
+    area             TEXT NOT NULL,
     address           TEXT,
     latitude          REAL NOT NULL CHECK (latitude BETWEEN -90 AND 90),
     longitude         REAL NOT NULL CHECK (longitude BETWEEN -180 AND 180),
     indoor            INTEGER CHECK (indoor IN (0, 1)),
     open_hours        TEXT CHECK (open_hours IS NULL OR json_valid(open_hours)),
     open_hours_text   TEXT,
-    price_level       INTEGER CHECK (price_level BETWEEN 1 AND 4),
+    price_amount      INTEGER,
+    price_basis       TEXT CHECK (price_basis IN ('PER_PERSON', 'TOTAL')),
+    price_text        TEXT,
     default_stay_min  INTEGER NOT NULL CHECK (default_stay_min > 0),
     overview          TEXT,
     source_id         INTEGER NOT NULL REFERENCES data_sources (id),

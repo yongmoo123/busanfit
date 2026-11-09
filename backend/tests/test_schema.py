@@ -5,21 +5,22 @@ import pytest
 
 from app.data import db
 
-# (column, type, NOT NULL, PK position) — SDD 5.2 table, plus issue #7 assumed columns (*)
+# (column, type, NOT NULL, PK position) — SDD 5.2 table (DEC-014, DEC-017, DEC-018)
 EXPECTED = {
     "data_sources": [
         ("id", "INTEGER", 0, 1), ("provider", "TEXT", 1, 0), ("dataset_name", "TEXT", 1, 0),
-        ("license", "TEXT", 0, 0), ("url", "TEXT", 0, 0), ("base_date", "TEXT", 0, 0),
-        ("retrieved_at", "TEXT", 1, 0),  # *
+        ("license", "TEXT", 0, 0), ("url", "TEXT", 1, 0), ("base_date", "TEXT", 0, 0),
+        ("retrieved_at", "TEXT", 1, 0),
     ],
     "places": [
-        ("id", "INTEGER", 0, 1), ("source_place_id", "TEXT", 0, 0),  # *
+        ("id", "INTEGER", 0, 1), ("source_place_id", "TEXT", 1, 0),
         ("name", "TEXT", 1, 0), ("category", "TEXT", 1, 0), ("area", "TEXT", 1, 0),
         ("address", "TEXT", 0, 0), ("latitude", "REAL", 1, 0), ("longitude", "REAL", 1, 0),
         ("indoor", "INTEGER", 0, 0), ("open_hours", "TEXT", 0, 0),
-        ("open_hours_text", "TEXT", 0, 0),  # *
-        ("price_level", "INTEGER", 0, 0), ("default_stay_min", "INTEGER", 1, 0),
-        ("overview", "TEXT", 0, 0),  # *
+        ("open_hours_text", "TEXT", 0, 0),
+        ("price_amount", "INTEGER", 0, 0), ("price_basis", "TEXT", 0, 0),
+        ("price_text", "TEXT", 0, 0), ("default_stay_min", "INTEGER", 1, 0),
+        ("overview", "TEXT", 0, 0),
         ("source_id", "INTEGER", 1, 0), ("updated_at", "TEXT", 1, 0),
     ],
     "accessibility": [
@@ -79,8 +80,8 @@ def conn(tmp_path):
 
 def add_source(conn):
     return conn.execute(
-        "INSERT INTO data_sources (provider, dataset_name, retrieved_at) VALUES (?, ?, ?)",
-        ("[가상] 기관", "[가상] 데이터", NOW)).lastrowid
+        "INSERT INTO data_sources (provider, dataset_name, url, retrieved_at) VALUES (?, ?, ?, ?)",
+        ("[가상] 기관", "[가상] 데이터", "https://example.invalid/busanfit", NOW)).lastrowid
 
 
 def add_place(conn, source_id=None, **overrides):
@@ -127,7 +128,8 @@ def test_coordinate_index_used_for_bounding_box(conn):
 def test_unknown_values_stored_as_null(conn):
     place_id = add_place(conn, add_source(conn))
     row = conn.execute("SELECT * FROM places WHERE id = ?", (place_id,)).fetchone()
-    for column in ("address", "indoor", "open_hours", "open_hours_text", "price_level", "overview"):
+    for column in ("address", "indoor", "open_hours", "open_hours_text", "price_amount",
+                   "price_basis", "price_text", "overview"):
         assert row[column] is None, column
     conn.execute("INSERT INTO accessibility (place_id, grade, source_id) VALUES (?, 'UNKNOWN', ?)",
                  (place_id, row["source_id"]))
@@ -136,12 +138,25 @@ def test_unknown_values_stored_as_null(conn):
         == [None] * 4
 
 
-def test_category_is_not_restricted(conn):
-    add_place(conn, add_source(conn), category="[가상] 체험")  # 정할 것 2 대기: 값 제한 없음
+@pytest.mark.parametrize("category", [
+    "CAFE", "FOOD", "EXHIBITION", "ATTRACTION", "PARK", "SHOPPING", "OTHER",
+])
+def test_contract_categories_accepted(conn, category):
+    add_place(conn, add_source(conn), category=category)
+
+
+@pytest.mark.parametrize("basis", ["PER_PERSON", "TOTAL"])
+def test_price_fields_stored(conn, basis):
+    place_id = add_place(conn, add_source(conn), price_amount=5000, price_basis=basis,
+                         price_text="[가상] 5,000원")
+    row = conn.execute("SELECT * FROM places WHERE id = ?", (place_id,)).fetchone()
+    assert (row["price_amount"], row["price_basis"], row["price_text"]) \
+        == (5000, basis, "[가상] 5,000원")
 
 
 @pytest.mark.parametrize("overrides", [
-    {"indoor": 2}, {"price_level": 0}, {"price_level": 5}, {"default_stay_min": 0},
+    {"indoor": 2}, {"category": "[가상] 체험"}, {"category": "cafe"}, {"category": None},
+    {"price_basis": "UNKNOWN"}, {"source_place_id": None}, {"default_stay_min": 0},
     {"latitude": 91}, {"longitude": -181}, {"open_hours": "not json"}, {"name": None},
     {"latitude": None}, {"source_id": 999},
 ])
@@ -164,7 +179,11 @@ def test_duplicate_source_place_id_rejected(conn):
     "INSERT INTO accessibility (place_id, grade, wheelchair, source_id) VALUES (:p, 'VERIFIED', 2, :s)",
     "INSERT INTO accessibility (place_id, grade, source_id) VALUES (999, 'UNKNOWN', :s)",
     "INSERT INTO accessibility (place_id, grade, source_id) VALUES (:p, 'UNKNOWN', 999)",
-    "INSERT INTO data_sources (provider, dataset_name) VALUES ('[가상]', '[가상]')",
+    "INSERT INTO data_sources (provider, dataset_name, url) "
+    "VALUES ('[가상]', '[가상]', 'https://example.invalid')",
+    "INSERT INTO data_sources (provider, dataset_name, retrieved_at) VALUES ('[가상]', '[가상]', 'x')",
+    "INSERT INTO data_sources (provider, dataset_name, url, retrieved_at) "
+    "VALUES ('[가상]', '[가상]', NULL, 'x')",
 ])
 def test_invalid_accessibility_and_source_rejected(conn, sql):
     source_id = add_source(conn)
