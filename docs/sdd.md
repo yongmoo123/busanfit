@@ -155,16 +155,20 @@ Software Design Document (SDD)
 | data_sources | id | INTEGER | PK | N | 출처 식별자 | NFR-009 |
 | data_sources | provider / dataset_name | TEXT | \- | N | 제공기관, 데이터명 | NFR-009 |
 | data_sources | license / url / base_date | TEXT | \- | Y | 이용조건(공공누리 유형), 원본 URL, 기준일(ISO 8601 날짜) | NFR-009 |
-| places | id | INTEGER | PK | N | 장소 식별자 | FR-007 |
+| data_sources | retrieved_at | TEXT | \- | N | 조회 시각 (ISO 8601 시각, API Source.retrievedAt). 제공기관의 기준일(base_date)과 구분 (가정, 이슈 #7) | NFR-009 |
+| places | id | INTEGER | PK | N | 장소 식별자 (API에서는 문자열로 변환) | FR-007 |
+| places | source_place_id | TEXT | \- | Y | 원본 데이터의 장소 ID (예: TourAPI contentid). (source_id, source_place_id) 중복 금지 (가정, 이슈 #7) | FR-020, NFR-009 |
 | places | name / category / area | TEXT | \- | N | 장소명, 카테고리(관광·문화·체험·야외·음식·카페), 권역 | FR-007 |
 | places | address | TEXT | \- | Y | 주소 | FR-012 |
-| places | latitude / longitude | REAL | \- | N | WGS84 위도·경도 (일반 인덱스, 반경 검색은 위경도 사각형 1차 필터 후 하버사인 2차 필터) | FR-007, NFR-001 |
+| places | latitude / longitude | REAL | \- | N | WGS84 위도·경도 (일반 인덱스 idx_places_lat_lon, 반경 검색은 위경도 사각형 1차 필터 후 하버사인 2차 필터) | FR-007, NFR-001 |
 | places | indoor | INTEGER | \- | Y | 실내 여부 (0/1 불리언, 날씨 필터) | FR-016 |
-| places | open_hours | TEXT | \- | Y | 요일별 운영시간 (JSON 문자열), 없으면 '정보 없음' | FR-009 |
+| places | open_hours | TEXT | \- | Y | 요일별 운영시간 (원문을 파싱한 JSON 문자열, 구조 미정). 원문이 없거나 파싱에 실패하면 NULL로 두고 화면에 '정보 없음'으로 표시 (가정, 이슈 #7) | FR-009 |
+| places | open_hours_text | TEXT | \- | Y | 운영시간 원문. 원문은 있고 open_hours가 NULL이면 HARD 검증에서는 미확인 (가정, 이슈 #7) | FR-009, FR-012 |
 | places | price_level | INTEGER | \- | Y | 가격대 1~4, 없으면 예산 하드 제약 미적용 | FR-007 |
 | places | default_stay_min | INTEGER | \- | N | 기본 체류시간 (카페 60, 식사 70, 전시 시설별 또는 60) | FR-005 |
+| places | overview | TEXT | \- | Y | 장소 개요 원문. LLM 컨텍스트에는 200자 이내로 잘라 사용(7.3) (가정, 이슈 #7) | FR-012 |
 | places | source_id | INTEGER | FK | N | data_sources.id | NFR-009 |
-| places | updated_at | TEXT | \- | N | 최종 수집 시각 (ISO 8601 시각) | FR-020 |
+| places | updated_at | TEXT | \- | N | 이 장소 레코드의 최종 수집 시각 (ISO 8601 시각). 출처 단위 조회 시각은 data_sources.retrieved_at | FR-020 |
 | accessibility | place_id | INTEGER | PK, FK | N | places.id (1:0..1) | FR-008 |
 | accessibility | grade | TEXT | \- | N | VERIFIED / UNKNOWN / UNSUITABLE | FR-008, FR-013 |
 | accessibility | wheelchair / stroller / elevator / accessible_toilet | INTEGER | \- | Y | 항목별 무장애 정보 (0/1 불리언) | FR-008 |

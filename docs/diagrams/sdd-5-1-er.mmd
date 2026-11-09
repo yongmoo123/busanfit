@@ -16,9 +16,11 @@ erDiagram
     TEXT license
     TEXT url
     TEXT base_date
+    TEXT retrieved_at
   }
   places {
     INTEGER id PK
+    TEXT source_place_id
     TEXT name
     TEXT category
     TEXT area
@@ -27,8 +29,10 @@ erDiagram
     REAL longitude
     INTEGER indoor
     TEXT open_hours
+    TEXT open_hours_text
     INTEGER price_level
     INTEGER default_stay_min
+    TEXT overview
     INTEGER source_id FK
     TEXT updated_at
   }
