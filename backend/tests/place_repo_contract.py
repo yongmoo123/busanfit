@@ -208,11 +208,33 @@ class PlaceRepositoryContract:
         assert [hit.place.id for hit in reloaded.find_within_radius(*CENTER, RADIUS_M)] \
             == [pid(k) for k in ("10", "15", "14", "13", "11")]
 
-    @pytest.mark.parametrize("bad", ["10", "mock-base", "mock-base:", ":10", "MOCK-BASE:10",
-                                     "mock-base:10/x", ""])
+    @pytest.mark.parametrize("bad", [
+        "10", "mock-base", "mock-base:", ":10", "MOCK-BASE:10", "mock-base:10/x", "",
+        # URL-unsafe or out-of-rule original IDs (source_place_id = [A-Za-z0-9_-]{1,64})
+        "mock-base:10?x", "mock-base:10#x", "mock-base:10%x", "mock-base:10%2Fx",
+        "mock-base:1%30", "mock-base:10 x", "mock-base:10.5", "mock-base:장소",
+        "mock-base:" + "1" * 65, "mock-base:10:x",
+    ])
     def test_malformed_place_id_is_not_found(self, repo, bad):
         assert repo.get_place(bad) is None
         assert repo.existing_place_ids([bad]) == frozenset()
+
+    def test_unsafe_original_id_cannot_become_a_place(self):
+        # The record itself refuses it, so no implementation can store or return such an ID.
+        for bad in ["10?x", "10#x", "10%2F", "10%61", "a/b", "a b", "", "a" * 65, "한글"]:
+            with pytest.raises(ValueError):
+                place("x", 100, "CAFE", source_place_id=bad)
+
+    def test_allowed_original_id_mix_round_trips(self):
+        keys = ["126508", "Mock_ID-01", "a" * 64, "_", "-"]
+        repo = self.make_repo([place(key, 100 + i, "CAFE") for i, key in enumerate(keys)],
+                              SOURCES)
+        for key in keys:
+            found = repo.get_place(pid(key))
+            assert found is not None and found.id == pid(key)
+            assert parse_place_id(found.id) == ("mock-base", key)
+        assert repo.existing_place_ids([pid(key) for key in keys]) \
+            == frozenset(pid(key) for key in keys)
 
     def test_same_original_id_from_two_sources_are_two_places(self):
         other = place("10", 200, "CAFE", source_code="mock-access", source_id="2")
