@@ -23,6 +23,6 @@ cd backend; ../.venv/Scripts/python.exe -m app.data.db create; cd ..
 - SQLite 오류(테이블 없음, 닫힌 연결 등)와 규칙에 어긋난 저장 행은 `RepositoryError`입니다. 빈 목록은 "조건에 맞는 장소 없음"만 뜻합니다.
 
 ## 장소 ID (DEC-017)
-API의 place.id는 `{data_sources.code}:{places.source_place_id}`입니다(예: `tourapi-kor:126508`). DB 내부 정수 `places.id`는 DB를 새로 만들면 바뀌므로 내보내지 않습니다. `data_sources.code`는 적재 스크립트가 고정 값으로 넣으며(관광정보 `tourapi-kor`, 무장애 `tourapi-barrierfree`) 소문자·숫자·하이픈만 허용합니다. 만들기·나누기는 `place_id.py`의 `make_place_id`·`parse_place_id`를 씁니다.
+API의 place.id는 `{data_sources.code}:{places.source_place_id}`입니다(예: `tourapi-kor:126508`). DB 내부 정수 `places.id`는 DB를 새로 만들면 바뀌므로 내보내지 않습니다. `data_sources.code`는 적재 스크립트가 고정 값으로 넣으며(관광정보 `tourapi-kor`, 무장애 `tourapi-barrierfree`) 소문자·숫자·하이픈만 허용합니다. `source_place_id`는 영문 대소문자·숫자·`_`·`-`만, 1~64자입니다. 그 밖의 글자(`?` `#` `%` `/` 공백 `.` 한글 등)가 있는 원본 ID는 바꾸지 않고 적재를 거절합니다. 만들기·나누기는 `place_id.py`의 `make_place_id`·`parse_place_id`를 씁니다.
 외부 수집은 pipelines, 요청 시 검색은 이 영역입니다. 초기 적재 재현은 pipelines와 함께 검수합니다.
 FR-017의 역·주차장·엘리베이터·보관함 조회도 담당합니다. FR-019 공유 저장은 Could 후속이며 세션/건강 원문 저장과 구분합니다.

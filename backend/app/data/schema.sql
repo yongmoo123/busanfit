@@ -5,7 +5,9 @@
 -- places.source_place_id / overview / open_hours_text, data_sources.retrieved_at은 DEC-017.
 -- API place.id = "{data_sources.code}:{places.source_place_id}" (DEC-017 담당자 결정, app.data.place_id).
 --   code는 적재 스크립트가 넣는 고정 값(예: tourapi-kor, tourapi-barrierfree)이고 소문자·숫자·하이픈만 허용해
---   구분자 ':'가 들어가지 않는다. source_place_id에는 URL 경로를 끊는 '/'를 허용하지 않는다.
+--   구분자 ':'가 들어가지 않는다. source_place_id는 영문 대소문자·숫자·'_'·'-'만, 1~64자
+--   (? # % / 공백 . 한글 등은 거절). 그래서 place.id는 URL 경로에 인코딩 없이 그대로 들어간다.
+--   SQLite에는 정규식이 없으므로 GLOB으로 허용 문자 밖의 글자가 하나라도 있으면 거절한다.
 -- SQLite는 STRICT가 아니면 INTEGER 컬럼에 소수·문자열을 그대로 저장하므로 정수 수치는 typeof로 검사한다.
 -- 외래 키는 연결마다 PRAGMA foreign_keys = ON 이 필요하다(app.data.db.connect가 설정).
 
@@ -24,7 +26,9 @@ CREATE TABLE data_sources (
 
 CREATE TABLE places (
     id                INTEGER PRIMARY KEY,
-    source_place_id   TEXT NOT NULL CHECK (source_place_id <> '' AND instr(source_place_id, '/') = 0),
+    source_place_id   TEXT NOT NULL CHECK (typeof(source_place_id) = 'text'
+                                           AND length(source_place_id) BETWEEN 1 AND 64
+                                           AND source_place_id NOT GLOB '*[^A-Za-z0-9_-]*'),
     name              TEXT NOT NULL,
     category          TEXT NOT NULL CHECK (category IN ('CAFE', 'FOOD', 'EXHIBITION', 'ATTRACTION',
                                                         'PARK', 'SHOPPING', 'OTHER')),
