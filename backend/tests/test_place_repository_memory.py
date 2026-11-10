@@ -43,6 +43,11 @@ def test_place_must_match_its_source(fields):
 @pytest.mark.parametrize("fields", [
     {"source_code": "Mock-Base"}, {"source_code": "mock:base"}, {"source_code": ""},
     {"source_place_id": ""}, {"source_place_id": "a/b"}, {"source_place_id": None},
+    {"source_place_id": "mock?part"}, {"source_place_id": "mock#part"},
+    {"source_place_id": "mock%part"}, {"source_place_id": "mock%2Fpart"},
+    {"source_place_id": "mock%61"}, {"source_place_id": "mock part"},
+    {"source_place_id": "a" * 65}, {"source_place_id": "한글"}, {"source_place_id": "1.5"},
+    {"source_place_id": 126508},
 ])
 def test_record_rejects_unsafe_id_parts(fields):
     with pytest.raises(ValueError):
