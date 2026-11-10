@@ -4,15 +4,23 @@ DEC-017 left the format to the data owner. The DB integer ``places.id`` changes 
 is rebuilt, so the API ID is built from values that survive a reload: the fixed source code the
 loader writes (e.g. ``tourapi-kor``, ``tourapi-barrierfree``) and the original place ID.
 
-The code allows only ``[a-z0-9-]`` (same rule as the CHECK in schema.sql), so it never contains
-the separator and the first ``:`` always splits the ID. ``:`` is allowed as-is in a URL path
-segment (RFC 3986 pchar), so ``/api/places/tourapi-kor:12345`` needs no escaping. ``/`` is not
-allowed in the original ID because it would split the path.
+Allowed characters (same rules as the CHECKs in schema.sql):
+- source code: ``[a-z0-9-]+``
+- original place ID: ``[A-Za-z0-9_-]{1,64}`` — ASCII letters, digits, ``_`` and ``-`` only.
+  Anything else (``? # % /``, space, ``.``, non-ASCII, ...) is rejected, never rewritten.
+
+Every character in a place ID is therefore an RFC 3986 "unreserved" character or the separator
+``:``, which may appear as-is in a path segment. The ID can be put into ``/api/places/{placeId}``
+without encoding and comes back unchanged: no ``?``/``#`` to cut it, no ``%`` to be decoded into
+something else, no ``/`` to split the path. The code never contains ``:``, so the first ``:``
+always splits the ID.
 """
 import re
 
 SEPARATOR = ":"
 SOURCE_CODE_PATTERN = re.compile(r"[a-z0-9-]+")
+SOURCE_PLACE_ID_MAX_LENGTH = 64
+SOURCE_PLACE_ID_PATTERN = re.compile(r"[A-Za-z0-9_-]{1,%d}" % SOURCE_PLACE_ID_MAX_LENGTH)
 
 
 def validate_source_code(code: str) -> str:
@@ -22,9 +30,10 @@ def validate_source_code(code: str) -> str:
 
 
 def validate_source_place_id(source_place_id: str) -> str:
-    if not isinstance(source_place_id, str) or not source_place_id or "/" in source_place_id:
-        raise ValueError(f"source_place_id must be a non-empty string without '/': "
-                         f"{source_place_id!r}")
+    if not isinstance(source_place_id, str) or not SOURCE_PLACE_ID_PATTERN.fullmatch(
+            source_place_id):
+        raise ValueError(f"source_place_id must be 1-{SOURCE_PLACE_ID_MAX_LENGTH} characters of "
+                         f"[A-Za-z0-9_-]: {source_place_id!r}")
     return source_place_id
 
 

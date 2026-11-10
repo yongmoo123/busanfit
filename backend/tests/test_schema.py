@@ -334,10 +334,56 @@ def test_place_id_stable_across_reload(tmp_path):
 
 def test_place_id_round_trip():
     assert place_id.parse_place_id("tourapi-kor:900001") == ("tourapi-kor", "900001")
-    assert place_id.parse_place_id("tourapi-kor:a:b") == ("tourapi-kor", "a:b")
-    for bad in ["", "tourapi-kor", ":900001", "tourapi-kor:", "Tour:1", "tourapi-kor:1/2", None]:
+    assert place_id.parse_place_id("tourapi-kor:Mock_ID-01") == ("tourapi-kor", "Mock_ID-01")
+    for bad in ["", "tourapi-kor", ":900001", "tourapi-kor:", "Tour:1", "tourapi-kor:1/2",
+                "tourapi-kor:a:b", None]:
         with pytest.raises(ValueError):
             place_id.parse_place_id(bad)
+
+
+# 원본 ID 규칙: 영문 대소문자·숫자·_·- 만, 1~64자. SQL CHECK와 파이썬 검증이 같은 값을 거절·허용해야 한다.
+REJECTED_SOURCE_PLACE_IDS = [
+    "mock?part", "mock#part", "mock%part", "mock%2Fpart", "mock%61", "mock/part", "a/b",
+    "mock part", " 126508", "126508 ", "", "a" * 65, "장소1", "한글", "1.5", "mock:part",
+    "mock\npart", "mock\tpart", "ｍｏｃｋ",
+]
+ALLOWED_SOURCE_PLACE_IDS = [
+    "126508", "0", "Mock_ID-01", "A", "_", "-", "abc_DEF-123", "a" * 64, "9" * 64,
+]
+
+
+@pytest.mark.parametrize("bad", REJECTED_SOURCE_PLACE_IDS)
+def test_source_place_id_rejected_by_schema_and_python(conn, bad):
+    with pytest.raises(sqlite3.IntegrityError, match="CHECK"):
+        add_place(conn, add_source(conn), source_place_id=bad)
+    with pytest.raises(ValueError):
+        place_id.validate_source_place_id(bad)
+    with pytest.raises(ValueError):
+        place_id.make_place_id("tourapi-kor", bad)
+
+
+@pytest.mark.parametrize("good", ALLOWED_SOURCE_PLACE_IDS)
+def test_source_place_id_allowed_by_schema_and_python(conn, good):
+    row_id = add_place(conn, add_source(conn), source_place_id=good)
+    stored = conn.execute("SELECT source_place_id, typeof(source_place_id) AS kind FROM places "
+                          "WHERE id = ?", (row_id,)).fetchone()
+    assert (stored["source_place_id"], stored["kind"]) == (good, "text")
+    made = place_id.make_place_id("tourapi-kor", good)
+    assert made == f"tourapi-kor:{good}"
+    assert place_id.parse_place_id(made) == ("tourapi-kor", good)
+
+
+def test_numeric_source_place_id_stored_as_text(conn):
+    # A loader passing an int still stores TEXT (column affinity) and passes the CHECK.
+    row_id = add_place(conn, add_source(conn), source_place_id=126508)
+    row = conn.execute("SELECT source_place_id, typeof(source_place_id) AS kind FROM places "
+                       "WHERE id = ?", (row_id,)).fetchone()
+    assert (row["source_place_id"], row["kind"]) == ("126508", "text")
+
+
+def test_blob_source_place_id_rejected(conn):
+    with pytest.raises(sqlite3.IntegrityError, match="CHECK"):
+        add_place(conn, add_source(conn), source_place_id=b"126508")
 
 
 def test_db_path_comes_from_environment(tmp_path):
