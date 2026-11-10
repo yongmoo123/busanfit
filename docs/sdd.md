@@ -174,7 +174,7 @@ Software Design Document (SDD)
 | places | source_id | INTEGER | FK | N | data_sources.id | NFR-009 |
 | places | updated_at | TEXT | \- | N | 이 장소 레코드의 최종 수집 시각 (ISO 8601 시각). 출처 단위 조회 시각은 data_sources.retrieved_at | FR-020 |
 | accessibility | place_id | INTEGER | PK, FK | N | places.id (1:0..1) | FR-008 |
-| accessibility | grade | TEXT | \- | N | VERIFIED / UNKNOWN / UNSUITABLE | FR-008, FR-013 |
+| accessibility | grade | TEXT | \- | N | VERIFIED / UNKNOWN / UNSUITABLE. 항목값을 요약한 **표시용 등급**: 정보 없음 → UNKNOWN, 휠체어·유모차 모두 false → UNSUITABLE, 둘 중 하나라도 true → VERIFIED. 하드 제약은 등급이 아니라 항목별 값으로 판정한다(WHEELCHAIR → wheelchair = true, STROLLER → stroller = true만 통과, null은 기본 후보에서 제외하고 FR-013 제안 대상, false는 제외, 7.3). 기본 정보와 원본 ID(source_place_id)로 짝지은 무장애 정보가 없으면 행을 만들지 않고 API에서 UNKNOWN으로 내보낸다 (DEC-015) | FR-008, FR-013 |
 | accessibility | wheelchair / stroller / elevator / accessible_toilet | INTEGER | \- | Y | 항목별 무장애 정보 (0/1 불리언) | FR-008 |
 | accessibility | raw | TEXT | \- | Y | 원본 무장애 정보 (JSON 문자열) | NFR-009 |
 | accessibility | source_id | INTEGER | FK | N | data_sources.id (무장애 정보 출처) | NFR-009 |
