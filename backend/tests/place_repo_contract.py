@@ -4,10 +4,12 @@ All places, sources and coordinates here are [가상] fixtures, not real Busan d
 Offsets are along a meridian, so the haversine distance equals the offset in meters.
 """
 import math
+import re
 
 import pytest
 
 from app.data.geo import EARTH_RADIUS_M
+from app.data.place_id import parse_place_id
 from app.data.repository import PlaceRepository, RepositoryError
 from app.domain.place import AccessibilityRecord, DataSourceRecord, OpenHoursRecord, PlaceRecord
 
@@ -20,26 +22,34 @@ def north(meters: float) -> tuple[float, float]:
 
 
 SOURCES = [
-    DataSourceRecord("1", "[가상] 테스트 기관", "[가상] 기본 장소 데이터", None,
+    DataSourceRecord("1", "mock-base", "[가상] 테스트 기관", "[가상] 기본 장소 데이터", None,
                      "https://example.invalid/busanfit/base", None, "2026-11-09T09:00:00+09:00"),
-    DataSourceRecord("2", "[가상] 테스트 기관", "[가상] 무장애 데이터", "MOCK_ONLY",
+    DataSourceRecord("2", "mock-access", "[가상] 테스트 기관", "[가상] 무장애 데이터", "MOCK_ONLY",
                      "https://example.invalid/busanfit/access", "2026-11-01",
                      "2026-11-09T09:00:00+09:00"),
 ]
 
 UNKNOWN_HOURS = OpenHoursRecord(parsed=None, text=None)
 
+# API place.id = "{data_sources.code}:{source_place_id}" (DEC-017, app.data.place_id)
+PLACE_ID_FORMAT = re.compile(r"[a-z0-9-]+:[^/]+")
 
-def place(place_id: str, meters_north: float, category: str, *, area: str = "HAEUNDAE",
+
+def pid(key: str) -> str:
+    """API place.id of the fixture ``place(key, ...)`` (base source code "mock-base")."""
+    return f"mock-base:{key}"
+
+
+def place(key: str, meters_north: float, category: str, *, area: str = "HAEUNDAE",
           accessibility: AccessibilityRecord | None = None, **fields) -> PlaceRecord:
     lat, lon = north(meters_north)
-    values = dict(source_place_id=f"mock-{place_id}", name=f"[가상] 장소 {place_id}",
+    values = dict(source_code="mock-base", source_place_id=key, name=f"[가상] 장소 {key}",
                   category=category, area=area, address=None, latitude=lat, longitude=lon,
                   indoor=None, open_hours=UNKNOWN_HOURS, price_amount=None, price_basis=None,
                   price_text=None, default_stay_min=60, overview=None, source_id="1", updated_at="2026-11-09T09:00:00+09:00",
                   accessibility=accessibility)
     values.update(fields)
-    return PlaceRecord(id=place_id, **values)
+    return PlaceRecord(**values)
 
 
 PLACES = [
@@ -78,18 +88,18 @@ class PlaceRepositoryContract:
 
     def test_radius_boundary_and_order(self, repo):
         hits = repo.find_within_radius(*CENTER, RADIUS_M)
-        assert self.ids(hits) == ["10", "15", "14", "13", "11"]
-        assert "12" not in self.ids(hits)
+        assert self.ids(hits) == [pid(k) for k in ("10", "15", "14", "13", "11")]
+        assert pid("12") not in self.ids(hits)
         assert hits[-1].distance_m == pytest.approx(1490, abs=0.01)
         assert [hit.distance_m for hit in hits] == sorted(hit.distance_m for hit in hits)
 
     def test_area_and_category_filters(self, repo):
         hits = repo.find_within_radius(*CENTER, RADIUS_M, area="HAEUNDAE",
                                        exclude_categories={"CAFE", "PARK"})
-        assert self.ids(hits) == ["15", "11"]
+        assert self.ids(hits) == [pid("15"), pid("11")]
 
     def test_limit(self, repo):
-        assert self.ids(repo.find_within_radius(*CENTER, RADIUS_M, limit=2)) == ["10", "15"]
+        assert self.ids(repo.find_within_radius(*CENTER, RADIUS_M, limit=2)) == [pid("10"), pid("15")]
 
     def test_no_candidates_is_empty_list(self, repo):
         assert repo.find_within_radius(-35.0, -129.0, 10) == []
@@ -110,7 +120,7 @@ class PlaceRepositoryContract:
             repo.find_within_radius(*args, **kwargs)
 
     def test_unknown_values_stay_none(self, repo):
-        found = repo.get_place("11")
+        found = repo.get_place(pid("11"))
         assert (found.address, found.indoor, found.price_amount, found.price_basis,
                 found.price_text, found.overview) == (None,) * 6
         assert found.open_hours == UNKNOWN_HOURS
@@ -118,10 +128,10 @@ class PlaceRepositoryContract:
         assert found.default_stay_min == 70
 
     def test_unparsed_open_hours_keep_text(self, repo):
-        assert repo.get_place("15").open_hours == OpenHoursRecord(None, "[가상] 해석 불가 원문")
+        assert repo.get_place(pid("15")).open_hours == OpenHoursRecord(None, "[가상] 해석 불가 원문")
 
     def test_known_fields_and_partial_accessibility(self, repo):
-        found = repo.get_place("10")
+        found = repo.get_place(pid("10"))
         assert found == PLACES[0]
         assert found.indoor is True
         assert (found.price_amount, found.price_basis, found.price_text) \
@@ -131,17 +141,18 @@ class PlaceRepositoryContract:
             == (True, None, False, None)
 
     def test_source_ids_merged_without_duplicates(self, repo):
-        assert repo.get_place("10").source_ids == ("1", "2")
-        assert repo.get_place("13").source_ids == ("1",)
-        assert repo.get_place("11").source_ids == ("1",)
+        assert repo.get_place(pid("10")).source_ids == ("1", "2")
+        assert repo.get_place(pid("13")).source_ids == ("1",)
+        assert repo.get_place(pid("11")).source_ids == ("1",)
 
     def test_get_place_missing_and_bad_id(self, repo):
-        assert repo.get_place("999") is None
+        assert repo.get_place(pid("999")) is None
         with pytest.raises(ValueError):
             repo.get_place(10)
 
     def test_existing_place_ids(self, repo):
-        assert repo.existing_place_ids(["10", "999", "11", "10"]) == frozenset({"10", "11"})
+        assert repo.existing_place_ids([pid("10"), pid("999"), pid("11"), pid("10")]) \
+            == frozenset({pid("10"), pid("11")})
         assert repo.existing_place_ids([]) == frozenset()
 
     def test_get_sources(self, repo):
@@ -164,18 +175,47 @@ class PlaceRepositoryContract:
         given = place("20", 100, "CAFE", open_hours=hours())
         repo = self.make_repo([given], SOURCES)
         given.open_hours.parsed["mon"][0]["open"] = "00:00"  # caller mutates the record it passed in
-        repo.get_place("20").open_hours.parsed["mon"][0]["open"] = "01:00"
+        repo.get_place(pid("20")).open_hours.parsed["mon"][0]["open"] = "01:00"
         repo.find_within_radius(*CENTER, RADIUS_M)[0].place.open_hours.parsed["mon"].clear()
         expected = hours()
-        assert repo.get_place("20").open_hours == expected
+        assert repo.get_place(pid("20")).open_hours == expected
         assert repo.find_within_radius(*CENTER, RADIUS_M)[0].place.open_hours == expected
 
     @pytest.mark.parametrize("call", [
         lambda r: r.find_within_radius(*CENTER, RADIUS_M),
-        lambda r: r.get_place("10"),
-        lambda r: r.existing_place_ids(["10"]),
+        lambda r: r.get_place(pid("10")),
+        lambda r: r.existing_place_ids([pid("10")]),
         lambda r: r.get_sources(["1"]),
     ])
     def test_storage_failure_raises_not_empty(self, call):
         with pytest.raises(RepositoryError):
             call(self.make_failing_repo())
+
+    def test_place_ids_follow_source_code_rule(self, repo):
+        """Every returned place.id is "{data_sources.code}:{source_place_id}" (DEC-017)."""
+        codes = {source.id: source.code for source in SOURCES}
+        found = [hit.place for hit in repo.find_within_radius(*CENTER, 10_000)]
+        assert len(found) == len(PLACES)
+        for record in found:
+            assert PLACE_ID_FORMAT.fullmatch(record.id), record.id
+            assert record.id == f"{codes[record.source_id]}:{record.source_place_id}"
+            assert parse_place_id(record.id) == (codes[record.source_id], record.source_place_id)
+            assert repo.get_place(record.id) == record
+        assert repo.existing_place_ids([p.id for p in PLACES]) == frozenset(p.id for p in PLACES)
+
+    def test_place_id_independent_of_load_order(self):
+        reloaded = self.make_repo(PLACES[::-1], SOURCES[::-1])
+        assert [hit.place.id for hit in reloaded.find_within_radius(*CENTER, RADIUS_M)] \
+            == [pid(k) for k in ("10", "15", "14", "13", "11")]
+
+    @pytest.mark.parametrize("bad", ["10", "mock-base", "mock-base:", ":10", "MOCK-BASE:10",
+                                     "mock-base:10/x", ""])
+    def test_malformed_place_id_is_not_found(self, repo, bad):
+        assert repo.get_place(bad) is None
+        assert repo.existing_place_ids([bad]) == frozenset()
+
+    def test_same_original_id_from_two_sources_are_two_places(self):
+        other = place("10", 200, "CAFE", source_code="mock-access", source_id="2")
+        repo = self.make_repo([PLACES[0], other], SOURCES)
+        assert repo.existing_place_ids([pid("10"), "mock-access:10"]) \
+            == frozenset({pid("10"), "mock-access:10"})

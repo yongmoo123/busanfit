@@ -20,17 +20,35 @@ class InMemoryPlaceRepository:
 
     def __init__(self, places: Iterable[PlaceRecord] = (), sources: Iterable[DataSourceRecord] = (),
                  *, error: RepositoryError | None = None):
-        self._places: dict[str, PlaceRecord] = {}
-        for place in places:
-            if place.id in self._places:
-                raise ValueError(f"duplicate place id {place.id!r}")
-            self._places[place.id] = deepcopy(place)
         self._sources: dict[str, DataSourceRecord] = {}
+        codes: set[str] = set()
         for source in sources:
             if source.id in self._sources:
                 raise ValueError(f"duplicate source id {source.id!r}")
+            if source.code in codes:  # data_sources.code UNIQUE
+                raise ValueError(f"duplicate source code {source.code!r}")
+            codes.add(source.code)
             self._sources[source.id] = source
+        self._places: dict[str, PlaceRecord] = {}
+        for place in places:
+            self._check_source_refs(place)
+            if place.id in self._places:  # same as UNIQUE (source_id, source_place_id)
+                raise ValueError(f"duplicate place id {place.id!r}")
+            self._places[place.id] = deepcopy(place)
         self.error = error
+
+    def _check_source_refs(self, place: PlaceRecord) -> None:
+        """Same as the DB foreign keys, and ``source_code`` must be the joined data_sources.code,
+        so the place ID is built from the same values as in the SQLite implementation."""
+        source = self._sources.get(place.source_id)
+        if source is None:
+            raise ValueError(f"place {place.source_place_id!r}: unknown source_id {place.source_id!r}")
+        if place.source_code != source.code:
+            raise ValueError(f"place {place.source_place_id!r}: source_code {place.source_code!r} "
+                             f"is not the code {source.code!r} of source {source.id!r}")
+        if place.accessibility is not None and place.accessibility.source_id not in self._sources:
+            raise ValueError(f"place {place.id!r}: unknown accessibility source_id "
+                             f"{place.accessibility.source_id!r}")
 
     def find_within_radius(self, center_lat: float, center_lon: float, radius_m: float, *,
                            area: str | None = None,

@@ -10,6 +10,8 @@ from dataclasses import dataclass
 import re
 from typing import Any
 
+from app.data.place_id import make_place_id, validate_source_code  # pure string rule, no DB
+
 # Contract (openapi Place.category) values, shared by DB, API and UI (DEC-013).
 CONTRACT_CATEGORIES = ("CAFE", "FOOD", "EXHIBITION", "ATTRACTION", "PARK", "SHOPPING", "OTHER")
 
@@ -98,12 +100,14 @@ class PlaceRecord:
     """One ``places`` row plus its optional ``accessibility`` row.
 
     ``accessibility is None`` means there is no barrier-free row; the API reports grade UNKNOWN.
-    ``id`` is the opaque string the API exposes. It must survive a reload of the DB, so it is based
-    on ``source_place_id`` and is not the integer ``places.id`` (DEC-017).
+    ``id`` is the opaque string the API exposes: ``"{source_code}:{source_place_id}"``, where
+    ``source_code`` is ``data_sources.code`` of ``source_id`` (joined). It survives a reload of the
+    DB, unlike the integer ``places.id`` (DEC-017, ``app.data.place_id``). Both parts are checked
+    when the record is created, so a record with an unsafe code or original ID cannot exist.
     ``price_amount`` is in won, ``price_basis`` is ``PER_PERSON`` or ``TOTAL``, ``price_text`` is the
     original text. Sprint 2 stores only the text; ``None`` never means free (DEC-014).
     """
-    id: str
+    source_code: str
     source_place_id: str
     name: str
     category: str
@@ -122,6 +126,13 @@ class PlaceRecord:
     updated_at: str
     accessibility: AccessibilityRecord | None = None
 
+    def __post_init__(self) -> None:
+        make_place_id(self.source_code, self.source_place_id)
+
+    @property
+    def id(self) -> str:
+        return make_place_id(self.source_code, self.source_place_id)
+
     @property
     def source_ids(self) -> tuple[str, ...]:
         """places.source_id ∪ accessibility.source_id, without duplicates, base source first (DEC-003)."""
@@ -134,14 +145,19 @@ class PlaceRecord:
 @dataclass(frozen=True)
 class DataSourceRecord:
     """One ``data_sources`` row (NFR-009). ``base_date`` = provider's reference date,
-    ``retrieved_at`` = when we fetched it (contract Source.baseDate / retrievedAt)."""
+    ``retrieved_at`` = when we fetched it (contract Source.baseDate / retrievedAt).
+    ``code`` = fixed source code written by the loader (e.g. ``tourapi-kor``); the prefix of place IDs."""
     id: str
+    code: str
     provider: str
     dataset_name: str
     license: str | None
     url: str
     base_date: str | None
     retrieved_at: str
+
+    def __post_init__(self) -> None:
+        validate_source_code(self.code)
 
 
 @dataclass(frozen=True)
