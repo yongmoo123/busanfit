@@ -3,6 +3,9 @@
 -- 새 DB 파일에 한 번 적용한다(CREATE TABLE, IF NOT EXISTS 없음). 갱신은 새 파일을 만든 뒤 교체한다.
 -- places.category는 계약의 7개 값(DEC-013), 가격은 금액·기준·원문(DEC-014).
 -- places.source_place_id / overview / open_hours_text, data_sources.retrieved_at은 DEC-017.
+-- API place.id = "{data_sources.code}:{places.source_place_id}" (DEC-017 담당자 결정, app.data.place_id).
+--   code는 적재 스크립트가 넣는 고정 값(예: tourapi-kor, tourapi-barrierfree)이고 소문자·숫자·하이픈만 허용해
+--   구분자 ':'가 들어가지 않는다. source_place_id에는 URL 경로를 끊는 '/'를 허용하지 않는다.
 -- SQLite는 STRICT가 아니면 INTEGER 컬럼에 소수·문자열을 그대로 저장하므로 정수 수치는 typeof로 검사한다.
 -- 외래 키는 연결마다 PRAGMA foreign_keys = ON 이 필요하다(app.data.db.connect가 설정).
 
@@ -10,6 +13,7 @@ PRAGMA user_version = 1;
 
 CREATE TABLE data_sources (
     id            INTEGER PRIMARY KEY,
+    code          TEXT NOT NULL UNIQUE CHECK (code <> '' AND code NOT GLOB '*[^a-z0-9-]*'),
     provider      TEXT NOT NULL,
     dataset_name  TEXT NOT NULL,
     license       TEXT,
@@ -20,7 +24,7 @@ CREATE TABLE data_sources (
 
 CREATE TABLE places (
     id                INTEGER PRIMARY KEY,
-    source_place_id   TEXT NOT NULL,
+    source_place_id   TEXT NOT NULL CHECK (source_place_id <> '' AND instr(source_place_id, '/') = 0),
     name              TEXT NOT NULL,
     category          TEXT NOT NULL CHECK (category IN ('CAFE', 'FOOD', 'EXHIBITION', 'ATTRACTION',
                                                         'PARK', 'SHOPPING', 'OTHER')),

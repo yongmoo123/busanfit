@@ -153,12 +153,13 @@ Software Design Document (SDD)
 | **테이블/컬렉션** | **필드** | **타입** | **PK/FK** | **Null** | **설명** | **관련 요구사항** |
 |----|----|----|----|----|----|----|
 | data_sources | id | INTEGER | PK | N | 출처 식별자 | NFR-009 |
+| data_sources | code | TEXT | UNIQUE | N | 출처 코드. 적재 스크립트가 고정 값으로 넣는다(예: 관광정보 `tourapi-kor`, 무장애 `tourapi-barrierfree`). 소문자·숫자·하이픈만 허용(CHECK)해 place.id 구분자 ':'가 들어가지 않는다. DB 파일을 새로 만들어도 같은 값이므로 API place.id의 앞부분으로 쓴다 (DEC-017) | FR-007, NFR-009 |
 | data_sources | provider / dataset_name | TEXT | \- | N | 제공기관, 데이터명 | NFR-009 |
 | data_sources | license / base_date | TEXT | \- | Y | 이용조건(공공누리 유형), 기준일(ISO 8601 날짜) | NFR-009 |
 | data_sources | url | TEXT | \- | N | 원본 URL (API Source.url, DEC-018) | NFR-009 |
 | data_sources | retrieved_at | TEXT | \- | N | 조회 시각 (ISO 8601 시각, API Source.retrievedAt). 제공기관의 기준일(base_date)과 구분 (DEC-017) | NFR-009 |
-| places | id | INTEGER | PK | N | DB 내부 장소 식별자. DB 파일을 새로 만들면 바뀔 수 있으므로 API place.id로 그대로 내보내지 않는다. API place.id는 재적재해도 같은 값이 나오도록 source_place_id 기반 문자열로 만든다 (DEC-017) | FR-007 |
-| places | source_place_id | TEXT | \- | N | 원본 데이터의 장소 ID (예: TourAPI contentid). (source_id, source_place_id) 중복 금지. 재적재 후에도 유지되는 장소 식별의 기준 (DEC-017) | FR-020, NFR-009 |
+| places | id | INTEGER | PK | N | DB 내부 장소 식별자. DB 파일을 새로 만들면 바뀔 수 있으므로 API place.id로 그대로 내보내지 않는다. API place.id는 재적재해도 같은 값이 나오도록 `{data_sources.code}:{places.source_place_id}` 문자열로 만든다(예: `tourapi-kor:126508`). 첫 ':'에서 나누면 출처 코드와 원본 ID가 된다. ':'는 URL 경로 세그먼트에 그대로 쓸 수 있어 `/api/places/{placeId}`에서 인코딩이 필요 없다(계약의 Place.id는 pattern 없는 문자열이며 클라이언트는 불투명 문자열로 취급). 형식은 DEC-017이 담당자에게 맡긴 범위에서 정함(`app.data.place_id`) (DEC-017) | FR-007 |
+| places | source_place_id | TEXT | \- | N | 원본 데이터의 장소 ID (예: TourAPI contentid). (source_id, source_place_id) 중복 금지. 빈 문자열과 URL 경로를 끊는 '/'는 허용하지 않음(CHECK). 재적재 후에도 유지되는 장소 식별의 기준 (DEC-017) | FR-020, NFR-009 |
 | places | name / category / area | TEXT | \- | N | 장소명, 카테고리(CAFE·FOOD·EXHIBITION·ATTRACTION·PARK·SHOPPING·OTHER, DEC-013. 대응: 관광→ATTRACTION, 문화→EXHIBITION, 야외→PARK, 음식→FOOD, 카페→CAFE, 체험→ATTRACTION), 권역 | FR-007 |
 | places | address | TEXT | \- | Y | 주소 | FR-012 |
 | places | latitude / longitude | REAL | \- | N | WGS84 위도·경도 (일반 인덱스 idx_places_lat_lon, 반경 검색은 위경도 사각형 1차 필터 후 하버사인 2차 필터) | FR-007, NFR-001 |

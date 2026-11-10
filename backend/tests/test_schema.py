@@ -3,12 +3,13 @@ import sqlite3
 
 import pytest
 
-from app.data import db
+from app.data import db, place_id
 
 # (column, type, NOT NULL, PK position) — SDD 5.2 table (DEC-014, DEC-017, DEC-018)
 EXPECTED = {
     "data_sources": [
-        ("id", "INTEGER", 0, 1), ("provider", "TEXT", 1, 0), ("dataset_name", "TEXT", 1, 0),
+        ("id", "INTEGER", 0, 1), ("code", "TEXT", 1, 0),
+        ("provider", "TEXT", 1, 0), ("dataset_name", "TEXT", 1, 0),
         ("license", "TEXT", 0, 0), ("url", "TEXT", 1, 0), ("base_date", "TEXT", 0, 0),
         ("retrieved_at", "TEXT", 1, 0),
     ],
@@ -78,10 +79,13 @@ def conn(tmp_path):
     connection.close()
 
 
-def add_source(conn):
+def add_source(conn, code=None):
+    if code is None:
+        code = f"mock-src-{conn.execute('SELECT count(*) FROM data_sources').fetchone()[0] + 1}"
     return conn.execute(
-        "INSERT INTO data_sources (provider, dataset_name, url, retrieved_at) VALUES (?, ?, ?, ?)",
-        ("[가상] 기관", "[가상] 데이터", "https://example.invalid/busanfit", NOW)).lastrowid
+        "INSERT INTO data_sources (code, provider, dataset_name, url, retrieved_at) "
+        "VALUES (?, ?, ?, ?, ?)",
+        (code, "[가상] 기관", "[가상] 데이터", "https://example.invalid/busanfit", NOW)).lastrowid
 
 
 def add_place(conn, source_id=None, **overrides):
@@ -161,6 +165,7 @@ def test_price_fields_stored(conn, basis):
     {"latitude": None}, {"source_id": 999},
     {"default_stay_min": 1.5}, {"default_stay_min": "unknown"},
     {"price_amount": 1.5}, {"price_amount": "unknown"},
+    {"source_place_id": ""}, {"source_place_id": "mock/1"},
 ])
 def test_invalid_place_rejected(conn, overrides):
     values = {"source_id": add_source(conn), **overrides}
@@ -238,17 +243,101 @@ def test_duplicate_source_place_id_rejected(conn):
     "INSERT INTO accessibility (place_id, grade, wheelchair, source_id) VALUES (:p, 'VERIFIED', 2, :s)",
     "INSERT INTO accessibility (place_id, grade, source_id) VALUES (999, 'UNKNOWN', :s)",
     "INSERT INTO accessibility (place_id, grade, source_id) VALUES (:p, 'UNKNOWN', 999)",
-    "INSERT INTO data_sources (provider, dataset_name, url) "
-    "VALUES ('[가상]', '[가상]', 'https://example.invalid')",
-    "INSERT INTO data_sources (provider, dataset_name, retrieved_at) VALUES ('[가상]', '[가상]', 'x')",
-    "INSERT INTO data_sources (provider, dataset_name, url, retrieved_at) "
-    "VALUES ('[가상]', '[가상]', NULL, 'x')",
+    "INSERT INTO data_sources (code, provider, dataset_name, url) "
+    "VALUES ('mock-x', '[가상]', '[가상]', 'https://example.invalid')",
+    "INSERT INTO data_sources (code, provider, dataset_name, retrieved_at) "
+    "VALUES ('mock-x', '[가상]', '[가상]', 'x')",
+    "INSERT INTO data_sources (code, provider, dataset_name, url, retrieved_at) "
+    "VALUES ('mock-x', '[가상]', '[가상]', NULL, 'x')",
 ])
 def test_invalid_accessibility_and_source_rejected(conn, sql):
     source_id = add_source(conn)
     params = {"p": add_place(conn, source_id), "s": source_id}
     with pytest.raises(sqlite3.IntegrityError):
         conn.execute(sql, params)
+
+
+SOURCE_SQL = "INSERT INTO data_sources (code, provider, dataset_name, url, retrieved_at) " \
+             "VALUES (?, '[가상]', '[가상]', 'https://example.invalid', 'x')"
+
+
+def test_source_code_is_unique_index(conn):
+    unique_columns = [
+        [col["name"] for col in conn.execute(f"PRAGMA index_info('{idx['name']}')")]
+        for idx in conn.execute("PRAGMA index_list(data_sources)") if idx["unique"]]
+    assert ["code"] in unique_columns
+
+
+def test_source_code_unique(conn):
+    conn.execute(SOURCE_SQL, ("tourapi-kor",))
+    with pytest.raises(sqlite3.IntegrityError, match="UNIQUE"):
+        conn.execute(SOURCE_SQL, ("tourapi-kor",))
+    conn.execute(SOURCE_SQL, ("tourapi-barrierfree",))
+
+
+def test_source_code_not_null(conn):
+    with pytest.raises(sqlite3.IntegrityError, match="NOT NULL"):
+        conn.execute(SOURCE_SQL, (None,))
+    with pytest.raises(sqlite3.IntegrityError, match="NOT NULL"):
+        conn.execute("INSERT INTO data_sources (provider, dataset_name, url, retrieved_at) "
+                     "VALUES ('[가상]', '[가상]', 'https://example.invalid', 'x')")
+
+
+@pytest.mark.parametrize("code", ["", "tourapi:kor", "TourAPI-kor", "tourapi kor", "tourapi/kor",
+                                  "tourapi_kor", "투어"])
+def test_source_code_rejects_unsafe_characters(conn, code):
+    with pytest.raises(sqlite3.IntegrityError, match="CHECK"):
+        conn.execute(SOURCE_SQL, (code,))
+    with pytest.raises(ValueError):
+        place_id.validate_source_code(code)
+
+
+@pytest.mark.parametrize("code", ["tourapi-kor", "tourapi-barrierfree", "busan-2026"])
+def test_source_code_rule_matches_python(conn, code):
+    conn.execute(SOURCE_SQL, (code,))
+    assert place_id.validate_source_code(code) == code
+
+
+# [가상] 두 출처·세 장소. 적재 순서를 바꿔 DB 내부 정수 ID가 달라져도 API place.id는 같아야 한다.
+RELOAD_SOURCES = ["tourapi-kor", "tourapi-barrierfree"]
+RELOAD_PLACES = [("tourapi-kor", "900001", "[가상] 카페"), ("tourapi-kor", "900002", "[가상] 공원"),
+                 ("tourapi-barrierfree", "900001", "[가상] 전시")]
+
+
+def load_and_read_ids(path, sources, places):
+    connection = db.connect(db.create_database(path))
+    try:
+        source_ids = {code: add_source(connection, code) for code in sources}
+        for code, original_id, name in places:
+            add_place(connection, source_ids[code], source_place_id=original_id, name=name)
+        rows = connection.execute(
+            "SELECT p.id, p.name, s.code, p.source_place_id FROM places p "
+            "JOIN data_sources s ON s.id = p.source_id").fetchall()
+    finally:
+        connection.close()
+    return ({row["name"]: place_id.make_place_id(row["code"], row["source_place_id"])
+             for row in rows}, {row["name"]: row["id"] for row in rows})
+
+
+def test_place_id_stable_across_reload(tmp_path):
+    first, first_internal = load_and_read_ids(tmp_path / "a.sqlite3", RELOAD_SOURCES,
+                                              RELOAD_PLACES)
+    # 다시 적재: 출처·장소 순서를 뒤집고, 앞에 다른 장소를 하나 더 넣어 내부 ID를 밀어낸다.
+    extra = [("tourapi-kor", "900999", "[가상] 추가")]
+    second, second_internal = load_and_read_ids(
+        tmp_path / "b.sqlite3", RELOAD_SOURCES[::-1], extra + RELOAD_PLACES[::-1])
+    assert any(first_internal[name] != second_internal[name] for name in first_internal)
+    assert first == {name: second[name] for name in first}
+    assert first == {"[가상] 카페": "tourapi-kor:900001", "[가상] 공원": "tourapi-kor:900002",
+                     "[가상] 전시": "tourapi-barrierfree:900001"}
+
+
+def test_place_id_round_trip():
+    assert place_id.parse_place_id("tourapi-kor:900001") == ("tourapi-kor", "900001")
+    assert place_id.parse_place_id("tourapi-kor:a:b") == ("tourapi-kor", "a:b")
+    for bad in ["", "tourapi-kor", ":900001", "tourapi-kor:", "Tour:1", "tourapi-kor:1/2", None]:
+        with pytest.raises(ValueError):
+            place_id.parse_place_id(bad)
 
 
 def test_db_path_comes_from_environment(tmp_path):
