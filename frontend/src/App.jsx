@@ -2,6 +2,9 @@
 import { useEffect, useRef, useState } from 'react'
 import needsInputMock from './mocks/02-chat.needs-input.response.json'
 import readyMock from './mocks/02-chat.ready.response.json'
+import { createSession, saveProfile } from './sessionApi.js'
+import { createEmptyProfile } from './profile.js'
+import ProfileEditor from './ProfileEditor.jsx'
 import './App.css'
 
 const MIN_SIDEBAR_WIDTH = 220
@@ -49,6 +52,7 @@ function formatDateTime(value) {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
+    timeZone: 'Asia/Seoul',
   })
 }
 
@@ -75,6 +79,7 @@ function getCompanionsName(value) {
   if (!value) return '미입력'
 
   const names = {
+    SOLO: '혼자',
     ALONE: '혼자',
     FRIENDS: '친구',
     FAMILY: '가족',
@@ -85,32 +90,25 @@ function getCompanionsName(value) {
   return value.count ? `${type} · ${value.count}명` : type
 }
 
-function ConditionCard({ profile, onRecommend }) {
+function ConditionCard({ profile, onRecommend, onEdit }) {
   const timeWindow = profile?.timeWindow?.value
+  const budget = profile?.budget?.value
 
   const items = [
     { label: '여행 지역', value: getAreaName(profile?.area?.value) },
-    { label: '이동수단', value: getTransportName(profile?.transport?.value) },
+    { label: '이동수단', value: getTransportName(profile?.transport?.value), source: profile?.transport?.source },
     { label: '시작 시간', value: formatDateTime(timeWindow?.startAt) },
     { label: '종료 시간', value: formatDateTime(timeWindow?.endAt) },
     { label: '동행 인원', value: getCompanionsName(profile?.companions?.value) },
-    {
-      label: '예산',
-      value: profile?.budget?.value == null
-        ? '미입력'
-        : String(profile.budget.value),
-    },
+    { label: '예산', value: budget == null ? '미입력' : budget.amount.toLocaleString('ko-KR') + '원' },
   ]
 
   return (
     <div className="condition-card">
       <div className="condition-card-heading">
         <div>
-          <span className="eyebrow">TRAVEL PROFILE</span>
           <h3>내 여행 조건</h3>
-          <p>현재 대화에서 확인된 조건이에요.</p>
         </div>
-        <span className="ready-badge">READY</span>
       </div>
 
       <div className="condition-grid">
@@ -118,19 +116,14 @@ function ConditionCard({ profile, onRecommend }) {
           <div className="condition-item" key={item.label}>
             <span>{item.label}</span>
             <strong>{item.value}</strong>
+            {item.source === 'DEFAULT' && <span className="profile-default">기본값</span>}
           </div>
         ))}
       </div>
 
-      <div className="condition-actions">
-        <span className="mock-note">계약 예시 기반 · 가상 응답</span>
-        <button
-          type="button"
-          className="primary-button"
-          onClick={onRecommend}
-        >
-          코스 추천받기
-        </button>
+      <div className="profile-actions">
+        <button type="button" className="primary-button" onClick={onEdit}>조건 편집</button>
+        <button type="button" className="profile-secondary" onClick={onRecommend}>가상 코스 미리보기</button>
       </div>
     </div>
   )
@@ -146,7 +139,6 @@ function CoursePlaceholder() {
           실제 장소와 이동 경로를 포함한 추천 결과는
           코스 API 연동 후 제공될 예정이에요.
         </p>
-        <span className="mock-note">현재는 UI 시연 화면입니다.</span>
       </div>
     </div>
   )
@@ -238,6 +230,53 @@ function Sidebar({
 }
 
 function App() {
+  const [editor, setEditor] = useState(() => {
+    const isProfileQa = import.meta.env.DEV &&
+      new URLSearchParams(window.location.search).get('qa') === 'profile-save'
+    return isProfileQa ? { target: 'qa', isMock: true } : null
+  })
+  const isQaEditor = editor?.target === 'qa'
+  const [session, setSession] = useState(null)
+  const [sessionError, setSessionError] = useState('')
+  const [sessionAttempt, setSessionAttempt] = useState(0)
+  const sessionRequestRef = useRef(null)
+  const profileSaveRef = useRef(false)
+
+  useEffect(() => {
+    if (isQaEditor) return undefined
+
+    let active = true
+
+    if (sessionRequestRef.current === null) {
+      sessionRequestRef.current = createSession()
+    }
+
+    sessionRequestRef.current
+      .then((created) => {
+        if (active) {
+          setSession({ ...created, profileRevision: 0 })
+        }
+      })
+      .catch((error) => {
+        if (active) {
+          setSessionError(
+            error.status ? error.message : '서버에 연결하지 못했어요.',
+          )
+        }
+      })
+
+    return () => {
+      active = false
+    }
+  }, [isQaEditor, sessionAttempt])
+
+  function retrySession() {
+    sessionRequestRef.current = null
+    setSession(null)
+    setSessionError('')
+    setSessionAttempt((current) => current + 1)
+  }
+
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [isSending, setIsSending] = useState(false)
@@ -323,12 +362,64 @@ function App() {
     document.body.style.userSelect = 'none'
   }
 
+  async function handleSaveProfile(profile) {
+    if (editor?.isMock) {
+      const questions = []
+      if (profile.area.value === null) questions.push({ message: '방문할 지역을 선택해 주세요.' })
+      if (profile.timeWindow.value === null) questions.push({ message: '이용 시간을 입력해 주세요.' })
+      return { profile, status: questions.length ? 'NEEDS_INPUT' : 'READY', questions, warnings: [] }
+    }
+
+    if (!session || profileSaveRef.current) {
+      throw new Error('서버 연결 또는 이전 저장이 끝날 때까지 기다려 주세요.')
+    }
+
+    profileSaveRef.current = true
+    try {
+      const result = await saveProfile(session.sessionId, profile, session.profileRevision)
+      setSession((current) => {
+        if (current?.sessionId !== session.sessionId) return current
+        return {
+          ...current,
+          savedProfile: result.profile,
+          profileRevision: result.profileRevision,
+          expiresAt: result.sessionExpiresAt,
+        }
+      })
+      return result
+    } finally {
+      profileSaveRef.current = false
+    }
+  }
+
+  function openEditor(target) {
+    if (!profileSaveRef.current) setEditor({ target, isMock: false })
+  }
+
+  function renderProfileEditor() {
+    return (
+      <ProfileEditor
+        key={editor.isMock ? 'mock' : 'live'}
+        initialProfile={editor.isMock ? readyMock.profile : session?.savedProfile ?? createEmptyProfile()}
+        isMock={editor.isMock}
+        canSave={editor.isMock || Boolean(session)}
+        sessionError={editor.isMock ? '' : sessionError}
+        onSave={handleSaveProfile}
+        onRestart={retrySession}
+        onClose={() => setEditor(null)}
+      />
+    )
+  }
+
   function handleNewChat() {
+    if (profileSaveRef.current) return
+
     if (sendTimerRef.current) {
       clearTimeout(sendTimerRef.current)
       sendTimerRef.current = null
     }
 
+    setEditor(null)
     setMessages([])
     setInput('')
     setIsSending(false)
@@ -445,10 +536,11 @@ function App() {
             ☰
           </button>
 
-          <span className="demo-badge">가상 시연 모드</span>
         </header>
 
-        {!hasMessages ? (
+        {isQaEditor ? (
+          <div className="profile-editor-page">{renderProfileEditor()}</div>
+        ) : !hasMessages ? (
           <div className="welcome-layout">
             <div className="welcome-content">
               <div className="welcome-symbol">✦</div>
@@ -500,10 +592,13 @@ function App() {
                       )}
 
                       {message.status === 'READY' && message.profile && (
-                        <ConditionCard
-                          profile={message.profile}
-                          onRecommend={handleRecommend}
-                        />
+                        editor?.target === message.id ? renderProfileEditor() : (
+                          <ConditionCard
+                            profile={message.profile}
+                            onRecommend={handleRecommend}
+                            onEdit={() => openEditor(message.id)}
+                          />
+                        )
                       )}
 
                       {message.showCoursePlaceholder && (
@@ -533,7 +628,6 @@ function App() {
 
             <div className="bottom-composer">
               {composer}
-              <p>BusanFit · 계약 예시 기반 UI 시연</p>
             </div>
           </>
         )}
