@@ -3,22 +3,25 @@
 erDiagram
   data_sources ||--|{ places : "source_id"
   data_sources ||--o{ accessibility : "source_id"
-  data_sources ||--|{ stations : "source_id"
-  data_sources ||--|{ facilities : "source_id"
+  data_sources ||--o{ stations : "source_id"
+  data_sources ||--o{ facilities : "source_id"
   places ||--o| accessibility : "place_id"
   stations ||--|{ station_travel : "from_station, to_station"
   stations |o--o{ facilities : "station_id"
 
   data_sources {
     INTEGER id PK
+    TEXT code UK
     TEXT provider
     TEXT dataset_name
     TEXT license
     TEXT url
     TEXT base_date
+    TEXT retrieved_at
   }
   places {
     INTEGER id PK
+    TEXT source_place_id
     TEXT name
     TEXT category
     TEXT area
@@ -27,8 +30,12 @@ erDiagram
     REAL longitude
     INTEGER indoor
     TEXT open_hours
-    INTEGER price_level
+    TEXT open_hours_text
+    INTEGER price_amount
+    TEXT price_basis
+    TEXT price_text
     INTEGER default_stay_min
+    TEXT overview
     INTEGER source_id FK
     TEXT updated_at
   }
