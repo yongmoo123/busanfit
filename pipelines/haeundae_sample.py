@@ -262,6 +262,8 @@ def cmd_build(args) -> int:
         Path(args.report).parent.mkdir(parents=True, exist_ok=True)
         Path(args.report).write_text(text + "\n", encoding="utf-8")
     print(f"built {path}: places={report['loaded']}")
+    # 수상한 운영시간 입력은 건수만 남긴다 (open_hours NULL, 원문 보존)
+    print(f"open_hours suspicious (NULL, original kept): {report['open_hours_suspicious']['count']}")
     print(text)
     return 0
 
