@@ -1,7 +1,7 @@
 # DEC-019~021 API 계약 반영 기록
 
 - 날짜: 2026-11-10
-- 상태: 계약 수정·검증 완료, 사용자 요청으로 기존 PR #13에 통합 반영. 새 PR은 생성하지 않음. 서버 정책 구현과 프론트 연결은 미완료.
+- 상태: 계약 수정·검증 완료, 사용자 요청으로 기존 PR #13에 통합 반영. 새 PR은 생성하지 않음. 2026-11-11 서버 정책 코드를 추가했고 #17 의존 모듈과 소스 검토 사본에서 검증했다. PR 병합·실제 지원 활성화·프론트 연결은 미완료.
 - 관련: 이슈 #6 / FR-001·002·004·005·006·018, NFR-002·003, AI-REQ-02
 - 근거: [PR #13 PM 결정 댓글](https://github.com/yongmoo123/busanfit/pull/13#issuecomment-6734033507), [PR #18](https://github.com/yongmoo123/busanfit/pull/18) head 9320ffa500f86a9cf1a2eb66986f4e736e3db1fa의 DEC-019~021.
 - 결정일/결정자: 2026-11-09 / 김세민(PM). 명시적 결정과 문서 PR의 병합 상태를 구분하며 PR #18·#13은 조회 시점 미병합.
@@ -38,3 +38,7 @@
 .\.venv\Scripts\python.exe contracts/validate_source_sync.py
 .\.venv\Scripts\python.exe -m pytest -q
 ```
+
+## 2026-11-11 후속 구현
+
+application/extraction.py·condition_policy.py, api/chat.py 및 세션 pending_fields·companion_hints를 추가했다. #17 의존 모듈과 함께 188개 통합 테스트(기존 정책 사례14개 HTTP 포함), #13 단독47개·의존 통합 모듈1개 skip을 확인했다. 앞의 서버 미구현 설명은 11/10 계약 반영 시점 기록이다. 현재 구현·검증 범위와 남은 실제 연결은 [구현 기록](ISSUE6_8_IMPLEMENTATION.md)을 따른다.
