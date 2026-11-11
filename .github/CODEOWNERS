@@ -29,6 +29,7 @@
 /backend/app/weather/ @cksdyd3786
 /pipelines/ @cksdyd3786
 /backend/tests/test_data*.py @cksdyd3786 @yongmoo123
+/backend/tests/test_schema*.py @cksdyd3786 @yongmoo123
 /backend/tests/test_repository*.py @cksdyd3786 @yongmoo123
 /backend/tests/test_retrieval*.py @cksdyd3786 @yongmoo123
 /backend/tests/test_travel*.py @cksdyd3786 @yongmoo123

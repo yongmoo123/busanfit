@@ -69,3 +69,7 @@ develop의 실제 검사 이름·GitHub Actions 앱 ID를 확인했다. main 현
 - 이슈 #8의 불가 사유 댓글은 아직 등록하지 않았다. 이 문서 내용을 사용해 수동으로 공유할 수 있다.
 
 참고: [GitHub CODEOWNERS 안내](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners), [브랜치 보호 REST API](https://docs.github.com/en/rest/branches/branch-protection).
+
+## 2026-11-11 PR #11 리뷰 반영
+
+`test_schema*.py`의 데이터·API 공동 검토 담당을 CODEOWNERS에 추가했습니다. CONTRIBUTING의 플랜 확인 대기 문구를 공개 전환 결과와 구분해 정리했습니다. CODEOWNERS 병합·자동 리뷰 요청 확인은 아직 남아 있습니다. 이번 수정은 원격 보호 설정을 변경하지 않습니다.
