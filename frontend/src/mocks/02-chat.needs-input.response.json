@@ -1,0 +1,66 @@
+{
+  "status": "NEEDS_INPUT",
+  "reply": "방문 날짜와 이용할 시간을 알려주세요.",
+  "profile": {
+    "area": {
+      "value": "HAEUNDAE",
+      "source": "USER",
+      "strength": "HARD"
+    },
+    "timeWindow": {
+      "value": null,
+      "source": "UNSET",
+      "strength": "HARD"
+    },
+    "transport": {
+      "value": "WALK",
+      "source": "DEFAULT",
+      "strength": "SOFT"
+    },
+    "mobility": {
+      "value": null,
+      "source": "UNSET",
+      "strength": "HARD"
+    },
+    "budget": {
+      "value": null,
+      "source": "UNSET",
+      "strength": "HARD"
+    },
+    "indoorPreference": {
+      "value": "INDOOR",
+      "source": "USER",
+      "strength": "SOFT"
+    },
+    "companions": {
+      "value": {
+        "type": "FRIENDS",
+        "count": 2,
+        "hasInfant": false
+      },
+      "source": "USER",
+      "strength": "SOFT"
+    },
+    "excludedCategories": {
+      "value": [],
+      "source": "DEFAULT",
+      "strength": "HARD"
+    },
+    "preferenceTags": {
+      "value": [],
+      "source": "DEFAULT",
+      "strength": "SOFT"
+    },
+    "includeUnknownAccessibility": false
+  },
+  "profileRevision": 1,
+  "questions": [
+    {
+      "field": "timeWindow",
+      "message": "언제 방문하고, 몇 시부터 몇 시까지 이용하시나요?"
+    }
+  ],
+  "warnings": [],
+  "sessionExpiresAt": "2026-11-05T10:30:00+09:00",
+  "requestId": "22222222-2222-4222-8222-222222222222"
+}

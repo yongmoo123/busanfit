@@ -42,8 +42,9 @@ python -m venv .venv
 ```
 
 ## 작업 규칙
-- 브랜치: develop에서 `feature/FR-xxx-<내용>` 또는 `docs/DEC-xxx-<내용>`. PR은 develop으로.
-- 커밋·PR 제목에 관련 ID(FR-, NFR-, DEC-)를 쓴다.
+- 브랜치: develop에서 `feature/FR-xxx-<내용>` 또는 `docs/DEC-xxx-<내용>`. PR은 develop으로. 저장소 기본 브랜치가 main이므로 대상을 명시한다(예: `gh pr create --base develop`).
+- 커밋·PR 제목은 `feat:`/`fix:`/`docs:`/`test:`/`chore:` 접두어 뒤에 관련 ID(FR-, NFR-, DEC-)를 쓴다. 예: `feat: FR-007 DEC-005 반경 검색 구현`
+- 저장소는 공개다. 학번 등 개인정보, API 키, 실제 건강 정보를 커밋하지 않는다.
 - API·DB·요구사항이 바뀌는 코드 변경은 해당 문서(계약·SDD·SRS)와 테스트를 같은 PR에서 고친다.
 - 요구사항·결정 ID는 재번호·재사용하지 않는다. 문서 관리 규칙은 `docs/README.md`.
 - 테스트를 실행하지 않았으면 통과했다고 쓰지 않는다.
