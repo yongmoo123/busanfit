@@ -253,7 +253,7 @@
 ## DEC-017 장소·출처 컬럼 추가
 - 날짜: 2026-11-09 · 결정자: 김세민(PM) · 계기: 이슈 #7 질문 3~6
 - 결정:
-  - `places.source_place_id` TEXT(원본 ID)와 `UNIQUE(source_id, source_place_id)`. API `place.id`는 문자열로 내보낸다. **재적재해도 같은 장소는 같은 `place.id`를 가져야 한다**(방식은 담당자가 정함).
+  - `places.source_place_id` TEXT(원본 ID)와 `UNIQUE(source_id, source_place_id)`. API `place.id`는 문자열로 내보낸다. **재적재해도 같은 장소는 같은 `place.id`를 가져야 한다**(방식은 담당자가 정함). → 담당자 결정(11/10, PR #16): `data_sources.code`(적재 스크립트가 넣는 고정 값, 예: `tourapi-kor`)를 추가하고 API `place.id = "{code}:{source_place_id}"`. `source_place_id`는 NOT NULL, 영문·숫자·`_`·`-` 1~64자.
   - `data_sources.retrieved_at` TEXT NOT NULL(조회 시각, ISO 8601). `places.updated_at`과의 차이를 SDD에 적는다.
   - `places.overview` TEXT NULL(원문). LLM 컨텍스트에 넣을 때 200자로 자른다(SDD 7.3).
   - `places.open_hours`(구조화 JSON, 파싱 실패 시 NULL)와 `places.open_hours_text`(원문)를 함께 저장한다. 원문이 있어도 파싱에 실패하면 하드 검증에서 미확인으로 둔다. JSON 형식은 김영무와 PR #15에서 합의한다.
