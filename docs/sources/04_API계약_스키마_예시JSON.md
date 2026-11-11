@@ -36,13 +36,14 @@ example.invalid는 의도적으로 사용할 수 없는 출처 주소다. 실제
 | 메서드·경로 | 요청 | 응답 |
 |---|---|---|
 | POST /api/sessions | {} | sessionId, expiresAt, capabilities, requestId |
+| DELETE /api/sessions/{sessionId} | 경로 UUID, 본문 없음 | 204, 본문 없음 (DEC-009) |
 | POST /api/chat | sessionId, message, expectedProfileRevision | status, reply, profile, profileRevision, questions, warnings, sessionExpiresAt, requestId |
 | PUT /api/sessions/{sessionId}/profile | expectedProfileRevision, profile | status, profile, profileRevision, questions, warnings, sessionExpiresAt, requestId |
 | POST /api/courses | sessionId, profileRevision | status, course, suggestions, warnings, excludedUnknown, sessionExpiresAt, requestId |
 | GET /api/places/{placeId} | 경로의 placeId | place, sources, warnings, requestId |
 
 서버 주소는 로컬 예시 http://localhost:8000. 경로에 /api가 이미 포함되어 있다.
-세션 생성만 HTTP 201, 나머지 성공은 200. 성공 응답은 별도 data 래퍼 없이 반환한다.
+세션 생성은 HTTP 201, 세션 종료는 본문 없는 204, 나머지 성공은 200. 성공 응답은 별도 data 래퍼 없이 반환한다.
 
 ## 2. 공통 형식
 - application/json, UTF-8, camelCase. 문서에 없는 필드는 거절한다.
@@ -51,7 +52,7 @@ example.invalid는 의도적으로 사용할 수 없는 출처 주소다. 실제
 - 시간은 정수 분, 금액은 정수 원(KRW). latitude=위도, longitude=경도.
 - ID는 불투명 문자열로 취급한다. sessionId/course.id/requestId는 UUID, place.id는 문자열.
 - 모든 필드는 스키마대로 포함한다. 정보 없음=null, 빈 목록=[], 확인된 부정=false. null을 false·0·무료로 바꾸지 않는다.
-- 모든 응답의 requestId는 실제 서버에서 새로 만든다. 고정 예시 ID와 날짜는 테스트 전용이다.
+- JSON 응답의 requestId는 실제 서버에서 새로 만든다. 세션 종료 204는 본문이 없어 requestId 필드를 반환하지 않는다. 고정 예시 ID와 날짜는 테스트 전용이다.
 - FastAPI 기본 422 형식도 아래 공통 ErrorResponse로 변환한다.
 
 ## 3. 세션·동시 요청
@@ -65,6 +66,14 @@ example.invalid는 의도적으로 사용할 수 없는 출처 주소다. 실제
 - 첫 주 프론트는 한 세션의 요청을 순차 처리하고 전송 중 버튼을 잠근다.
 - 프로필 GET은 이번 범위에 없다. 409이면 대기 중인 성공 응답을 먼저 반영한다. 최신 상태를 복구할 수 없으면 새 세션을 시작한다.
 - 응답 유실 시 변경 요청을 무조건 자동 재전송하지 않는다.
+
+### 세션 명시적 종료 — DEC-009 (2026-11-08 반영)
+- DELETE /api/sessions/{sessionId}, 요청 본문·revision 없음. UUID 형식 오류는 422 INVALID_REQUEST.
+- 성공은 204와 Cache-Control: no-store, JSON·빈 객체·requestId 응답 본문 없음. 이미 없는 세션·만료된 세션·재호출도 204.
+- 저장소에서 프로필·이력·revision·세션별 요청 제한 상태를 제거한다. 다른 세션과 IP별 생성 제한 기록은 유지한다. 종료는 TTL을 갱신하지 않고 세션 작업 제한에 막히지 않는다.
+- 종료 이후 시작하거나 완료되는 세션 작업의 최신 상태 확인은 410. 종료 전에 이미 완료된 작업의 응답 전달 순서까지 보장하는 것은 아니다.
+- 프론트는 새로 시작 시 종료를 호출하고 로컬 세션·프로필·진행 중 응답을 정리한다. 탭 종료 호출은 가능한 범위에서만 시도하며 30분 TTL이 최종 수단이다. 실제 프론트 연결은 별도 확인한다.
+- 예시: contracts/examples/06-session-delete.http. 204는 본문이 없으므로 가짜 응답 JSON을 만들지 않는다. 이 변경은 DEC-009 반영이며 다른 미합의 정책을 확정하지 않는다.
 
 ## 4. 프로필 의미
 각 조건은 {value, source, strength}다.
@@ -176,6 +185,7 @@ GitHub에 합의 버전을 커밋하고 필드·enum·상태 의미 변경은 �
 | 작업 | 요청 스키마 | 성공 상태 | 응답 스키마 |
 |---|---|---|---|
 | POST /api/sessions | SessionRequest | 201 | SessionResponse |
+| DELETE /api/sessions/{sessionId} | 경로 UUID, 본문 없음 | 204 | 본문 없음 |
 | POST /api/chat | ChatRequest | 200 | ChatResponse |
 | PUT /api/sessions/{sessionId}/profile | ProfileUpdateRequest | 200 | ProfileResponse |
 | POST /api/courses | CourseRequest | 200 | CourseResponse |
