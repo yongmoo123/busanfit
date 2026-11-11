@@ -27,7 +27,7 @@ def questions_for(profile, pending):
     messages = {'area': '방문할 지역을 선택해 주세요.',
                 'timeWindow': '시작 시각과 종료 시각을 입력해 주세요.'}
     return [{'field': name, 'message': (
-        '요청한 이동수단은 아직 지원하지 않아요. 지원되는 이동수단을 조건 카드에서 선택해 주세요.'
+        '요청한 이동수단은 아직 지원하지 않아요. 지원되는 이동수단을 명시적으로 선택해 주세요.'
         if pending.get(name) == 'UNSUPPORTED_TRANSPORT' else
         messages.get(name, '조건 카드에서 이 항목을 확인해 주세요.'))} for name in fields[:2]]
 
@@ -121,6 +121,11 @@ def replace_card(current, profile: Profile, capabilities):
     for name in list(pending):
         condition = values[name]
         changed = current.profile is None or condition != current.profile[name]
+        # Whole-card PUTs echo transport even when only another field changed.
+        # Source/strength changes are not evidence of accepting the same mode.
+        # For the same value, use an explicit chat selection (contract section5).
+        if name == 'transport' and current.profile is not None and condition['value'] == current.profile[name]['value']:
+            continue
         if condition['source'] == 'USER' and condition['value'] is not None and (name in displayed or changed):
             pending.pop(name)
     hints = deepcopy(values['companions']['value'] or {})

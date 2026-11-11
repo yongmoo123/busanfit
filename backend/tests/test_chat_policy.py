@@ -152,6 +152,54 @@ def test_transport_chat_partial_acceptance_and_pending_persistence(environment):
     assert env[1].check_current(env[4], 3).pending_fields == {}
 
 
+@pytest.mark.parametrize('source', ['USER', 'DEFAULT'])
+@pytest.mark.parametrize('card_edit', ['time_only', 'unchanged', 'strength_only', 'source_only'])
+def test_card_echo_cannot_accept_pending_transport_but_explicit_chat_can(environment, source, card_edit):
+    env = environment
+    profile = ready()
+    profile['transport'] = condition('WALK', 'SOFT', source)
+    seed(env, profile)
+    requested = chat(env, '자차로 이동', 1)
+    assert requested.status_code == 200, requested.text
+    assert requested.json()['status'] == 'NEEDS_INPUT'
+    card = requested.json()['profile']
+    if card_edit == 'time_only':
+        card['timeWindow']['value']['endAt'] = '2026-11-12T18:00:00+09:00'
+    elif card_edit == 'strength_only':
+        card['transport'] = condition('WALK', 'HARD')
+    elif card_edit == 'source_only':
+        card['transport'] = condition('WALK', 'SOFT')
+    saved = put(env, card, 2)
+    assert saved.status_code == 200, saved.text
+    assert saved.json()['status'] == 'NEEDS_INPUT'
+    assert any(q['field'] == 'transport' for q in saved.json()['questions'])
+    assert any(w['code'] == 'UNSUPPORTED_TRANSPORT' for w in saved.json()['warnings'])
+    assert env[1].check_current(env[4], 3).pending_fields['transport'] == 'UNSUPPORTED_TRANSPORT'
+    with pytest.raises(SessionError, match='PROFILE_INCOMPLETE'):
+        env[1].begin_course(env[4], 3)
+    accepted = chat(env, '도보로 이동할게요', 3)
+    assert accepted.status_code == 200, accepted.text
+    assert accepted.json()['status'] == 'READY'
+    assert accepted.json()['profile']['transport']['source'] == 'USER'
+    assert not any(w['code'] == 'UNSUPPORTED_TRANSPORT' for w in accepted.json()['warnings'])
+    assert env[1].check_current(env[4], 4).pending_fields == {}
+
+
+def test_card_can_resolve_transport_when_a_different_supported_value_is_selected(environment):
+    env = environment
+    env[0].state.capabilities.supportedTransports = ['WALK', 'PUBLIC']  # synthetic support only
+    profile = ready()
+    profile['transport'] = condition('WALK', 'SOFT')
+    seed(env, profile)
+    requested = chat(env, '자차로 이동', 1).json()
+    card = requested['profile']
+    card['transport'] = condition('PUBLIC', 'SOFT')
+    saved = put(env, card, 2)
+    assert saved.status_code == 200, saved.text
+    assert saved.json()['status'] == 'READY'
+    assert env[1].check_current(env[4], 3).pending_fields == {}
+
+
 def test_unsupported_put_preserves_profile_revision_pending_and_ttl(environment):
     before = seed(environment, pending={'budget': 'UNCONFIRMED_CHANGE'})
     profile = ready()

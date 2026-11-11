@@ -28,7 +28,7 @@ PR #13은 #17의 AIService·RuleBasedParser·normalize_mobility를 사용한다.
 
 ## capabilities 인계 계획
 
-현재 지원 배열은 계속 비어 있다. 이번 변경만으로 HAEUNDAE/WALK 지원을 켜지 않는다. 활성화 조건은 (1) #15·#16·#41 실제 데이터/Repository 검증, (2) 도보 이동시간과 스케줄러·하드 검증기 연결, (3) 생성 진입 guard 및 end-to-end 검사, (4) 실제 지원 필드별 계약·프론트 재현 확인이다. 담당자는 API 김영무, 데이터·이동시간 이찬용, 표시·선택 배진호다. 이 조건이 충족되는 PR에서 지원 배열·실제 검증 결과·활성화 시점을 함께 갱신한다. 확정되지 않은 활성화 날짜는 만들지 않는다.
+현재 지원 배열은 계속 비어 있다. 이번 변경만으로 HAEUNDAE/WALK 지원을 켜지 않는다. 활성화 계획은 이슈 #21 B에 맞춰 두 단계로 구분한다. #15·#16·#41 실제 데이터/Repository 검증과 #22 후보 검색·항목별 하드 판정이 실제 연결되고 해당 필드 검증을 통과하면 HAEUNDAE/WALK를 켜서 카드·채팅을 실서버에서 검증한다. #23 코스 생성·이동시간·검증기·생성 진입 guard와 end-to-end 검증은 코스 생성 흐름을 여는 별도 조건이다. #23 완료를 카드·채팅 지원 목록 활성화의 추가 선행 조건으로 두지 않는다. 담당자는 API 김영무, 데이터·이동시간 이찬용, 표시·선택 배진호다. 이 조건이 충족되는 PR에서 지원 배열·실제 검증 결과·활성화 시점을 함께 갱신한다. 확정되지 않은 활성화 날짜는 만들지 않는다.
 
 ## 인터페이스 재검토 기록 (#8 A)
 
@@ -53,3 +53,17 @@ Python 3.12.14 / PYTEST_DISABLE_PLUGIN_AUTOLOAD=1:
 - 공통 기존 Starlette/httpx deprecation 경고 1건. 실제 LLM·부산 데이터·프론트·코스 추천 통합은 미검증.
 
 통합 사본에는 Git 메타데이터가 없으며 두 PR의 소스만 함께 적용했다. 이는 브랜치 또는 GitHub PR 병합이 아니다. 테스트 중 정상 AI 응답의 시간 필드가 strict JSON 검증에서 거절되는 문제를 발견해, RFC3339 문자열 검사 후 datetime으로 변환하도록 보완했다. epoch·naive 시간은 계속 거절한다.
+
+## 2026-11-11 배진호 프론트 리뷰 후속
+
+PR #13 issuecomment-6789513546의 시간만 수정한 PUT 재현을 회귀 테스트로 확인하고 수정했다. transport 값이 같으면 출처·강도 변경 또는 표시된 질문의 USER 재전송만으로 확인 대기를 지우지 않는다. 같은 도보 재선택은 사용자 클릭에만 최신 revision으로 chat `도보로 이동할게요`를 보낸다. 다른 지원 값의 실제 USER 카드 선택은 대기를 해소한다. 외부 필드를 추가하지 않았다.
+
+현재 일반 서버는 지원 배열이 비어 있어 활성 조건을 422로 거절한다. #13+#17 의존 소스를 함께 적용한 격리 검토 사본의 가상 capabilities로 카드·채팅 정책 검증은 지금 가능하다. 이 설정은 실제 지원 선언이 아니다. 실서버에서 조건 입력을 저장하는 시점은 #22 실제 연결과 필드 검증 후의 #21 활성화 PR이다. 날짜는 그 선행 작업 완료 전 확정하지 않는다.
+
+최초 활성화 대상은 supportedAreas=[HAEUNDAE], supportedTransports=[WALK]이며 supportedProfileFields는 area·timeWindow·transport·mobility·companions·excludedCategories를 대상으로 각 필드 검증을 통과한 것만 연다. mobility는 #22의 휠체어·유모차·부상 판정/UNKNOWN 미통과 검증이 선행한다. indoorPreference·preferenceTags·budget은 처리·지원 검증 전에는 열지 않는다. 기존 supportsUnknownAccessibilityInclusion·supportsCourseAdjustment·supportsWeather는 false를 유지한다. 실제 목록과 검증 결과는 #21 활성화 변경에서 확정해 공유한다. READY는 조건 확인 완료이며 코스 생성 지원 완료를 뜻하지 않는다.
+
+수정 후 #13+#17 전체197개 테스트 통과(기존188개+프론트 회귀9개), 기존 경고1건. 이후 추가한 정책 사례의 HTTP 검증은 최종 실행 결과에 별도 기록한다. PR #12의 접근 로그 지적은 해당 브랜치의 deployment/SESSION_LOG_PRIVACY.md에서 배포 전 검수와 로컬 검증을 구분한다. 브랜치/PR 병합과 실제 프론트 연결은 하지 않았다.
+
+최종 재검증: 정책 사례를15개로 늘린 후 #13+#17 소스 검토 사본198 passed, 계약5 operations·31 schemas·20 examples·15 policy cases/negative control 및 참고 문서 동기화 통과. #13 단독 결과는 별도 아래 최종 기록을 따른다.
+
+#13 단독 최종 결과:47 passed, #17 의존 통합 테스트 모듈1개 skip. 기존 Starlette/httpx 경고1건. 실제 프론트·모델·배포 검증은 별도다.

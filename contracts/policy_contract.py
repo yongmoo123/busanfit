@@ -4,6 +4,7 @@ from copy import deepcopy
 WARNING_CODES = {'AI_FALLBACK', 'UNCONFIRMED_CHANGE', 'UNSUPPORTED_TRANSPORT', 'STROLLER_NOT_APPLIED'}
 CASE_IDS = {
     'transport-chat-partial', 'transport-put-rejected', 'transport-chat-accepted',
+    'transport-put-preserves-pending',
     'stroller-auto', 'stroller-user-empty', 'stroller-user-injury',
     'stroller-remove-only', 'stroller-reset-unset', 'stroller-cancel-default',
     'fallback-both-missing', 'fallback-one-present', 'fallback-unconfirmed-change',
@@ -55,9 +56,12 @@ def validate_case(case, spec, check):
     if case['fallbackUsed']:
         assert 'AI_FALLBACK' in codes
     if 'UNSUPPORTED_TRANSPORT' in codes:
-        assert chat and 'transport' in pending
+        assert 'transport' in pending
         assert profile['transport'] == before['profile']['transport']
         assert any(q['field'] == 'transport' for q in response['questions'])
+        if not chat:
+            assert case['request']['profile']['transport'] == before['profile']['transport']
+            assert profile['timeWindow'] == case['request']['profile']['timeWindow']
     if 'UNCONFIRMED_CHANGE' in codes:
         assert pending and response['status'] == 'NEEDS_INPUT'
     if 'STROLLER_NOT_APPLIED' in codes:
@@ -92,6 +96,7 @@ def validate_cases(document, spec, check):
     # Prove that the checks reject drift, not just the supplied happy fixtures.
     for name, mutate in [
         ('transport-chat-partial', lambda c: c['expectedResponse']['profile']['transport'].update(value='WALK', source='DEFAULT')),
+        ('transport-put-preserves-pending', lambda c: c['expectedResponse'].update(status='READY', questions=[])),
         ('fallback-both-missing', lambda c: c['before']['profile']['area'].update(value='HAEUNDAE', source='USER')),
         ('fallback-unconfirmed-change', lambda c: c['expectedResponse'].update(status='READY', questions=[])),
         ('stroller-user-empty', lambda c: c['expectedResponse']['profile']['mobility'].update(value=['STROLLER'])),

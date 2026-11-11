@@ -991,7 +991,8 @@ JSON Schema(OpenAPI 3.1). $ref는 아래 components.schemas 이름을 가리킨�
           "message",
           "expectedProfileRevision"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "기존과 같은 이동수단 값의 PUT 재전송·source/strength 변경만으로 transport 확인 대기를 해소하지 않는다. 같은 값의 명시적 수락은 최신 revision으로 POST /api/chat에 \"도보로 이동할게요\" 같은 선택 문장을 전송한다. 다른 지원 값으로 실제 변경한 USER 카드 PUT은 해당 대기를 해소한다."
       },
       "ChatResponse": {
         "type": "object",
@@ -1063,7 +1064,8 @@ JSON Schema(OpenAPI 3.1). $ref는 아래 components.schemas 이름을 가리킨�
           "expectedProfileRevision",
           "profile"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "기존과 같은 이동수단 값의 PUT 재전송·source/strength 변경만으로 transport 확인 대기를 해소하지 않는다. 같은 값의 명시적 수락은 최신 revision으로 POST /api/chat에 \"도보로 이동할게요\" 같은 선택 문장을 전송한다. 다른 지원 값으로 실제 변경한 USER 카드 PUT은 해당 대기를 해소한다."
       },
       "ProfileResponse": {
         "type": "object",
@@ -5386,7 +5388,222 @@ JSON Schema(OpenAPI 3.1). $ref는 아래 components.schemas 이름을 가리킨�
         "area",
         "timeWindow"
       ]
+    },
+    {
+      "id": "transport-put-preserves-pending",
+      "operation": "put",
+      "assumedCapabilities": {
+        "supportedAreas": [
+          "HAEUNDAE"
+        ],
+        "supportedTransports": [
+          "WALK"
+        ],
+        "supportedProfileFields": [
+          "area",
+          "timeWindow",
+          "transport",
+          "mobility",
+          "budget",
+          "indoorPreference",
+          "companions",
+          "excludedCategories",
+          "preferenceTags"
+        ]
+      },
+      "before": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 1,
+        "sessionExpiresAt": "2026-11-12T10:20:00+09:00",
+        "pendingFields": [
+          "transport"
+        ]
+      },
+      "request": {
+        "expectedProfileRevision": 1,
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T18:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        }
+      },
+      "extractedProfile": null,
+      "fallbackUsed": false,
+      "expectedHttp": 200,
+      "expectedResponse": {
+        "status": "NEEDS_INPUT",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T18:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 2,
+        "questions": [
+          {
+            "field": "transport",
+            "message": "자차는 아직 지원하지 않아요. 도보로 코스를 만들까요?"
+          }
+        ],
+        "warnings": [
+          {
+            "code": "UNSUPPORTED_TRANSPORT",
+            "message": "요청한 이동수단은 아직 지원하지 않아요.",
+            "placeIds": []
+          }
+        ],
+        "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+        "requestId": "22222222-2222-4222-8222-222222222222"
+      },
+      "expectedPendingFields": [
+        "transport"
+      ]
     }
   ]
 }
 ~~~
+
+## 2026-11-11 프론트 리뷰 보완: 같은 이동수단 수락
+
+시간만 바꾼 전체 PUT은 기존 WALK/USER를 함께 보내도 이동수단 수락이 아니다. transport 확인 대기·질문·경고를 유지한다. 같은 도보를 명시적으로 선택할 때는 최신 revision으로 POST /api/chat에 `도보로 이동할게요`를 전송한다. 실패·409는 수락 완료로 표시하지 않는다. 다른 지원 이동수단 값으로 실제 변경한 USER 카드 PUT은 대기를 해소한다. 새 외부 필드는 추가하지 않는다.

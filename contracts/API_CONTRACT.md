@@ -74,6 +74,8 @@ budget/mobility/preferenceTags도 최종 프로필 모양에는 있으나 예시
 - 일반 규칙: 비어 있지 않은 미지원 조건은 HARD/SOFT 모두 422 UNSUPPORTED_CONSTRAINT이며 요청 전체를 저장하지 않고 관련 field만 오류 details로 안내한다. 원문을 복사하지 않는다.
 - DEC-019 카드 PUT: 미지원 이동수단도 위 규칙대로 422, 요청 전체 미저장 및 기존 프로필·revision·대화·TTL 유지.
 - DEC-019 채팅 예외(이동수단만): 해석한 나머지 조건이 유효하면 반영하고 revision을 1 증가시킨다. 미지원 이동수단은 반영하지 않고 questions(field=transport)와 UNSUPPORTED_TRANSPORT 경고를 반환한다. 사용자 수락 전 NEEDS_INPUT이며 기존 이동수단이 있어도 코스를 생성하지 않는다.
+- transport 확인 대기 중 시간 등 다른 항목만 수정한 전체 PUT은 기존 WALK/USER가 함께 전송돼도 수락이 아니다. 같은 transport.value의 재전송·source/strength만 변경해도 질문·경고·NEEDS_INPUT을 유지한다. 다른 지원 값으로 실제 변경한 USER 카드 PUT은 해당 대기를 해소한다.
+- 같은 도보 값을 다시 선택하는 명시적 수락은 POST /api/chat에 `message="도보로 이동할게요"`와 최신 `expectedProfileRevision`을 보낸다. 카드 저장 후라면 그 응답의 revision을 사용한다. 프론트는 이 문장을 사용자의 명시적 선택 때만 전송하며 경고 닫기·시간 저장에서 자동 전송하지 않는다. 409·422·503 또는 네트워크 실패를 수락 성공으로 표시하지 않고 서버 최신 status·revision을 따른다. 새 외부 필드는 추가하지 않는다.
 - 채팅에서 미지원 이동수단을 WALK로 자동 변경하거나 새 DEFAULT를 넣어 수락한 것으로 처리하지 않는다. 기존 값이 없다면 transport=null/UNSET, 기존 값이 있으면 보존한다. 사용자가 명시적으로 수락하면 그때 지원되는 값을 USER로 저장하고 해당 확인 대기를 해소한다.
 - 다른 미지원 조건까지 함께 들어온 경우에는 일반 422 규칙을 유지한다. 이동수단 예외가 지역·이동제약 등 모든 미지원 조건을 허용하는 예외는 아니다.
 - includeUnknownAccessibility는 첫 주 false만 허용한다. true 요청은 422.
