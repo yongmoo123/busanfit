@@ -1,0 +1,508 @@
+{
+  "description": "조건 추출 평가셋 초안 (AI-REQ-04 필드 정확도, AI-REQ-06 강도 분류·되묻기). 입력은 전부 가상 시나리오이며 실제 건강 정보를 담지 않는다. 기대 결과만 적은 사례를 통과로 표시하지 않는다.",
+  "version": "draft-2026-11-11",
+  "status": "초안 — 김영무 교차 검토 전 (최소 10문장 공동 검토 필요)",
+  "referenceNow": "2026-11-12T10:00:00+09:00",
+  "referenceNowNote": "2026-11-12(목) 오전 10시 기준. '토요일'=2026-11-14, '일요일'=2026-11-15, '내일'=2026-11-13, '오늘'=2026-11-12.",
+  "capabilities": {
+    "FINAL": {
+      "note": "추출 정확도 평가용 최종 범위(SRS 1.2). 스프린트 범위 정책이 추출 평가를 가리지 않도록 한다.",
+      "supportedAreas": ["HAEUNDAE", "SEOMYEON", "GWANGALLI", "NAMPO"],
+      "supportedTransports": ["WALK", "PUBLIC", "CAR"],
+      "supportedProfileFields": ["area", "timeWindow", "transport", "mobility", "budget", "indoorPreference", "companions", "excludedCategories", "preferenceTags"]
+    },
+    "SPRINT2": {
+      "note": "스프린트 2 정책 검증용(DEC-001·019). 실제 활성화 목록은 #21에서 확정되며 이 값은 가정이다.",
+      "supportedAreas": ["HAEUNDAE"],
+      "supportedTransports": ["WALK"],
+      "supportedProfileFields": ["area", "timeWindow", "transport", "mobility", "companions", "excludedCategories"]
+    }
+  },
+  "conventions": [
+    "before.profile은 모든 항목이 UNSET인 빈 프로필에 profileOverrides를 덮어쓴 것이다.",
+    "expected.extracted에는 사용자가 이번 메시지에서 말한 항목만 적는다. 적지 않은 항목은 USER가 아니어야 한다(UNSET 또는 서버 기본값 DEFAULT 허용).",
+    "기본 강도: area·timeWindow·mobility·budget·excludedCategories는 HARD, transport·indoorPreference·companions·preferenceTags는 SOFT. '꼭·반드시·절대·~만' 같은 강한 표현이면 HARD로 승격(FR-003, SRS 표 3-1).",
+    "expected.policy는 추출 뒤 서버 정책(기본값·DEC-019·020)이 적용된 결과다. 추출 정확도(AI-REQ-04)와 따로 채점한다.",
+    "preferenceTags는 자유 문자열이라 keywordsAny의 단어 중 하나라도 포함되면 맞은 것으로 본다.",
+    "acceptable이 있으면 그 목록의 어느 값이든 정답으로 본다.",
+    "openQuestion이 있는 사례는 정책 결정 전이라 해당 부분을 채점에서 제외한다."
+  ],
+  "openQuestions": {
+    "Q1": "동행 정보가 불완전할 때(예: '친구들이랑 4명이서' — 영유아 동반 여부 미언급) 동행 확인 질문을 할지, 영유아 미동반으로 보고 READY로 둘지. 계약 Companions.hasInfant는 boolean 필수이고 현재 구현(#13)은 확인 질문을 만든다. FR-004는 하드 판단 정보(시간·지역)만 되묻는다."
+  },
+  "cases": [
+    {
+      "id": "EX-01", "category": "기본 추출", "requirements": ["FR-002", "AI-REQ-04"], "decisions": [],
+      "input": "[가상] 이번 주 토요일 오후 2시부터 6시까지 해운대에서 놀고 싶어요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-14T14:00:00+09:00", "endAt": "2026-11-14T18:00:00+09:00"}, "source": "USER", "strength": "HARD"}
+        },
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "result": null
+    },
+    {
+      "id": "EX-02", "category": "기본 추출", "requirements": ["FR-002", "AI-REQ-04"], "decisions": [],
+      "input": "[가상] 내일 오전 10시부터 오후 3시까지 광안리 근처로 코스 짜 주세요. 걸어서 다닐게요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "GWANGALLI", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-13T10:00:00+09:00", "endAt": "2026-11-13T15:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "transport": {"value": "WALK", "source": "USER", "strength": "SOFT"}
+        },
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "result": null
+    },
+    {
+      "id": "EX-03", "category": "기본 추출", "requirements": ["FR-002", "FR-018", "AI-REQ-04"], "decisions": [],
+      "input": "[가상] 오늘 저녁 6시부터 9시까지 서면에서 친구들이랑 4명이서 놀 거예요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "SEOMYEON", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-12T18:00:00+09:00", "endAt": "2026-11-12T21:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "companions": {"value": {"type": "FRIENDS", "count": 4, "hasInfant": null}, "source": "USER", "strength": "SOFT", "note": "hasInfant 미언급"}
+        },
+        "status": "READY", "questionFields": [], "warningCodes": [],
+        "openQuestion": "Q1"
+      },
+      "result": null
+    },
+    {
+      "id": "EX-04", "category": "기본 추출", "requirements": ["FR-002", "AI-REQ-04"], "decisions": [],
+      "input": "[가상] 이번 주 일요일 남포동에서 낮 12시부터 오후 5시까지 지하철 타고 다니려고요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "NAMPO", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-15T12:00:00+09:00", "endAt": "2026-11-15T17:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "transport": {"value": "PUBLIC", "source": "USER", "strength": "SOFT"}
+        },
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "result": null
+    },
+    {
+      "id": "EX-05", "category": "기본 추출", "requirements": ["FR-002", "AI-REQ-04"], "decisions": [],
+      "input": "[가상] 토요일 오후 1시부터 7시까지 해운대요. 비 온대서 실내 위주로 보고 싶어요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-14T13:00:00+09:00", "endAt": "2026-11-14T19:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "indoorPreference": {"value": "INDOOR", "source": "USER", "strength": "SOFT"}
+        },
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "result": null
+    },
+    {
+      "id": "EX-06", "category": "강도 분류", "requirements": ["FR-003", "AI-REQ-06"], "decisions": [],
+      "input": "[가상] 토요일 오후 2시부터 6시까지 해운대요. 실외는 절대 안 돼요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-14T14:00:00+09:00", "endAt": "2026-11-14T18:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "indoorPreference": {"value": "INDOOR", "source": "USER", "strength": "HARD"}
+        },
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "notes": "부정 표현('안 돼요')을 실외 선호로 오해하지 않고, '절대'로 HARD 승격(계약 §4 예시).",
+      "result": null
+    },
+    {
+      "id": "EX-07", "category": "강도 분류", "requirements": ["FR-003", "AI-REQ-06"], "decisions": [],
+      "input": "[가상] 일요일 오전 11시부터 오후 4시까지 광안리, 꼭 걸어서만 다니고 싶어요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "GWANGALLI", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-15T11:00:00+09:00", "endAt": "2026-11-15T16:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "transport": {"value": "WALK", "source": "USER", "strength": "HARD"}
+        },
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "result": null
+    },
+    {
+      "id": "EX-08", "category": "강도 분류", "requirements": ["FR-003", "AI-REQ-06"], "decisions": [],
+      "input": "[가상] 내일 오후 4시부터 밤 9시까지 해운대에서 놀 건데, 야경 보는 곳은 꼭 넣어 주세요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-13T16:00:00+09:00", "endAt": "2026-11-13T21:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "preferenceTags": {"keywordsAny": ["야경"], "source": "USER", "strength": "HARD"}
+        },
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "notes": "소프트 선호를 '꼭'으로 HARD 승격(FR-003).",
+      "result": null
+    },
+    {
+      "id": "EX-09", "category": "강도 분류", "requirements": ["FR-002", "AI-REQ-04"], "decisions": ["DEC-014"],
+      "input": "[가상] 토요일 오후 1시부터 6시까지 해운대요. 입장료랑 밥값 합쳐서 1인당 3만 원 안으로 하고 싶어요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-14T13:00:00+09:00", "endAt": "2026-11-14T18:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "budget": {"value": {"amount": 30000, "currency": "KRW", "basis": "PER_PERSON", "includes": ["ADMISSION", "FOOD"]}, "source": "USER", "strength": "HARD"}
+        },
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "notes": "예산 하드 제약 적용은 스프린트 3(DEC-010)이지만 추출은 지금 평가한다.",
+      "result": null
+    },
+    {
+      "id": "EX-10", "category": "강도 분류", "requirements": ["FR-002", "FR-003", "AI-REQ-04"], "decisions": ["DEC-013"],
+      "input": "[가상] 일요일 낮 12시부터 오후 5시까지 서면이요. 박물관 같은 전시는 빼 주세요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "SEOMYEON", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-15T12:00:00+09:00", "endAt": "2026-11-15T17:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "excludedCategories": {"value": ["EXHIBITION"], "source": "USER", "strength": "HARD"}
+        },
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "result": null
+    },
+    {
+      "id": "EX-11", "category": "되묻기", "requirements": ["FR-004", "AI-REQ-06"], "decisions": [],
+      "input": "[가상] 해운대에서 놀고 싶어요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"}
+        },
+        "status": "NEEDS_INPUT", "questionFields": ["timeWindow"], "warningCodes": []
+      },
+      "result": null
+    },
+    {
+      "id": "EX-12", "category": "되묻기", "requirements": ["FR-004", "AI-REQ-06"], "decisions": [],
+      "input": "[가상] 이번 주 토요일 오후에 놀 곳 추천해 주세요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {},
+        "status": "NEEDS_INPUT", "questionFields": ["area", "timeWindow"], "warningCodes": []
+      },
+      "notes": "'오후'만으로 시작·끝 시각을 지어내지 않는다(AT-02). 질문은 최대 2개.",
+      "result": null
+    },
+    {
+      "id": "EX-13", "category": "되묻기", "requirements": ["FR-004", "AI-REQ-06"], "decisions": [],
+      "input": "[가상] 부산 놀거리 코스 짜 줘.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {},
+        "status": "NEEDS_INPUT", "questionFields": ["area", "timeWindow"], "warningCodes": []
+      },
+      "notes": "'부산'은 권역(4개 중 하나)이 아니므로 area를 정하지 않는다.",
+      "result": null
+    },
+    {
+      "id": "EX-14", "category": "되묻기", "requirements": ["FR-004", "AI-REQ-06"], "decisions": [],
+      "input": "[가상] 토요일 오후 3시부터 광안리에서 놀 거예요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "GWANGALLI", "source": "USER", "strength": "HARD"}
+        },
+        "status": "NEEDS_INPUT", "questionFields": ["timeWindow"], "warningCodes": []
+      },
+      "notes": "끝 시각이 없으면 timeWindow를 확정하지 않고 묻는다. 끝 시각을 임의로 정하지 않는다.",
+      "result": null
+    },
+    {
+      "id": "EX-15", "category": "이동제약", "requirements": ["FR-002", "FR-008", "AI-REQ-04"], "decisions": ["DEC-015"],
+      "input": "[가상] 토요일 오후 1시부터 5시까지 해운대요. 저는 휠체어를 타요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-14T13:00:00+09:00", "endAt": "2026-11-14T17:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "mobility": {"value": ["WHEELCHAIR"], "source": "USER", "strength": "HARD"}
+        },
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "result": null
+    },
+    {
+      "id": "EX-16", "category": "이동제약", "requirements": ["FR-002", "FR-008", "AI-REQ-04"], "decisions": ["DEC-016"],
+      "input": "[가상] 일요일 오후 2시부터 6시까지 광안리요. 다리를 다쳐서 오래 못 걸어요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "GWANGALLI", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-15T14:00:00+09:00", "endAt": "2026-11-15T18:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "mobility": {"value": ["INJURY"], "source": "USER", "strength": "HARD"}
+        },
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "notes": "'못 걸어요'의 부정을 이동제약 없음으로 오해하지 않는다. 규칙 파서(대체 경로)는 이 표현을 확인 필요로 넘기므로 LLM 추출 기준의 정답이다.",
+      "result": null
+    },
+    {
+      "id": "EX-17", "category": "이동제약", "requirements": ["FR-002", "FR-008", "AI-REQ-04"], "decisions": ["DEC-015"],
+      "input": "[가상] 내일 오전 10시부터 오후 2시까지 해운대요. 유모차 끌고 가요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-13T10:00:00+09:00", "endAt": "2026-11-13T14:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "mobility": {"value": ["STROLLER"], "source": "USER", "strength": "HARD"}
+        },
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "result": null
+    },
+    {
+      "id": "EX-18", "category": "이동제약", "requirements": ["FR-002", "AI-REQ-04"], "decisions": [],
+      "input": "[가상] 토요일 오후 1시부터 5시까지 해운대요. 이동하는 데 불편한 점은 없어요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-14T13:00:00+09:00", "endAt": "2026-11-14T17:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "mobility": {"value": [], "source": "USER", "strength": "HARD"}
+        },
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "notes": "명시적 '없음'은 []로, 미입력 null과 구분한다(계약 §4).",
+      "result": null
+    },
+    {
+      "id": "EX-19", "category": "영유아 동반", "requirements": ["FR-018", "FR-005"], "decisions": ["DEC-002", "DEC-020"],
+      "input": "[가상] 토요일 오전 11시부터 오후 3시까지 해운대요. 남편이랑 돌 지난 아기랑 셋이 가요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-14T11:00:00+09:00", "endAt": "2026-11-14T15:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "companions": {"value": {"type": "FAMILY", "count": 3, "hasInfant": true}, "source": "USER", "strength": "SOFT"}
+        },
+        "policy": {
+          "mobility": {"value": ["STROLLER"], "source": "DEFAULT", "strength": "HARD"}
+        },
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "notes": "추출은 mobility를 만들지 않고(언급 없음), 서버 정책이 유모차를 DEFAULT로 적용한다.",
+      "result": null
+    },
+    {
+      "id": "EX-20", "category": "영유아 동반", "requirements": ["FR-018", "FR-006"], "decisions": ["DEC-002", "DEC-020"],
+      "input": "[가상] 일요일 낮 12시부터 오후 4시까지 광안리요. 남편이랑 아기랑 셋이 가는데 유모차는 안 쓰고 아기띠 할 거예요. 이동 제약은 없어요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "GWANGALLI", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-15T12:00:00+09:00", "endAt": "2026-11-15T16:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "companions": {"value": {"type": "FAMILY", "count": 3, "hasInfant": true}, "source": "USER", "strength": "SOFT"},
+          "mobility": {"value": [], "source": "USER", "strength": "HARD"}
+        },
+        "policy": {
+          "mobility": {"value": [], "source": "USER", "strength": "HARD"}
+        },
+        "status": "READY", "questionFields": [], "warningCodes": ["STROLLER_NOT_APPLIED"]
+      },
+      "notes": "사용자 명시 []가 자동 유모차보다 우선하고, 경고만 붙는다(질문 아님).",
+      "result": null
+    },
+    {
+      "id": "EX-21", "category": "영유아 동반", "requirements": ["FR-018", "FR-008"], "decisions": ["DEC-016", "DEC-020"],
+      "input": "[가상] 토요일 오후 1시부터 5시까지 해운대요. 제가 다리를 다쳤고, 남편이랑 아기까지 셋이 가요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-14T13:00:00+09:00", "endAt": "2026-11-14T17:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "companions": {"value": {"type": "FAMILY", "count": 3, "hasInfant": true}, "source": "USER", "strength": "SOFT"},
+          "mobility": {"value": ["INJURY"], "source": "USER", "strength": "HARD"}
+        },
+        "policy": {
+          "mobility": {"value": ["INJURY"], "source": "USER", "strength": "HARD"}
+        },
+        "status": "READY", "questionFields": [], "warningCodes": ["STROLLER_NOT_APPLIED"]
+      },
+      "notes": "USER 목록에 유모차를 자동 추가하지 않고 경고로 알린다(DEC-020 추가 규칙).",
+      "result": null
+    },
+    {
+      "id": "EX-22", "category": "미지원 이동수단", "requirements": ["FR-001", "FR-004"], "decisions": ["DEC-001", "DEC-019"],
+      "input": "[가상] 토요일 오후 1시부터 5시까지 해운대요. 차로 갈게요.",
+      "before": {"capabilities": "SPRINT2", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-14T13:00:00+09:00", "endAt": "2026-11-14T17:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "transport": {"value": "CAR", "source": "USER", "strength": "SOFT"}
+        },
+        "policy": {
+          "transport": {"applied": false, "note": "CAR는 저장하지 않고 확인 대기"}
+        },
+        "status": "NEEDS_INPUT", "questionFields": ["transport"], "warningCodes": ["UNSUPPORTED_TRANSPORT"]
+      },
+      "notes": "지역·시간은 저장하고 이동수단만 질문으로 안내한다. 메시지 전체를 422로 거절하지 않는다.",
+      "result": null
+    },
+    {
+      "id": "EX-23", "category": "미지원 이동수단", "requirements": ["FR-001", "FR-004"], "decisions": ["DEC-001", "DEC-019"],
+      "input": "[가상] 일요일 오후 2시부터 6시까지 해운대요. 지하철 타고 다닐 거예요.",
+      "before": {"capabilities": "SPRINT2", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-15T14:00:00+09:00", "endAt": "2026-11-15T18:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "transport": {"value": "PUBLIC", "source": "USER", "strength": "SOFT"}
+        },
+        "policy": {
+          "transport": {"applied": false, "note": "PUBLIC은 저장하지 않고 확인 대기"}
+        },
+        "status": "NEEDS_INPUT", "questionFields": ["transport"], "warningCodes": ["UNSUPPORTED_TRANSPORT"]
+      },
+      "result": null
+    },
+    {
+      "id": "EX-24", "category": "미지원 이동수단", "requirements": ["FR-006"], "decisions": ["DEC-019"],
+      "input": "[가상] 네, 그럼 도보로 할게요.",
+      "before": {
+        "capabilities": "SPRINT2",
+        "profileOverrides": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-14T13:00:00+09:00", "endAt": "2026-11-14T17:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "transport": {"value": "WALK", "source": "DEFAULT", "strength": "SOFT"}
+        },
+        "pendingFields": [{"field": "transport", "reason": "UNSUPPORTED_TRANSPORT"}]
+      },
+      "expected": {
+        "extracted": {
+          "transport": {"value": "WALK", "source": "USER", "strength": "SOFT"}
+        },
+        "policy": {
+          "transport": {"value": "WALK", "source": "USER", "strength": "SOFT"},
+          "pendingCleared": ["transport"]
+        },
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "notes": "미지원 안내 뒤 사용자가 지원 값을 명시적으로 수락하면 확인 대기를 해소한다. 기존 지역·시간은 유지.",
+      "result": null
+    },
+    {
+      "id": "EX-25", "category": "기존 조건 유지", "requirements": ["FR-002", "FR-006"], "decisions": [],
+      "input": "[가상] 카페는 빼 줘.",
+      "before": {
+        "capabilities": "FINAL",
+        "profileOverrides": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-14T13:00:00+09:00", "endAt": "2026-11-14T17:00:00+09:00"}, "source": "USER", "strength": "HARD"}
+        },
+        "pendingFields": []
+      },
+      "expected": {
+        "extracted": {
+          "excludedCategories": {"value": ["CAFE"], "source": "USER", "strength": "HARD"}
+        },
+        "unchanged": ["area", "timeWindow"],
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "notes": "AT-03. 언급하지 않은 기존 시간·지역을 지우지 않는다.",
+      "result": null
+    },
+    {
+      "id": "EX-26", "category": "기존 조건 유지", "requirements": ["FR-002", "FR-006"], "decisions": [],
+      "input": "[가상] 시간을 오후 3시부터 7시로 바꿔 줘.",
+      "before": {
+        "capabilities": "FINAL",
+        "profileOverrides": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-14T13:00:00+09:00", "endAt": "2026-11-14T17:00:00+09:00"}, "source": "USER", "strength": "HARD"}
+        },
+        "pendingFields": []
+      },
+      "expected": {
+        "extracted": {
+          "timeWindow": {"value": {"startAt": "2026-11-14T15:00:00+09:00", "endAt": "2026-11-14T19:00:00+09:00"}, "source": "USER", "strength": "HARD"}
+        },
+        "unchanged": ["area"],
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "notes": "날짜를 말하지 않았으므로 기존 날짜(11/14)를 유지한다.",
+      "result": null
+    },
+    {
+      "id": "EX-27", "category": "기존 조건 유지", "requirements": ["FR-002", "FR-006", "FR-008"], "decisions": ["DEC-021"],
+      "input": "[가상] 그리고 전시는 빼 주세요.",
+      "before": {
+        "capabilities": "FINAL",
+        "profileOverrides": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-14T13:00:00+09:00", "endAt": "2026-11-14T17:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "mobility": {"value": ["WHEELCHAIR"], "source": "USER", "strength": "HARD"}
+        },
+        "pendingFields": []
+      },
+      "expected": {
+        "extracted": {
+          "excludedCategories": {"value": ["EXHIBITION"], "source": "USER", "strength": "HARD"}
+        },
+        "unchanged": ["area", "timeWindow", "mobility"],
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "notes": "기존 휠체어 HARD 조건을 UNSET으로 덮어쓰지 않는다(DEC-021 보호 규칙, 이슈 #6 가상 검수 사례).",
+      "result": null
+    },
+    {
+      "id": "EX-28", "category": "부정·오해 표현", "requirements": ["FR-003", "AI-REQ-06"], "decisions": [],
+      "input": "[가상] 토요일 오후 2시부터 6시까지 해운대요. 꼭 카페일 필요는 없어요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-14T14:00:00+09:00", "endAt": "2026-11-14T18:00:00+09:00"}, "source": "USER", "strength": "HARD"}
+        },
+        "mustNot": ["excludedCategories에 CAFE", "카페 관련 HARD 조건"],
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "notes": "AT-03. '카페는 빼 줘'(EX-25)와 구별한다. '꼭'이 있어도 부정문이라 승격하지 않는다.",
+      "result": null
+    },
+    {
+      "id": "EX-29", "category": "부정·오해 표현", "requirements": ["FR-002", "AI-REQ-04"], "decisions": [],
+      "input": "[가상] 안녕하세요! 부산은 처음 와 봐요. 토요일 오후 1시부터 5시까지 해운대 갈 거예요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-14T13:00:00+09:00", "endAt": "2026-11-14T17:00:00+09:00"}, "source": "USER", "strength": "HARD"}
+        },
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "notes": "인사말·잡담을 조건으로 해석하지 않는다.",
+      "result": null
+    },
+    {
+      "id": "EX-30", "category": "부정·오해 표현", "requirements": ["FR-003", "AI-REQ-06"], "decisions": [],
+      "input": "[가상] 일요일 낮 12시부터 오후 5시까지 광안리요. 야외도 괜찮아요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "GWANGALLI", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-15T12:00:00+09:00", "endAt": "2026-11-15T17:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+          "indoorPreference": {"acceptable": [{"value": "ANY", "source": "USER", "strength": "SOFT"}, {"value": null, "source": "UNSET"}]}
+        },
+        "mustNot": ["indoorPreference INDOOR", "indoorPreference HARD"],
+        "status": "READY", "questionFields": [], "warningCodes": []
+      },
+      "notes": "'야외도 괜찮아요'를 실외 전용이나 실내 선호로 오해하지 않는다.",
+      "result": null
+    }
+  ]
+}
