@@ -102,10 +102,32 @@ def test_mobility_and_companion_hints_preserve_unknowns():
     assert parse('친구와 함께').conditions['companions'].value.count is None
 
 
-def test_infant_does_not_apply_pending_stroller_precedence():
+def test_infant_is_a_partial_hint_for_stateful_mobility_normalization():
     result = parse('아기 동반')
     assert result.conditions['companions'].value.has_infant is True
     assert result.conditions['mobility'].value is None
+
+
+def test_unrelated_exclusion_does_not_discard_explicit_time():
+    result = parse('해운대, 2026-11-12 13시부터 17시까지, 카페는 빼 주세요')
+    assert result.conditions['time_window'].value.start_at.hour == 13
+    assert result.conditions['time_window'].value.end_at.hour == 17
+    assert 'time_window' not in result.unconfirmed_fields
+    assert 'excluded_categories' in result.unconfirmed_fields
+
+
+def test_greeting_is_not_a_negated_area_or_time():
+    result = parse('해운대에서 안녕하세요, 2026-11-12 13시부터 17시까지')
+    assert result.conditions['area'].value == 'HAEUNDAE'
+    assert result.conditions['time_window'].value is not None
+
+
+@pytest.mark.parametrize('text', [
+    '2026-11-12 13시부터 17시까지 말고',
+    '2026-11-12 13시부터 17시까지는 안 돼요',
+])
+def test_negated_time_itself_still_requires_confirmation(text):
+    assert parse(text).conditions['time_window'].value is None
 
 
 @pytest.mark.parametrize('text', ['휠체어는 안 써요', '유모차가 필요없어요', '휠체어가 아닌 유모차', '다리가 아파요', '계단은 못 올라가요'])

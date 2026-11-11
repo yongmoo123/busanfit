@@ -8,7 +8,10 @@ SEOUL = timezone(timedelta(hours=9))
 FIELDS = ('area', 'time_window', 'transport', 'mobility', 'budget',
           'indoor_preference', 'companions', 'excluded_categories', 'preference_tags')
 # A clause containing these markers is deliberately not resolved by keywords.
-AMBIGUOUS = re.compile(r'말고|아니|아닌|안\s*|않|없|못|싫|불필요|제외|빼|대신|또는|혹은|[?？]')
+AMBIGUOUS = re.compile(
+    r'말고|아니|아닌|안\s+|안(?=가|갈|걷|걸|쓰|써|타|탈|하|해|되|돼|원|좋|필요|사용|이용|방문|넣|포함)|'
+    r'않|없|못|싫|불필요|제외|빼|대신|또는|혹은|[?？]'
+)
 DATE_TOKEN = re.compile(
     r'(?<!\d)(?:(\d{4})-(\d{1,2})-(\d{1,2})|'
     r'(\d{4})/(\d{1,2})/(\d{1,2})|'
@@ -34,7 +37,12 @@ def parse_time(text: str) -> TimeRange | None:
     ranges = list(TIME_RANGE.finditer(text))
     if len(dates) != 1 or len(hours) != 2 or len(ranges) != 1:
         return None
-    if uncertain([text]):
+    # A negated category in another clause must not invalidate explicit hours.
+    # Keep rejecting negation attached to the date/time clause itself.
+    time_clauses = [clause for clause in re.split(r'[,，。.!！\n]', text)
+                    if DATE_TOKEN.search(clause) or re.search(TIME_TOKEN, clause)
+                    or re.search(r'오늘|내일|오전|오후|저녁|아침|시간', clause)]
+    if uncertain(time_clauses):
         return None
     values = []
     date = [int(value) for value in dates[0].groups() if value is not None]
@@ -87,7 +95,7 @@ class RuleBasedParser:
                 mark('time_window')
 
         transport_map = {'도보': 'WALK', '걸어서': 'WALK', '대중교통': 'PUBLIC',
-                         '지하철': 'PUBLIC', '버스': 'PUBLIC', '자차': 'CAR', '자동차': 'CAR'}
+                         '지하철': 'PUBLIC', '버스': 'PUBLIC', '자차': 'CAR', '자동차': 'CAR', '차로': 'CAR'}
         transports = relevant_clauses(text, tuple(transport_map))
         choices = {v for k, v in transport_map.items() if k in text}
         if not transports:
@@ -137,6 +145,7 @@ class RuleBasedParser:
                 assign('indoor_preference', 'INDOOR', 'HARD' if re.search(r'꼭|절대|반드시|실내(?:에서)?만', ' '.join(indoors)) else 'SOFT')
             else:
                 mark('indoor_preference')
-        # No infant->stroller transform: pending USER/[] precedence (PR #13).
+        # Partial hints are normalized with existing USER choices by mobility.py
+        # (DEC-020, PM decided 2026-11-09); never overwrite a session here.
         # No READY/503, session updates, support checks or course generation.
         return result
