@@ -10,6 +10,6 @@
 
 | 세트 | 위치 | 상태 |
 |---|---|---|
-| 조건 추출 30개 (AI-REQ-04·06) | [extraction/](extraction/README.md) | 초안, 교차 검토 전 |
+| 조건 추출 31개 (AI-REQ-04·06) | [extraction/](extraction/README.md) | 초안, 교차 검토 전 |
 | 수정 요청 20개 (AI-REQ-07) | — | 미작성 (#39) |
 | 코스 시나리오 10개 (AI-REQ-01·05) | — | 미작성 (#39) |

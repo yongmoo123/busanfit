@@ -1,6 +1,6 @@
 {
   "description": "조건 추출 평가셋 초안 (AI-REQ-04 필드 정확도, AI-REQ-06 강도 분류·되묻기). 입력은 전부 가상 시나리오이며 실제 건강 정보를 담지 않는다. 기대 결과만 적은 사례를 통과로 표시하지 않는다.",
-  "version": "draft-2026-11-11",
+  "version": "draft-2026-11-12",
   "status": "초안 — 김영무 교차 검토 전 (최소 10문장 공동 검토 필요)",
   "referenceNow": "2026-11-12T10:00:00+09:00",
   "referenceNowNote": "2026-11-12(목) 오전 10시 기준. '토요일'=2026-11-14, '일요일'=2026-11-15, '내일'=2026-11-13, '오늘'=2026-11-12.",
@@ -25,10 +25,11 @@
     "expected.policy는 추출 뒤 서버 정책(기본값·DEC-019·020)이 적용된 결과다. 추출 정확도(AI-REQ-04)와 따로 채점한다.",
     "preferenceTags는 자유 문자열이라 keywordsAny의 단어 중 하나라도 포함되면 맞은 것으로 본다.",
     "acceptable이 있으면 그 목록의 어느 값이든 정답으로 본다.",
-    "openQuestion이 있는 사례는 정책 결정 전이라 해당 부분을 채점에서 제외한다."
+    "openQuestion이 있는 사례는 정책 결정 전이라 해당 부분을 채점에서 제외한다(현재 없음)."
   ],
-  "openQuestions": {
-    "Q1": "동행 정보가 불완전할 때(예: '친구들이랑 4명이서' — 영유아 동반 여부 미언급) 동행 확인 질문을 할지, 영유아 미동반으로 보고 READY로 둘지. 계약 Companions.hasInfant는 boolean 필수이고 현재 구현(#13)은 확인 질문을 만든다. FR-004는 하드 판단 정보(시간·지역)만 되묻는다."
+  "openQuestions": {},
+  "resolvedQuestions": {
+    "Q1": "동행 정보가 불완전할 때 → DEC-022: 혼자·친구·연인·기타는 영유아 미언급이면 미동반(질문 없음), 가족·'아이' 언급은 확인 질문 1회, 인원 수는 묻지 않음."
   },
   "cases": [
     {
@@ -59,17 +60,19 @@
       "result": null
     },
     {
-      "id": "EX-03", "category": "기본 추출", "requirements": ["FR-002", "FR-018", "AI-REQ-04"], "decisions": [],
+      "id": "EX-03", "category": "기본 추출", "requirements": ["FR-002", "FR-018", "AI-REQ-04"], "decisions": ["DEC-022"],
       "input": "[가상] 오늘 저녁 6시부터 9시까지 서면에서 친구들이랑 4명이서 놀 거예요.",
       "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
       "expected": {
         "extracted": {
           "area": {"value": "SEOMYEON", "source": "USER", "strength": "HARD"},
           "timeWindow": {"value": {"startAt": "2026-11-12T18:00:00+09:00", "endAt": "2026-11-12T21:00:00+09:00"}, "source": "USER", "strength": "HARD"},
-          "companions": {"value": {"type": "FRIENDS", "count": 4, "hasInfant": null}, "source": "USER", "strength": "SOFT", "note": "hasInfant 미언급"}
+          "companions": {"value": {"type": "FRIENDS", "count": 4, "hasInfant": false}, "acceptable": [{"type": "FRIENDS", "count": 4, "hasInfant": false}, {"type": "FRIENDS", "count": 4, "hasInfant": null}], "source": "USER", "strength": "SOFT", "note": "영유아 미언급. 추출은 false나 null 모두 허용, 정책 결과는 false(DEC-022)"}
         },
-        "status": "READY", "questionFields": [], "warningCodes": [],
-        "openQuestion": "Q1"
+        "policy": {
+          "companions": {"value": {"type": "FRIENDS", "count": 4, "hasInfant": false}, "source": "USER", "strength": "SOFT"}
+        },
+        "status": "READY", "questionFields": [], "warningCodes": []
       },
       "result": null
     },
@@ -502,6 +505,22 @@
         "status": "READY", "questionFields": [], "warningCodes": []
       },
       "notes": "'야외도 괜찮아요'를 실외 전용이나 실내 선호로 오해하지 않는다.",
+      "result": null
+    },
+    {
+      "id": "EX-31", "category": "영유아 동반", "requirements": ["FR-002", "FR-004", "FR-018", "AI-REQ-06"], "decisions": ["DEC-022", "DEC-021"],
+      "input": "[가상] 일요일 오후 1시부터 5시까지 해운대에서 가족끼리 놀려고요.",
+      "before": {"capabilities": "FINAL", "profileOverrides": {}, "pendingFields": []},
+      "expected": {
+        "extracted": {
+          "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+          "timeWindow": {"value": {"startAt": "2026-11-15T13:00:00+09:00", "endAt": "2026-11-15T17:00:00+09:00"}, "source": "USER", "strength": "HARD"}
+        },
+        "unchanged": ["mobility"],
+        "mustNot": ["companions.hasInfant false로 확정", "companions.hasInfant true로 추측", "companions.count 추측", "mobility STROLLER 적용"],
+        "status": "NEEDS_INPUT", "questionFields": ["companions"], "warningCodes": []
+      },
+      "notes": "가족이지만 인원·영유아를 말하지 않았다. 영유아 여부가 유모차 하드 제약을 정하므로 확인 질문 1개를 한다(DEC-022). 인원을 지어내지 않는다.",
       "result": null
     }
   ]
