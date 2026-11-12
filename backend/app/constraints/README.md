@@ -1,11 +1,11 @@
 # ConstraintAnalyzer — 김영무 · COMP-03
-관련 FR-002~006·015·018, AI-REQ-02·04·06·07. profile.py는 기존 카드 검증입니다. 2026-11-08 parser.py에 RuleBasedParser 골격을 추가했습니다. 실제 LLM·chat·세션 병합·생성 가능 판정은 미구현입니다.
+관련 FR-002~006·015·018, AI-REQ-02·04·06·07. profile.py는 기존 카드 검증입니다. 2026-11-08 parser.py에 RuleBasedParser 골격을 추가했습니다. 실제 LLM은 미연결입니다. chat·세션 병합·생성 가능 판정은 PR #13의 application 정책 모듈이 연결하며, #17 단독에서는 실행하지 않습니다.
 
 ## 내부 출력과 지원 문법
 
 `RuleBasedParser().parse(text)`는 domain/extraction.py의 Extraction을 반환합니다. conditions는 snake_case 필드의 value/source/strength 부분 힌트이며 미입력/불확실 값은 None/UNSET입니다. unconfirmed_fields는 언급되었으나 해석이 불완전한 필드 이름, warnings는 고정 RULE_PARSER_USED 코드입니다. 원문을 보관하거나 진단에 복사하지 않습니다.
 
-이 결과는 저장 가능한 API Profile이 아닙니다. companions.type/count/has_infant는 각각 None일 수 있으며 알 수 없다고 count=1·has_infant=false로 채우지 않습니다. API companions는 세 값이 모두 필요하므로 후속 어댑터·질문·병합 정책 검토가 필요합니다. 내부 모델은 공통 모델 검토 대상입니다.
+이 결과는 저장 가능한 API Profile이 아닙니다. companions.type/count/has_infant는 각각 None일 수 있으며 알 수 없다고 count=1·has_infant=false로 채우지 않습니다. API companions는 세 값이 모두 필요하므로 PR #13의 어댑터·질문·병합 정책을 거칩니다. 불완전한 힌트로 인원이나 동행 종류를 만들지 않습니다. 내부 모델은 공통 모델 검토 대상입니다.
 
 - 지역: 해운대 명시. 다른 주요 권역·충돌·부정 표현은 미확인.
 - 시간: 연도 포함 절대 날짜와 시작부터 종료까지. 예: `2026-11-12 13시부터 17시까지`, `2026년 11월 12일 오전 9시부터 오후 1시까지`, `2026-11-12 13:00부터 17:30까지`. 한국 시각으로 처리합니다.
@@ -19,10 +19,10 @@
 
 한국어 문장 전체 의미를 이해하는 파서가 아닙니다. 한 절의 부정 표현 때문에 관련된 다른 키워드도 보수적으로 UNSET이 될 수 있습니다. 테스트 밖의 중의적 표현·미확인 검출 완전성을 보장하지 않습니다. 모든 SOFT 기본값을 정의하거나 완성된 프로필을 반환하지 않습니다.
 
-## 확정 결정과 미합의 연결 지점
+## 확정 결정과 책임 분리
 
 - DEC-001: 스프린트 2 WALK, 이후 PUBLIC 기본값. 반환한 WALK는 capabilities 활성화를 의미하지 않습니다.
-- DEC-002: 영유아 동반 시 유모차 DEFAULT/HARD 및 카드 해제 원칙은 확정됐습니다. USER/[]·해제 상태 우선순위는 PR #13 제안이므로 자동 유모차 변환은 연결하지 않았습니다. has_infant 힌트만 제공합니다.
+- DEC-002·020: 영유아 동반 시 유모차 DEFAULT/HARD, USER []·목록·해제 우선, 초기화·취소·경고는 PM 확정 정책입니다. 파서는 has_infant 힌트를 제공하고 mobility.py가 기존 USER 상태를 보존해 정규화합니다. PR #13이 이 처리를 chat/카드에 연결합니다.
 - DEC-007: 불확실 HARD를 추측하지 않습니다. 이 출력으로 기존 HARD를 덮어쓰거나 일반 코스를 생성해서는 안 됩니다. HTTP 503/200·READY/NEEDS_INPUT·미지원 이동수단 응답은 여기서 결정하지 않습니다.
 - DEC-006: 원문·추출 값·예외 원문을 로그에 출력하지 않습니다. AI 호출은 AIService 경계로 분리합니다.
 
@@ -36,4 +36,13 @@
 
 ## DEC-020 정규화 (2026-11-11)
 
-`mobility.normalize_mobility(profile, has_infant=...)`는 입력을 복사하고 `(profile, warnings)`를 반환한다. USER 목록은 []도 유지한다. null/UNSET 초기화는 기본 적용 대상이며, 영유아 취소는 DEFAULT의 STROLLER만 제거한다. 영유아 부분 힌트도 처리하되 동행 종류·인원을 추측하지 않는다. 추가 질문은 하지 않는다. 실제 지원 여부는 정규화 후 capabilities로 검증한다. 정책은 PM 결정 완료, #18·#13 병합 및 서버 연결은 별도다. 스프린트2 기본 이동수단 WALK, 스프린트3 PUBLIC 전환은 DEC-001을 따른다.
+`mobility.normalize_mobility(profile, has_infant=...)`는 입력을 복사하고 `(profile, warnings)`를 반환한다. USER 목록은 []도 유지한다. null/UNSET 초기화는 기본 적용 대상이며, 영유아 취소는 DEFAULT의 STROLLER만 제거한다. 영유아 부분 힌트도 처리하되 동행 종류·인원을 추측하지 않는다. 추가 질문은 하지 않는다. 실제 지원 여부는 정규화 후 capabilities로 검증한다. 정책은 PM 결정 완료이며 #18 결정 기록은 develop 반영 완료다(2026-11-12 확인). #17·#13의 실제 반영 및 프론트 연결은 별도다. 스프린트2 기본 이동수단 WALK, 스프린트3 PUBLIC 전환은 DEC-001을 따른다.
+
+## PR #13과 함께 적용할 때 (2026-11-12 PM 리뷰 반영)
+
+- application/extraction.py: AIService 재시도 소진 후 규칙 대체 및 API 프로필 변환.
+- application/condition_policy.py: 기존 HARD 보존, USER 우선 유모차 정규화, 확인 대기·503/NEEDS_INPUT/READY 판정.
+- transport 확인 대기 중 같은 값의 전체 카드 PUT 재전송·source/strength 변경만으로 수락하지 않는다. 같은 도보 재선택은 사용자 명시적 선택 때 최신 revision으로 chat에 `도보로 이동할게요`를 보낸다.
+- 질문은 최대2개만 보여도 나머지 확인 대기는 세션 내부에 유지한다. 실제 코스 엔진은 begin_course guard를 통해야 한다.
+- 지원 목록은 현재 비어 있다. 카드·채팅 HAEUNDAE/WALK는 #22 실제 연결·필드 검증 후, 코스 생성 흐름은 #23 검증 후 개방한다(PR #13 PM 확인). READY는 조건 확인 완료이며 코스 생성 기능의 구현 완료가 아니다.
+- 상세 인계·검증은 PR #13의 docs/ISSUE6_8_IMPLEMENTATION.md, #17 골격은 docs/AI_PARSER_PROGRESS.md를 따른다. 이 README는 두 PR에서 같은 내용으로 유지해 공유 파일 충돌을 피한다.

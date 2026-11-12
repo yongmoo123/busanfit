@@ -56,3 +56,7 @@ AIService와 파서는 단독 모듈이며 서로의 대체 경로·세션·HTTP
 - #17은 파서·AI 경계·정규화, #13은 계약·세션/API 통합을 담당한다. 실제 LLM·코스 엔진·capabilities 활성화는 포함하지 않는다.
 
 검증(2026-11-11): Python3.12 전체147 passed, 계약5 operations·31 schemas·20 examples 및 참고 문서 JSON 동기화 통과. 기존 Starlette/httpx 경고1건. #13 소스와 별도 검토 사본에서188 passed. 작업 브랜치 간 또는 GitHub PR 병합은 수행하지 않았다.
+
+## 2026-11-12 PM 통합 리뷰 보완
+
+#13 PM APPROVED(review-5859651292)에서 확인된 constraints/README.md 충돌을 파일 수준에서 재현했다. #13·#17 README를 동일한 확정 정책·모듈 책임 설명으로 맞춰3-way 파일 검사가 무충돌임을 확인했다. 파서·정규화 코드는 바꾸지 않았다. #18 결정 기록은 develop 반영 완료. 검증: #17 단독147 passed·계약/동기화 통과, #13+#17 추적 소스 검토 사본198 passed·정책15사례 통과. 기존 Starlette/httpx 경고1건. 브랜치와 PR 병합은 하지 않았다. PM의 스프린트3 직접 질문 응답 개선·v0.3 문서 통합은 후속 범위로 유지한다.
