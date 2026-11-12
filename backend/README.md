@@ -8,6 +8,8 @@ PUT /api/sessions/{sessionId}/profile도 구현했습니다. 전체 교체·필�
 chat/course/place API·DB·LLM·CORS 설정은 아직 구현하지 않았습니다. 409·410·429는 조건 카드 HTTP 경로에 연결했습니다. 활성 조건은 현재 빈 capabilities에 따라 거절합니다. 기능이 없는데 READY/SUCCESS를 반환하는 대체 코드를 넣지 않습니다.
 테스트 전용 경로는 테스트 코드에서만 등록합니다. 운영 앱에는 없습니다.
 
+작업 E 골격: ai/service.py의 AIService·Provider, fake.py의 가짜 Provider, constraints/parser.py의 규칙 파서, domain/extraction.py의 부분 추출 결과를 추가했습니다. 독립 모듈이며 기존 HTTP·세션·capabilities에는 연결하지 않았습니다. 실제 모델 호출 없이 재시도·타임아웃·취소·스키마 검증·보수적 키워드 추출을 검사합니다. 지원 문법·미완료 정책은 각 영역 README를 참고합니다. FR-002 전체나 추출 정확도 목표 완료가 아닙니다.
+
 ## 첫 구현 작업 — 김영무
 관련 FR-001·002·006, NFR-003·008.
 1. contracts의 요청/응답 모델과 공통 오류 의미를 구현합니다.
