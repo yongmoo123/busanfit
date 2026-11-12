@@ -194,7 +194,9 @@ function saveError(error) {
   }
 }
 
-export default function ProfileEditor({ initialProfile, isMock, canSave, sessionError, onSave, onRestart, onClose }) {
+export default function ProfileEditor({
+  initialProfile, isMock, capabilities, canSave, sessionError, onSave, onRestart, onClose,
+}) {
   const titleId = useId()
   const [profile, setProfile] = useState(() => structuredClone(initialProfile))
   const [tags, setTags] = useState(() => initialProfile.preferenceTags.value?.join(', ') ?? '')
@@ -204,15 +206,46 @@ export default function ProfileEditor({ initialProfile, isMock, canSave, session
   const savingRef = useRef(false)
   const areaInputRef = useRef(null)
 
-  function edit(name, value, strength) {
-    setProfile((current) => ({
-      ...current,
-      [name]: name === 'includeUnknownAccessibility' ? value : {
-        value,
-        source: value === null ? 'UNSET' : 'USER',
-        strength: strength ?? current[name].strength,
-      },
-    }))
+    function edit(name, value, strength) {
+    setProfile((current) => {
+      const next = {
+        ...current,
+        [name]: name === 'includeUnknownAccessibility' ? value : {
+          value,
+          source: value === null ? 'UNSET' : 'USER',
+          strength: strength ?? current[name].strength,
+        },
+      }
+
+      if (!isMock || (name !== 'companions' && name !== 'mobility')) {
+        return next
+      }
+
+      const hasInfant = next.companions.value?.hasInfant === true
+      const mobility = next.mobility
+
+      if (hasInfant && mobility.source === 'UNSET') {
+        next.mobility = {
+          value: ['STROLLER'],
+          source: 'DEFAULT',
+          strength: 'HARD',
+        }
+      } else if (
+        !hasInfant
+        && mobility.source === 'DEFAULT'
+        && mobility.value?.includes('STROLLER')
+      ) {
+        const remaining = mobility.value.filter((item) => item !== 'STROLLER')
+        next.mobility = {
+          ...mobility,
+          value: remaining.length ? remaining : null,
+          source: remaining.length ? 'DEFAULT' : 'UNSET',
+        }
+      }
+
+      return next
+    })
+
     setDirty(true)
     setFeedback((current) => current?.restart ? current : null)
   }
@@ -221,12 +254,24 @@ export default function ProfileEditor({ initialProfile, isMock, canSave, session
     return feedback?.details?.find((detail) => detail.field === name || detail.field.startsWith(name + '.'))?.reason
   }
 
-  function field(name, children) {
+    function field(name, children) {
     const condition = name === 'includeUnknownAccessibility' ? null : profile[name]
+    const supportedValues = name === 'area'
+      ? capabilities?.supportedAreas
+      : name === 'transport'
+        ? capabilities?.supportedTransports
+        : null
+
+    const isUnsupported = Array.isArray(supportedValues)
+      && condition?.value != null
+      && (!capabilities.supportedProfileFields.includes(name)
+        || !supportedValues.includes(condition.value))
+
     return (
       <ProfileField name={name} condition={condition} error={detailFor(name)}
         onStrength={(strength) => edit(name, condition.value, strength)}>
         {children}
+        {isUnsupported && <p role="status">아직 지원하지 않아요.</p>}
       </ProfileField>
     )
   }
