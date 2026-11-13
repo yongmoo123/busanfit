@@ -87,6 +87,8 @@ budget/mobility/preferenceTags도 최종 프로필 모양에는 있으나 예시
 조건 추출에서 이동제약·제외 카테고리를 추가 언급하면 기존 목록에 합쳐 기존 HARD 제외를 유지한다. 명시적 빈 USER 목록 또는 카드 전체 교체로 목록을 해제할 수 있다. 이동수단 미언급 시 WALK/DEFAULT를 적용하되 기존 값과 미지원·미확인 이동수단 확인 대기는 보존한다.
 
 ## 6. 코스 의미·검증
+
+FR-005·006 구현 보완: 카드 PUT에서 transport=null/UNSET이면 지원되는 WALK/DEFAULT를 서버가 적용한다. 미지원 이동수단 확인 대기가 있으면 기본값을 넣어 수락 처리하지 않는다. mobility의 비어 있지 않은 값과 명시적 []는 HARD이며 SOFT 입력은 422 INVALID_PROFILE이다. 예산 미입력은 null/UNSET으로 유지하고 화면에서 '제한 없음(기본 동작)'으로 표시한다. 이는 0원·무료·가격 정보 없음과 다르며 DEFAULT 출처의 null을 만들지 않는다. 체류시간과 부상 초기 설정은 config/defaults.json을 따르고, 체류시간의 source는 내부 계산 결과에서 관리한다. 프로필에 새 체류시간·출처 필드를 추가하지 않는다.
 - SUCCESS는 course가 존재, INSUFFICIENT_PLACES는 HTTP 200 + course=null.
 - 첫 주 후보가 두 곳 미만이면 후보 부족이다. 시간 안에 못 넣는 장소를 무리하게 채우지 않는다.
 - suggestions는 최대 3개, 첫 주 type=EDIT_PROFILE만 허용. 클릭은 조건 입력 카드를 열며 자동으로 조건을 변경하지 않는다.

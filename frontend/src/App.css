@@ -1054,6 +1054,47 @@
   overflow-wrap: anywhere;
 }
 
+.profile-support-note,
+.profile-default-guide {
+  color: #304c45;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.profile-default-guide {
+  margin: 12px 0;
+  padding: 10px;
+  background: #edf5f1;
+  border-radius: 8px;
+}
+
+.profile-default-guide summary {
+  cursor: pointer;
+}
+
+.profile-injury-note {
+  margin-top: 10px;
+  padding: 10px;
+  color: #4d390f;
+  background: #fff2cc;
+  border-radius: 8px;
+}
+
+.profile-editor .ready-badge {
+  color: #174b3e;
+}
+
+.condition-card .condition-item > span {
+  color: #4e665f;
+}
+
+.profile-editor select:focus-visible,
+.profile-editor input:focus-visible,
+.profile-default-guide summary:focus-visible {
+  outline: 2px solid #16634f;
+  outline-offset: 2px;
+}
+
 .chat-notice {
   padding: 12px 20px;
   background: #f1f6ff;

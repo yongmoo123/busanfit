@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import readyMock from './mocks/02-chat.ready.response.json'
 import { createSession, saveProfile, sendChat, deleteSession } from './sessionApi.js'
 import { createEmptyProfile } from './profile.js'
+import { budgetLabel } from './profileDefaults.js'
 import ProfileEditor from './ProfileEditor.jsx'
 import './App.css'
 
@@ -81,7 +82,6 @@ function getCompanionsName(value) {
 
 function ConditionCard({ profile, onRecommend, onEdit, ready }) {
   const timeWindow = profile?.timeWindow?.value
-  const budget = profile?.budget?.value
 
   const items = [
     { field: 'area', label: '여행 지역', value: getAreaName(profile?.area?.value) },
@@ -89,7 +89,7 @@ function ConditionCard({ profile, onRecommend, onEdit, ready }) {
     { field: 'timeWindow', label: '시작 시간', value: formatDateTime(timeWindow?.startAt) },
     { field: 'timeWindow', label: '종료 시간', value: formatDateTime(timeWindow?.endAt) },
     { field: 'companions', label: '동행 인원', value: getCompanionsName(profile?.companions?.value) },
-    { field: 'budget', label: '예산', value: budget == null ? '미입력' : budget.amount.toLocaleString('ko-KR') + '원' },
+    { field: 'budget', label: '예산', value: budgetLabel(profile.budget) },
     { field: 'mobility', label: '이동제약', value: profile?.mobility?.value?.map((value) => ({ WHEELCHAIR: '휠체어', STROLLER: '유모차', INJURY: '부상' })[value]).join(', ') || (profile?.mobility?.value === null ? '미입력' : '제약 없음') },
     { field: 'indoorPreference', label: '장소 선호', value: ({ INDOOR: '실내', OUTDOOR: '실외', ANY: '상관없음' })[profile?.indoorPreference?.value] ?? '미입력' },
     { field: 'excludedCategories', label: '제외 카테고리', value: profile?.excludedCategories?.value?.map((value) => ({ CAFE: '카페', FOOD: '음식점', EXHIBITION: '전시', ATTRACTION: '관광지', PARK: '공원', SHOPPING: '쇼핑', OTHER: '기타' })[value]).join(', ') || (profile?.excludedCategories?.value === null ? '미입력' : '제외 없음') },
@@ -108,7 +108,7 @@ function ConditionCard({ profile, onRecommend, onEdit, ready }) {
           <div className="condition-item" key={item.label}>
             <span>{item.label}</span>
             <strong>{item.value}</strong>
-            {profile?.[item.field]?.source === 'DEFAULT' && <span className="profile-default">기본값</span>}
+            {(profile?.[item.field]?.source === 'DEFAULT' || (item.field === 'budget' && profile.budget.value === null)) && <span className="profile-default">기본값</span>}
             {profile?.[item.field]?.value !== null && <span className="condition-strength">{profile?.[item.field]?.strength === 'HARD' ? '필수' : '선호'}</span>}
           </div>
         ))}
@@ -412,6 +412,7 @@ function App() {
         isMock={editor.isMock}
         canSave={editor.isMock || (Boolean(session) && !isSending && !sessionError)}
         sessionError={editor.isMock ? '' : sessionError}
+        capabilities={editor.isMock ? null : session?.capabilities}
         onSave={handleSaveProfile}
         onRestart={retrySession}
         onClose={() => setEditor(null)}
