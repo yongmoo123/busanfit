@@ -37,8 +37,8 @@ def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1
         version="0.0.4",
         description=("세션 생성·조건 카드 전체 교체를 지원합니다. "
                      + ("조건 채팅·규칙 대체 처리를 지원합니다. " if condition_extractor is not None else
-                        "조건 채팅은 PR #17 의존 모듈 반영 후 등록됩니다. ")
-                     + "추천 엔진 미연결로 capabilities는 비어 있습니다. 실제 LLM·코스·장소 연동은 미완료입니다."),
+                        "조건 채팅을 사용할 수 없습니다. ")
+                     + "Gemini는 환경변수 설정 시 추출에 연결됩니다. #21·#22 활성화 전 일반 capabilities는 비어 있습니다. 코스·장소 API는 미완료입니다."),
         debug=False,
         lifespan=lifespan,
     )

@@ -1,8 +1,5 @@
-"""AI/fallback adapter. PR #17 supplies AIService and RuleBasedParser.
-
-No provider is configured in production yet. Combined with #17, the unavailable
-provider follows the same retry -> rule-parser path as a real provider failure.
-"""
+"""Validated AI extraction followed by deterministic, conservative fallback."""
+from datetime import timedelta, timezone
 from dataclasses import dataclass, field
 from typing import Literal, Protocol
 from pydantic import Field, StrictBool, StrictInt, model_validator
@@ -40,6 +37,7 @@ class Hints(ContractModel):
     type: Literal['SOLO', 'FRIENDS', 'COUPLE', 'FAMILY', 'OTHER'] | None = None
     count: StrictInt | None = Field(default=None, ge=1)
     hasInfant: StrictBool | None = None
+    hasChild: StrictBool | None = None
 
 
 class ExtractionOutput(ContractModel):
@@ -57,6 +55,22 @@ class ExtractionOutput(ContractModel):
                 raise ValueError('null and UNSET must correspond')
             if condition['source'] == 'DEFAULT':
                 raise ValueError('provider cannot assign defaults')
+            if name in ('area', 'timeWindow', 'mobility', 'budget', 'excludedCategories') and condition['strength'] != 'HARD':
+                raise ValueError('hard condition required')
+            if isinstance(condition['value'], list) and len(condition['value']) != len(set(condition['value'])):
+                raise ValueError('duplicate values')
+        if self.profile.includeUnknownAccessibility:
+            raise ValueError('unknown accessibility is outside extraction scope')
+        if self.profile.companions.value is not None:
+            companions = self.profile.companions.value.model_dump()
+            for key, value in self.companionHints.model_dump(exclude_none=True).items():
+                if key in companions and companions[key] != value:
+                    raise ValueError('conflicting companion hints')
+        window = self.profile.timeWindow.value
+        if window is not None:
+            seoul = timezone(timedelta(hours=9))
+            if window.startAt >= window.endAt or window.startAt.astimezone(seoul).date() != window.endAt.astimezone(seoul).date():
+                raise ValueError('invalid time window')
         return self
 
 
@@ -68,7 +82,10 @@ class AIConditionExtractor:
         from app.ai.service import Purpose
         result = await self.ai.complete(Purpose.EXTRACT, ExtractionOutput, user_message=message)
         if result.data is not None:
-            return Analysis(result.data.profile.model_dump(mode='json'),
+            profile = result.data.profile.model_dump(mode='json')
+            if profile['transport']['value'] is None and 'transport' not in result.data.unconfirmedFields:
+                profile['transport'] = {'value': 'WALK', 'source': 'DEFAULT', 'strength': 'SOFT'}
+            return Analysis(profile,
                             set(result.data.unconfirmedFields),
                             result.data.companionHints.model_dump(exclude_none=True))
         parsed = self.parser.parse(message)
@@ -80,9 +97,11 @@ class AIConditionExtractor:
                 value = {'startAt': value.start_at.isoformat(), 'endAt': value.end_at.isoformat()}
             elif name == 'companions' and value is not None:
                 hints = {key: val for key, val in
-                         [('type', value.type), ('count', value.count), ('hasInfant', value.has_infant)]
+                         [('type', value.type), ('count', value.count), ('hasInfant', value.has_infant),
+                          ('hasChild', value.has_child)]
                          if val is not None}
-                value = hints if len(hints) == 3 else None
+                value = {key: hints[key] for key in ('type', 'count', 'hasInfant')} if all(
+                    key in hints for key in ('type', 'count', 'hasInfant')) else None
             elif isinstance(value, tuple):
                 value = list(value)
             profile[FIELD_MAP[name]] = {'value': value,
@@ -93,17 +112,7 @@ class AIConditionExtractor:
 
 
 def build_extractor():
-    """Keep #13 independently installable until its #17 dependency is merged."""
-    try:
-        from app.ai.service import AIService
-        from app.constraints.parser import RuleBasedParser
-    except ModuleNotFoundError as exc:
-        if exc.name not in ('app.ai.service', 'app.constraints.parser'):
-            raise
-        return None
-
-    class UnconfiguredProvider:
-        async def complete(self, request):
-            raise RuntimeError('provider is not configured')
-
-    return AIConditionExtractor(AIService(UnconfiguredProvider()), RuleBasedParser())
+    from app.ai.service import AIService
+    from app.ai.gemini import configured_provider
+    from app.constraints.chat_parser import ChatRuleParser
+    return AIConditionExtractor(AIService(configured_provider()), ChatRuleParser())

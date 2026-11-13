@@ -1,5 +1,5 @@
 # AIService·Provider — 김영무 · COMP-09
-FR-002 일부, NFR-002·006, AI-REQ-02·03. 2026-11-08 내부 골격 구현. 실제 LLM·HTTP chat·세션·규칙 파서 자동 연결은 미구현입니다.
+FR-002·003·004, NFR-002·005·006, AI-REQ-02·03. HTTP chat·세션·규칙 파서를 연결했고 Gemini REST Provider를 추가했습니다. 실제 키를 사용한 모델 평가·시연용 유료 전환은 미검증입니다.
 
 ## 인터페이스
 
@@ -19,7 +19,7 @@ timeout_seconds는 양의 유한 int/float만 허용합니다. NaN·무한대·b
 
 타임아웃·스키마 불일치·Provider 오류를 재시도하고 AIResult에 data 또는 failure(TIMEOUT/INVALID_OUTPUT/PROVIDER_FAILURE)와 attempts를 반환합니다. 스키마 재요청에는 알려진 스키마 필드 이름만 넣고 입력값·오류 원문은 복사하지 않습니다. 외부 asyncio 취소는 재시도하지 않고 전파합니다.
 
-내부 실패 결과는 HTTP 503 판정이 아닙니다. 규칙 파서 호출·기존 조건 병합·미확인 HARD 생성 차단·API 응답 변환은 후속 작업입니다. HTTP 429 backoff와 실Provider 예외 분류도 아직 연결하지 않았습니다.
+내부 실패 결과는 HTTP 503 판정이 아닙니다. application/extraction.py가 규칙 파서를 호출하고 condition_policy.py가 기존 조건 병합·미확인 조건 차단·DEC-021의 503 판정을 담당합니다. Provider HTTP 실패도 최대 두 번 시도한 뒤 대체합니다. 별도 backoff는 구현하지 않았습니다. 기록하는 AI 메타데이터는 목적·횟수·실패 분류·경과 시간뿐입니다.
 
 ## 테스트와 미완료
 
@@ -29,4 +29,4 @@ fake.py의 FakeProvider는 FakeReply로 정상·지연·실패를 재현하고 �
 .\.venv\Scripts\python.exe -m pytest backend/tests/test_ai_service.py -q
 ```
 
-실모델·요금·이용조건을 선택하지 않았습니다. 실제 LLM 연결·추천 이유 완성·전체 오류 복구·보안 검증 완료를 뜻하지 않습니다.
+개발은 Gemini Flash 계열이며 모델 이름은 GEMINI_MODEL로 명시합니다. 키는 GEMINI_API_KEY, 둘 다 backend/.env에만 두고 uvicorn --env-file로 읽습니다. [.env.example](../../.env.example)에는 값이 없습니다. 어댑터는 공식 [generateContent API](https://ai.google.dev/api/generate-content)의 responseMimeType·responseJsonSchema와 x-goog-api-key 헤더를 사용합니다. 외부 응답은 별도로 Pydantic 타입·업무 의미를 검증합니다. 실제 호출·추천 이유 완성·배포 로그 검증 완료를 뜻하지 않습니다.

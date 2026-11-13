@@ -1,11 +1,15 @@
 """Internal JSON AI boundary. Never log prompts, outputs or exceptions."""
 import asyncio
 import math
+import logging
+from datetime import datetime, timedelta, timezone
+from time import monotonic
 from dataclasses import dataclass
 from enum import Enum
 from typing import Generic, Literal, Protocol, TypeVar
 
 from pydantic import BaseModel, ValidationError
+from app.ai.prompts import EXTRACTION_PROMPT
 
 
 class Purpose(str, Enum):
@@ -15,7 +19,7 @@ class Purpose(str, Enum):
 
 
 PROMPTS = {
-    Purpose.EXTRACT: '조건을 지정 스키마로 추출하세요. 불확실한 값은 추측하지 마세요. 장소를 추천하지 마세요.',
+    Purpose.EXTRACT: EXTRACTION_PROMPT,
     Purpose.MODIFY: '수정 의도만 지정 스키마로 반환하세요. 원래 조건을 임의로 삭제하지 마세요.',
     Purpose.EXPLAIN: '제공된 장소 사실만 근거로 지정 스키마의 설명을 반환하세요. 장소·가격·시간·출처를 만들지 마세요.',
 }
@@ -60,7 +64,7 @@ class AIResult(Generic[T]):
 
 
 class AIService:
-    def __init__(self, provider: Provider, *, timeout_seconds: float = 10):
+    def __init__(self, provider: Provider, *, timeout_seconds: float = 10, reference_now: datetime | None = None):
         if isinstance(timeout_seconds, bool) or not isinstance(timeout_seconds, (int, float)):
             raise ValueError('timeout must be a positive finite number')
         try:
@@ -71,6 +75,7 @@ class AIService:
             raise ValueError('timeout must be a positive finite number')
         self._provider = provider
         self._timeout = timeout
+        self._reference_now = reference_now
 
     async def complete(self, purpose: Purpose, output_model: type[T], *,
                        user_message: str | None = None,
@@ -86,9 +91,14 @@ class AIService:
         if context is not None and not isinstance(context, CourseContext):
             raise ValueError('invalid context')
         failure = 'PROVIDER_FAILURE'
+        started = monotonic()
         invalid_fields: list[str] = []
         for attempt in range(1, 3):
             prompt = PROMPTS[purpose]
+            if purpose == Purpose.EXTRACT:
+                now = self._reference_now or datetime.now(timezone(timedelta(hours=9)))
+                today = now.astimezone(timezone(timedelta(hours=9))).date().isoformat()
+                prompt += f'\n해석 기준 한국 날짜: {today}. 날짜를 확정할 수 없으면 timeWindow를 확인 요청한다.'
             if attempt == 2 and failure == 'INVALID_OUTPUT':
                 prompt += ' 이전 응답을 인용하지 말고 지정 JSON 스키마에 맞춰 다시 생성하세요.'
                 if invalid_fields:
@@ -102,6 +112,8 @@ class AIService:
                     failure = 'INVALID_OUTPUT'
                     continue
                 data = output_model.model_validate_json(raw, strict=True)
+                logging.getLogger(__name__).info('ai purpose=%s attempts=%d failure=NONE elapsed_ms=%d',
+                    purpose.value, attempt, int((monotonic() - started) * 1000))
                 return AIResult(data, None, attempt)
             except TimeoutError:
                 failure = 'TIMEOUT'
@@ -115,4 +127,6 @@ class AIService:
                 # Do not retain/reflect provider error text or request payloads.
                 # asyncio.CancelledError is not caught and cancels immediately.
                 failure = 'PROVIDER_FAILURE'
+        logging.getLogger(__name__).info('ai purpose=%s attempts=2 failure=%s elapsed_ms=%d',
+            purpose.value, failure, int((monotonic() - started) * 1000))
         return AIResult(None, failure, 2)

@@ -1,4 +1,4 @@
-"""DEC-019~021 state transitions; no HTTP, provider calls or raw-message storage."""
+"""DEC-019~022 state transitions; no HTTP, provider calls or raw-message storage."""
 from copy import deepcopy
 from dataclasses import dataclass
 from app.api.profile_models import Profile
@@ -15,8 +15,7 @@ def warning(code, message):
 
 
 def normalize(profile, hints):
-    # The implementation is owned by PR #17. Import only when the policy runs;
-    # the integration tests also verify both PRs composed without merging them.
+    # Shared normalization from the #17 dependency; preserve USER choices.
     from app.constraints.mobility import normalize_mobility
     return normalize_mobility(profile, has_infant=hints.get('hasInfant'))
 
@@ -29,6 +28,7 @@ def questions_for(profile, pending):
     return [{'field': name, 'message': (
         '요청한 이동수단은 아직 지원하지 않아요. 지원되는 이동수단을 명시적으로 선택해 주세요.'
         if pending.get(name) == 'UNSUPPORTED_TRANSPORT' else
+        '영유아도 함께 가나요?' if pending.get(name) == 'INFANT_CONFIRMATION' else
         messages.get(name, '조건 카드에서 이 항목을 확인해 주세요.'))} for name in fields[:2]]
 
 
@@ -54,7 +54,7 @@ class PolicyResult:
 def analyze_chat(current, analysis: Analysis, capabilities):
     profile = deepcopy(current.profile) if current.profile is not None else blank_profile()
     pending = deepcopy(current.pending_fields)
-    hints = deepcopy(current.companion_hints)
+    hints = {**deepcopy(profile['companions']['value'] or {}), **deepcopy(current.companion_hints)}
     for name in FIELD_ORDER:
         extracted = analysis.profile[name]
         if name in analysis.unconfirmed_fields:
@@ -76,7 +76,7 @@ def analyze_chat(current, analysis: Analysis, capabilities):
         value = deepcopy(extracted)
         if profile[name]['value'] is not None and profile[name]['strength'] == 'HARD' and value['strength'] == 'SOFT':
             value['strength'] = 'HARD'
-        if name == 'mobility' and value['value']:
+        if name in ('mobility', 'excludedCategories') and value['value']:
             # Mentioning another restriction is additive; only explicit USER []
             # or the whole-replacement card can remove existing restrictions.
             value['value'] = list(dict.fromkeys((profile[name]['value'] or []) + value['value']))
@@ -85,19 +85,38 @@ def analyze_chat(current, analysis: Analysis, capabilities):
         if value['source'] == 'USER':
             pending.pop(name, None)
 
+    companion_warnings = []
     if 'companions' not in analysis.unconfirmed_fields:
         hints.update(analysis.companion_hints)
         if analysis.profile['companions']['value'] is not None:
-            hints = deepcopy(profile['companions']['value'])
-        elif hints:
-            existing = profile['companions']['value']
-            combined = {**(existing or {}), **hints}
-            if all(name in combined for name in ('type', 'count', 'hasInfant')):
-                profile['companions'] = {'value': combined, 'source': 'USER', 'strength': 'SOFT'}
-                hints = combined
-                pending.pop('companions', None)
+            hints.update(profile['companions']['value'])
+        if hints:
+            kind = hints.get('type')
+            # DEC-022: only infant uncertainty is hard; unknown count is soft.
+            if hints.get('count') is None and kind in ('SOLO', 'COUPLE'):
+                hints['count'] = 1 if kind == 'SOLO' else 2
+            if hints.get('hasInfant') is None:
+                if kind == 'FAMILY' or hints.get('hasChild'):
+                    if hints.get('_infantAsked'):
+                        hints['hasInfant'] = False
+                        hints['_infantAssumedAbsent'] = True
+                        pending.pop('companions', None)
+                    else:
+                        pending['companions'] = 'INFANT_CONFIRMATION'
+                elif kind in ('SOLO', 'FRIENDS', 'COUPLE', 'OTHER'):
+                    hints['hasInfant'] = False
             else:
-                pending['companions'] = 'UNCONFIRMED_CHANGE'
+                if pending.get('companions') == 'INFANT_CONFIRMATION':
+                    pending.pop('companions')
+                if 'hasInfant' in analysis.companion_hints or analysis.profile['companions']['value'] is not None:
+                    hints.pop('_infantAssumedAbsent', None)
+            if all(hints.get(name) is not None for name in ('type', 'count', 'hasInfant')):
+                strength = profile['companions']['strength']
+                profile['companions'] = {'value': {key: hints[key] for key in ('type', 'count', 'hasInfant')},
+                                         'source': 'USER', 'strength': strength}
+                pending.pop('companions', None)
+            if hints.get('_infantAssumedAbsent'):
+                companion_warnings.append(warning('UNCONFIRMED_CHANGE', '영유아 동반이면 조건 카드에서 바꿔 주세요.'))
 
     profile, warnings = normalize(profile, hints)
     typed = Profile.model_validate(profile)
@@ -107,8 +126,11 @@ def analyze_chat(current, analysis: Analysis, capabilities):
     if analysis.fallback:
         warnings.append(warning('AI_FALLBACK', TIMEOUT_MESSAGE if analysis.failure == 'TIMEOUT'
                                 else '규칙 파서로 처리했어요. 조건을 확인해 주세요.'))
-    warnings += pending_warnings(pending)
-    return PolicyResult(typed, pending, hints, questions_for(profile, pending), warnings, unavailable)
+    warnings += pending_warnings(pending) + companion_warnings
+    questions = questions_for(profile, pending)
+    if any(q['field'] == 'companions' for q in questions) and pending.get('companions') == 'INFANT_CONFIRMATION':
+        hints['_infantAsked'] = True
+    return PolicyResult(typed, pending, hints, questions, warnings, unavailable)
 
 
 def replace_card(current, profile: Profile, capabilities):
@@ -128,9 +150,14 @@ def replace_card(current, profile: Profile, capabilities):
             continue
         if condition['source'] == 'USER' and condition['value'] is not None and (name in displayed or changed):
             pending.pop(name)
-    hints = deepcopy(values['companions']['value'] or {})
+    hints = (deepcopy(current.companion_hints)
+             if current.profile is not None and values['companions'] == current.profile['companions']
+             else deepcopy(values['companions']['value'] or {}))
     values, warnings = normalize(values, hints)
     typed = Profile.model_validate(values)
     validate_profile(typed, values, capabilities)
-    return PolicyResult(typed, pending, hints, questions_for(values, pending),
+    questions = questions_for(values, pending)
+    if any(q['field'] == 'companions' for q in questions) and pending.get('companions') == 'INFANT_CONFIRMATION':
+        hints['_infantAsked'] = True
+    return PolicyResult(typed, pending, hints, questions,
                         warnings + pending_warnings(pending))
