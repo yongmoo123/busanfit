@@ -22,6 +22,8 @@ class SessionSnapshot:
     revision: int = 0
     profile: dict | None = None
     history: list = field(default_factory=list)
+    pending_fields: dict[str, str] = field(default_factory=dict)
+    companion_hints: dict = field(default_factory=dict)
 
 
 @dataclass(repr=False)
@@ -97,16 +99,37 @@ class SessionStore:
             self._limit(entry.requests, self._clock(), 20)
             return deepcopy(entry.state)
 
-    def commit_profile(self, session_id: str, expected_revision: int, *, profile: dict, history: list) -> SessionSnapshot:
+    def check_current(self, session_id: str, expected_revision: int) -> SessionSnapshot:
+        """Recheck slow work without charging a second request or renewing TTL."""
+        with self._lock:
+            return deepcopy(self._entry(session_id, expected_revision).state)
+
+    def commit_profile(self, session_id: str, expected_revision: int, *, profile: dict, history: list,
+                       pending_fields: dict | None = None, companion_hints: dict | None = None) -> SessionSnapshot:
         """Caller validates input first. Atomically commit only a matching revision."""
         profile_copy, history_copy = deepcopy(profile), deepcopy(history)
+        pending_copy, hints_copy = deepcopy(pending_fields), deepcopy(companion_hints)
         with self._lock:
             entry = self._entry(session_id, expected_revision)
             entry.state.profile = profile_copy
             entry.state.history = history_copy
+            if pending_copy is not None:
+                entry.state.pending_fields = pending_copy
+            if hints_copy is not None:
+                entry.state.companion_hints = hints_copy
             entry.state.revision += 1
             self._renew(entry)
             return deepcopy(entry.state)
+
+    def begin_course(self, session_id: str, expected_revision: int) -> SessionSnapshot:
+        """Required entry guard for the future course engine (DEC-021)."""
+        with self._lock:
+            state = self.begin(session_id, expected_revision)
+            if state.pending_fields or state.profile is None or any(
+                state.profile[name]['value'] is None for name in ('area', 'timeWindow')
+            ):
+                raise SessionError('PROFILE_INCOMPLETE', 422)
+            return state
 
     def finish_read(self, session_id: str, expected_revision: int) -> SessionSnapshot:
         """Recheck after course generation; a stale result must not be returned."""

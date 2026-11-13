@@ -1,5 +1,6 @@
-import { useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { createEmptyProfile } from './profile.js'
+import { stayDefaults, injuryDefaults } from './profileDefaults.js'
 
 const areas = { HAEUNDAE: '해운대', SEOMYEON: '서면', GWANGALLI: '광안리', NAMPO: '남포' }
 const transports = { WALK: '도보', PUBLIC: '대중교통', CAR: '자차' }
@@ -98,8 +99,9 @@ function TimeFields({ value, onChange }) {
 
 function BudgetFields({ value, onChange }) {
   if (value === null) {
-    return <button type="button" className="profile-secondary"
-      onClick={() => onChange({ amount: null, currency: 'KRW', basis: null, includes: [] })}>예산 입력</button>
+    return <><p>제한 없음 (기본값). 금액을 입력하지 않았으며, 무료라는 뜻은 아니에요.</p>
+      <button type="button" className="profile-secondary"
+        onClick={() => onChange({ amount: null, currency: 'KRW', basis: null, includes: [] })}>예산 입력</button></>
   }
 
   return (
@@ -148,17 +150,19 @@ function CompanionFields({ value, onChange }) {
 
 function ProfileField({ name, condition, error, onStrength, children }) {
   const titleId = useId()
+  const errorId = useId()
 
   return (
-    <div className="condition-item profile-field" role="group" aria-labelledby={titleId}>
+    <div className="condition-item profile-field" role="group" data-profile-field={name}
+      aria-labelledby={titleId} aria-describedby={error ? errorId : undefined} aria-invalid={Boolean(error)}>
       <h4 id={titleId} className="profile-field-title">{fields[name]}</h4>
       {children}
       {condition && (
         <div className="profile-meta">
           <span className={condition.source === 'DEFAULT' ? 'profile-default' : undefined}>
-            {sources[condition.source]}
+            {name === 'budget' && condition.value === null ? '제한 없음 (기본값)' : sources[condition.source]}
           </span>
-          {name === 'area' || name === 'timeWindow' || condition.value === null || condition.source === 'DEFAULT'
+          {name === 'area' || name === 'timeWindow' || name === 'mobility' || condition.value === null || condition.source === 'DEFAULT'
             ? <span>{condition.strength === 'HARD' ? '필수' : '선호'}</span>
             : <label>
                 강도
@@ -169,7 +173,7 @@ function ProfileField({ name, condition, error, onStrength, children }) {
               </label>}
         </div>
       )}
-      {error && <p className="profile-error" role="alert">{error}</p>}
+      {error && <p id={errorId} className="profile-error" role="alert">{error}</p>}
     </div>
   )
 }
@@ -194,7 +198,7 @@ function saveError(error) {
   }
 }
 
-export default function ProfileEditor({ initialProfile, isMock, canSave, sessionError, onSave, onRestart, onClose }) {
+export default function ProfileEditor({ initialProfile, isMock, canSave, sessionError, capabilities, onSave, onRestart, onClose }) {
   const titleId = useId()
   const [profile, setProfile] = useState(() => structuredClone(initialProfile))
   const [tags, setTags] = useState(() => initialProfile.preferenceTags.value?.join(', ') ?? '')
@@ -203,6 +207,15 @@ export default function ProfileEditor({ initialProfile, isMock, canSave, session
   const [isSaving, setIsSaving] = useState(false)
   const savingRef = useRef(false)
   const areaInputRef = useRef(null)
+  const formRef = useRef(null)
+
+  useEffect(() => {
+    const first = feedback?.details?.[0]?.field?.split('.')[0]
+    if (!first) return
+    const group = [...(formRef.current?.querySelectorAll('[data-profile-field]') ?? [])]
+      .find((element) => element.dataset.profileField === first)
+    group?.querySelector('select, input, button')?.focus()
+  }, [feedback])
 
   function edit(name, value, strength) {
     setProfile((current) => ({
@@ -227,6 +240,10 @@ export default function ProfileEditor({ initialProfile, isMock, canSave, session
       <ProfileField name={name} condition={condition} error={detailFor(name)}
         onStrength={(strength) => edit(name, condition.value, strength)}>
         {children}
+        {capabilities && (name === 'includeUnknownAccessibility'
+          ? !capabilities.supportsUnknownAccessibilityInclusion
+          : !capabilities.supportedProfileFields.includes(name)) &&
+          <p className="profile-support-note">현재 지원하지 않는 조건이에요. 미입력·제약 없음·포함 안 함 상태는 유지할 수 있어요.</p>}
       </ProfileField>
     )
   }
@@ -274,17 +291,40 @@ export default function ProfileEditor({ initialProfile, isMock, canSave, session
         </div>
         <span className="ready-badge">{isMock ? '가상 저장 시연' : '실제 API'}</span>
       </div>
-      <form onSubmit={submit}>
+      {capabilities && <p className="profile-support-note" role="status">
+        {capabilities.supportedAreas.length ? `지원 지역: ${capabilities.supportedAreas.map((area) => areas[area]).join(', ')} · 이동수단: ${capabilities.supportedTransports.map((mode) => transports[mode]).join(', ')}`
+          : '현재 일반 서비스의 조건 저장은 준비 중이에요.'}
+      </p>}
+      <details className="profile-default-guide">
+        <summary>기본 체류시간과 적용 기준</summary>
+        <p>시설의 관람소요시간이 있으면 먼저 사용하고, 없으면 아래 기본값을 사용해요. 코스 계산에 쓰는 기준이며 장소의 실제 운영시간을 뜻하지 않아요.</p>
+        <ul>{Object.entries(stayDefaults).map(([category, minutes]) => <li key={category}>{categories[category]}: {minutes}분</li>)}</ul>
+      </details>
+      <form ref={formRef} onSubmit={submit}>
         <fieldset className="profile-form-fields" disabled={isSaving}>
           <div className="condition-grid">
             {field('area', <Choice label="지역 선택" inputRef={areaInputRef} options={areas} value={profile.area.value}
               onChange={(value) => edit('area', value)} />)}
-            {field('transport', <Choice label="이동수단 선택" options={transports} value={profile.transport.value}
-              onChange={(value) => edit('transport', value)} />)}
+            {field('transport', <>
+              <Choice label="이동수단 선택" options={transports} value={profile.transport.value}
+                onChange={(value) => edit('transport', value)} />
+              {capabilities?.supportedTransports.includes('WALK') && <button type="button" className="profile-secondary"
+                onClick={() => edit('transport', null)}>도보 기본값으로 초기화</button>}
+              <p>미지원 이동수단 확인 중에는 초기화나 다른 항목 저장으로 수락 처리하지 않아요.</p>
+            </>)}
             {field('timeWindow', <TimeFields value={profile.timeWindow.value}
               onChange={(value) => edit('timeWindow', value)} />)}
-            {field('mobility', <ListInput value={profile.mobility.value} options={mobilityOptions}
-              emptyLabel="제약 없음" onChange={(value) => edit('mobility', value)} />)}
+            {field('mobility', <>
+              <ListInput value={profile.mobility.value} options={mobilityOptions}
+                emptyLabel="제약 없음" onChange={(value) => edit('mobility', value, 'HARD')} />
+              <p>미입력으로 지우면 영유아 동반 시 유모차 기본값 적용 대상으로 돌아가요. 제약 없음을 고르면 자동 적용하지 않아요.</p>
+              {profile.mobility.value?.includes('INJURY') && <div className="profile-injury-note" role="note">
+                <strong>부상 조건 처리 기준</strong>
+                <p>보행 속도는 일반 {injuryDefaults.normalWalkingKmh}km/h 대신 {injuryDefaults.walkingKmh}km/h, 구간당 최대 도보는 {injuryDefaults.maxLegWalkingMinutes}분을 초기 설정으로 사용해요.</p>
+                <p>계단 회피는 장소의 휠체어 접근 가능 정보로 보수적으로 판정해요. 실제 이동 경로의 계단·경사는 확인되지 않아요. 후보가 부족해도 조건을 자동 해제하지 않아요.</p>
+                {!capabilities?.supportedProfileFields.includes('mobility') && <p>이동제약 지원이 준비 중이라 현재 선택한 조건을 저장할 수 없어요.</p>}
+              </div>}
+            </>)}
             {field('budget', <BudgetFields value={profile.budget.value} onChange={(value) => edit('budget', value)} />)}
             {field('companions', <CompanionFields value={profile.companions.value}
               onChange={(value) => edit('companions', value)} />)}
@@ -326,7 +366,7 @@ export default function ProfileEditor({ initialProfile, isMock, canSave, session
           role={feedback.error ? 'alert' : 'status'}>{feedback.message}</p>}
         {feedback?.directInput && (
           <button type="button" className="profile-secondary"
-            onClick={() => areaInputRef.current?.focus()}>조건 직접 입력</button>
+          onClick={() => areaInputRef.current?.focus()}>조건 직접 입력</button>
         )}
         {feedback?.details?.filter((detail) => !Object.keys(fields).some(
           (name) => detail.field === name || detail.field.startsWith(name + '.'),

@@ -3,7 +3,7 @@
   "info": {
     "title": "BusanFit — 첫 주 공통 API 계약",
     "version": "0.1.0",
-    "description": "팀 합의용 초안. 서버 구현물이 아닙니다. 모든 예시는 가상 fixture입니다. 첫 주 5개 작업만 정의하며 미지원 조건은 422로 거절합니다. 날짜는 Asia/Seoul 기준 offset 포함 RFC3339, ID는 불투명 문자열. 상세 의미 규칙은 API_CONTRACT.md 참고."
+    "description": "팀 합의용 초안. 서버 구현물이 아닙니다. 모든 예시는 가상 fixture입니다. 첫 주 5개 작업만 정의하며 미지원 조건은 422로 거절합니다. 날짜는 Asia/Seoul 기준 offset 포함 RFC3339, ID는 불투명 문자열. 상세 의미 규칙은 API_CONTRACT.md 참고. DEC-019~021 PM 결정 반영: PUT/채팅 이동수단 구분, USER 이동제약 우선, NEEDS_INPUT 확대·503 판정. 서버 구현 완료 아님."
   },
   "servers": [
     {
@@ -284,6 +284,433 @@
                       "sessionExpiresAt": "2026-11-05T10:30:00+09:00",
                       "requestId": "22222222-2222-4222-8222-222222222222"
                     }
+                  },
+                  "policy-transport-chat-partial": {
+                    "summary": "[가상 계약 사례] transport-chat-partial",
+                    "value": {
+                      "status": "NEEDS_INPUT",
+                      "profile": {
+                        "area": {
+                          "value": "HAEUNDAE",
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "timeWindow": {
+                          "value": {
+                            "startAt": "2026-11-12T13:00:00+09:00",
+                            "endAt": "2026-11-12T17:00:00+09:00"
+                          },
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "transport": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "mobility": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "budget": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "indoorPreference": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "companions": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "excludedCategories": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "preferenceTags": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "includeUnknownAccessibility": false
+                      },
+                      "profileRevision": 2,
+                      "questions": [
+                        {
+                          "field": "transport",
+                          "message": "자차는 아직 지원하지 않아요. 도보로 코스를 만들까요?"
+                        }
+                      ],
+                      "warnings": [
+                        {
+                          "code": "UNSUPPORTED_TRANSPORT",
+                          "message": "요청한 이동수단은 아직 지원하지 않아요.",
+                          "placeIds": []
+                        }
+                      ],
+                      "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+                      "requestId": "22222222-2222-4222-8222-222222222222",
+                      "reply": "조건을 확인해 주세요."
+                    }
+                  },
+                  "policy-transport-chat-accepted": {
+                    "summary": "[가상 계약 사례] transport-chat-accepted",
+                    "value": {
+                      "status": "READY",
+                      "profile": {
+                        "area": {
+                          "value": "HAEUNDAE",
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "timeWindow": {
+                          "value": {
+                            "startAt": "2026-11-12T13:00:00+09:00",
+                            "endAt": "2026-11-12T17:00:00+09:00"
+                          },
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "transport": {
+                          "value": "WALK",
+                          "source": "USER",
+                          "strength": "SOFT"
+                        },
+                        "mobility": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "budget": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "indoorPreference": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "companions": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "excludedCategories": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "preferenceTags": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "includeUnknownAccessibility": false
+                      },
+                      "profileRevision": 2,
+                      "questions": [],
+                      "warnings": [],
+                      "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+                      "requestId": "22222222-2222-4222-8222-222222222222",
+                      "reply": "조건을 확인해 주세요."
+                    }
+                  },
+                  "policy-fallback-one-present": {
+                    "summary": "[가상 계약 사례] fallback-one-present",
+                    "value": {
+                      "status": "NEEDS_INPUT",
+                      "profile": {
+                        "area": {
+                          "value": "HAEUNDAE",
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "timeWindow": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "transport": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "mobility": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "budget": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "indoorPreference": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "companions": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "excludedCategories": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "preferenceTags": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "includeUnknownAccessibility": false
+                      },
+                      "profileRevision": 2,
+                      "questions": [
+                        {
+                          "field": "timeWindow",
+                          "message": "시간을 확인해 주세요."
+                        }
+                      ],
+                      "warnings": [
+                        {
+                          "code": "AI_FALLBACK",
+                          "message": "규칙 파서로 처리했어요. 조건을 확인해 주세요.",
+                          "placeIds": []
+                        }
+                      ],
+                      "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+                      "requestId": "22222222-2222-4222-8222-222222222222",
+                      "reply": "조건을 확인해 주세요."
+                    }
+                  },
+                  "policy-fallback-unconfirmed-change": {
+                    "summary": "[가상 계약 사례] fallback-unconfirmed-change",
+                    "value": {
+                      "status": "NEEDS_INPUT",
+                      "profile": {
+                        "area": {
+                          "value": "HAEUNDAE",
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "timeWindow": {
+                          "value": {
+                            "startAt": "2026-11-12T13:00:00+09:00",
+                            "endAt": "2026-11-12T17:00:00+09:00"
+                          },
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "transport": {
+                          "value": "WALK",
+                          "source": "DEFAULT",
+                          "strength": "SOFT"
+                        },
+                        "mobility": {
+                          "value": [
+                            "WHEELCHAIR"
+                          ],
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "budget": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "indoorPreference": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "companions": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "excludedCategories": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "preferenceTags": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "includeUnknownAccessibility": false
+                      },
+                      "profileRevision": 2,
+                      "questions": [
+                        {
+                          "field": "mobility",
+                          "message": "이동제약 변경 내용을 확인해 주세요."
+                        }
+                      ],
+                      "warnings": [
+                        {
+                          "code": "AI_FALLBACK",
+                          "message": "규칙 파서로 처리했어요. 조건을 확인해 주세요.",
+                          "placeIds": []
+                        },
+                        {
+                          "code": "UNCONFIRMED_CHANGE",
+                          "message": "변경 내용을 확인해 주세요.",
+                          "placeIds": []
+                        }
+                      ],
+                      "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+                      "requestId": "22222222-2222-4222-8222-222222222222",
+                      "reply": "조건을 확인해 주세요."
+                    }
+                  },
+                  "policy-fallback-existing-ready": {
+                    "summary": "[가상 계약 사례] fallback-existing-ready",
+                    "value": {
+                      "status": "READY",
+                      "profile": {
+                        "area": {
+                          "value": "HAEUNDAE",
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "timeWindow": {
+                          "value": {
+                            "startAt": "2026-11-12T13:00:00+09:00",
+                            "endAt": "2026-11-12T17:00:00+09:00"
+                          },
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "transport": {
+                          "value": "WALK",
+                          "source": "DEFAULT",
+                          "strength": "SOFT"
+                        },
+                        "mobility": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "budget": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "indoorPreference": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "companions": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "excludedCategories": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "preferenceTags": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "includeUnknownAccessibility": false
+                      },
+                      "profileRevision": 2,
+                      "questions": [],
+                      "warnings": [
+                        {
+                          "code": "AI_FALLBACK",
+                          "message": "규칙 파서로 처리했어요. 조건을 확인해 주세요.",
+                          "placeIds": []
+                        }
+                      ],
+                      "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+                      "requestId": "22222222-2222-4222-8222-222222222222",
+                      "reply": "조건을 확인해 주세요."
+                    }
+                  },
+                  "policy-normal-missing": {
+                    "summary": "[가상 계약 사례] normal-missing",
+                    "value": {
+                      "status": "NEEDS_INPUT",
+                      "profile": {
+                        "area": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "timeWindow": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "transport": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "mobility": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "budget": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "indoorPreference": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "companions": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "excludedCategories": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "preferenceTags": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "includeUnknownAccessibility": false
+                      },
+                      "profileRevision": 2,
+                      "questions": [
+                        {
+                          "field": "area",
+                          "message": "지역을 확인해 주세요."
+                        },
+                        {
+                          "field": "timeWindow",
+                          "message": "시간을 확인해 주세요."
+                        }
+                      ],
+                      "warnings": [],
+                      "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+                      "requestId": "22222222-2222-4222-8222-222222222222",
+                      "reply": "조건을 확인해 주세요."
+                    }
                   }
                 }
               }
@@ -355,11 +782,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "policy-fallback-both-missing": {
+                    "summary": "[가상 계약 사례] fallback-both-missing",
+                    "value": {
+                      "error": {
+                        "code": "AI_UNAVAILABLE",
+                        "message": "조건을 확인하지 못했어요. 조건 카드에 직접 입력해 주세요.",
+                        "retryable": true,
+                        "details": []
+                      },
+                      "requestId": "22222222-2222-4222-8222-222222222222"
+                    }
+                  }
                 }
               }
             }
           }
-        }
+        },
+        "description": "DEC-019 미지원 이동수단은 미반영·질문/경고, 나머지 유효 조건 반영. DEC-021 NEEDS_INPUT·503 판정은 계약 §4·5·7 참조."
       }
     },
     "/api/sessions/{sessionId}/profile": {
@@ -525,6 +967,501 @@
                       "sessionExpiresAt": "2026-11-05T10:30:00+09:00",
                       "requestId": "22222222-2222-4222-8222-222222222222"
                     }
+                  },
+                  "policy-stroller-auto": {
+                    "summary": "[가상 계약 사례] stroller-auto",
+                    "value": {
+                      "status": "READY",
+                      "profile": {
+                        "area": {
+                          "value": "HAEUNDAE",
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "timeWindow": {
+                          "value": {
+                            "startAt": "2026-11-12T13:00:00+09:00",
+                            "endAt": "2026-11-12T17:00:00+09:00"
+                          },
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "transport": {
+                          "value": "WALK",
+                          "source": "DEFAULT",
+                          "strength": "SOFT"
+                        },
+                        "mobility": {
+                          "value": [
+                            "STROLLER"
+                          ],
+                          "source": "DEFAULT",
+                          "strength": "HARD"
+                        },
+                        "budget": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "indoorPreference": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "companions": {
+                          "value": {
+                            "type": "FAMILY",
+                            "count": 2,
+                            "hasInfant": true
+                          },
+                          "source": "USER",
+                          "strength": "SOFT"
+                        },
+                        "excludedCategories": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "preferenceTags": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "includeUnknownAccessibility": false
+                      },
+                      "profileRevision": 2,
+                      "questions": [],
+                      "warnings": [],
+                      "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+                      "requestId": "22222222-2222-4222-8222-222222222222"
+                    }
+                  },
+                  "policy-stroller-user-empty": {
+                    "summary": "[가상 계약 사례] stroller-user-empty",
+                    "value": {
+                      "status": "READY",
+                      "profile": {
+                        "area": {
+                          "value": "HAEUNDAE",
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "timeWindow": {
+                          "value": {
+                            "startAt": "2026-11-12T13:00:00+09:00",
+                            "endAt": "2026-11-12T17:00:00+09:00"
+                          },
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "transport": {
+                          "value": "WALK",
+                          "source": "DEFAULT",
+                          "strength": "SOFT"
+                        },
+                        "mobility": {
+                          "value": [],
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "budget": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "indoorPreference": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "companions": {
+                          "value": {
+                            "type": "FAMILY",
+                            "count": 2,
+                            "hasInfant": true
+                          },
+                          "source": "USER",
+                          "strength": "SOFT"
+                        },
+                        "excludedCategories": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "preferenceTags": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "includeUnknownAccessibility": false
+                      },
+                      "profileRevision": 2,
+                      "questions": [],
+                      "warnings": [
+                        {
+                          "code": "STROLLER_NOT_APPLIED",
+                          "message": "유모차 조건은 자동으로 넣지 않았어요. 필요하면 조건 카드에서 추가해 주세요.",
+                          "placeIds": []
+                        }
+                      ],
+                      "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+                      "requestId": "22222222-2222-4222-8222-222222222222"
+                    }
+                  },
+                  "policy-stroller-user-injury": {
+                    "summary": "[가상 계약 사례] stroller-user-injury",
+                    "value": {
+                      "status": "READY",
+                      "profile": {
+                        "area": {
+                          "value": "HAEUNDAE",
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "timeWindow": {
+                          "value": {
+                            "startAt": "2026-11-12T13:00:00+09:00",
+                            "endAt": "2026-11-12T17:00:00+09:00"
+                          },
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "transport": {
+                          "value": "WALK",
+                          "source": "DEFAULT",
+                          "strength": "SOFT"
+                        },
+                        "mobility": {
+                          "value": [
+                            "INJURY"
+                          ],
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "budget": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "indoorPreference": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "companions": {
+                          "value": {
+                            "type": "FAMILY",
+                            "count": 2,
+                            "hasInfant": true
+                          },
+                          "source": "USER",
+                          "strength": "SOFT"
+                        },
+                        "excludedCategories": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "preferenceTags": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "includeUnknownAccessibility": false
+                      },
+                      "profileRevision": 2,
+                      "questions": [],
+                      "warnings": [
+                        {
+                          "code": "STROLLER_NOT_APPLIED",
+                          "message": "유모차 조건은 자동으로 넣지 않았어요. 필요하면 조건 카드에서 추가해 주세요.",
+                          "placeIds": []
+                        }
+                      ],
+                      "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+                      "requestId": "22222222-2222-4222-8222-222222222222"
+                    }
+                  },
+                  "policy-stroller-remove-only": {
+                    "summary": "[가상 계약 사례] stroller-remove-only",
+                    "value": {
+                      "status": "READY",
+                      "profile": {
+                        "area": {
+                          "value": "HAEUNDAE",
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "timeWindow": {
+                          "value": {
+                            "startAt": "2026-11-12T13:00:00+09:00",
+                            "endAt": "2026-11-12T17:00:00+09:00"
+                          },
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "transport": {
+                          "value": "WALK",
+                          "source": "DEFAULT",
+                          "strength": "SOFT"
+                        },
+                        "mobility": {
+                          "value": [
+                            "WHEELCHAIR"
+                          ],
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "budget": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "indoorPreference": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "companions": {
+                          "value": {
+                            "type": "FAMILY",
+                            "count": 2,
+                            "hasInfant": true
+                          },
+                          "source": "USER",
+                          "strength": "SOFT"
+                        },
+                        "excludedCategories": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "preferenceTags": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "includeUnknownAccessibility": false
+                      },
+                      "profileRevision": 2,
+                      "questions": [],
+                      "warnings": [
+                        {
+                          "code": "STROLLER_NOT_APPLIED",
+                          "message": "유모차 조건은 자동으로 넣지 않았어요. 필요하면 조건 카드에서 추가해 주세요.",
+                          "placeIds": []
+                        }
+                      ],
+                      "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+                      "requestId": "22222222-2222-4222-8222-222222222222"
+                    }
+                  },
+                  "policy-stroller-reset-unset": {
+                    "summary": "[가상 계약 사례] stroller-reset-unset",
+                    "value": {
+                      "status": "READY",
+                      "profile": {
+                        "area": {
+                          "value": "HAEUNDAE",
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "timeWindow": {
+                          "value": {
+                            "startAt": "2026-11-12T13:00:00+09:00",
+                            "endAt": "2026-11-12T17:00:00+09:00"
+                          },
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "transport": {
+                          "value": "WALK",
+                          "source": "DEFAULT",
+                          "strength": "SOFT"
+                        },
+                        "mobility": {
+                          "value": [
+                            "STROLLER"
+                          ],
+                          "source": "DEFAULT",
+                          "strength": "HARD"
+                        },
+                        "budget": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "indoorPreference": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "companions": {
+                          "value": {
+                            "type": "FAMILY",
+                            "count": 2,
+                            "hasInfant": true
+                          },
+                          "source": "USER",
+                          "strength": "SOFT"
+                        },
+                        "excludedCategories": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "preferenceTags": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "includeUnknownAccessibility": false
+                      },
+                      "profileRevision": 2,
+                      "questions": [],
+                      "warnings": [],
+                      "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+                      "requestId": "22222222-2222-4222-8222-222222222222"
+                    }
+                  },
+                  "policy-stroller-cancel-default": {
+                    "summary": "[가상 계약 사례] stroller-cancel-default",
+                    "value": {
+                      "status": "READY",
+                      "profile": {
+                        "area": {
+                          "value": "HAEUNDAE",
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "timeWindow": {
+                          "value": {
+                            "startAt": "2026-11-12T13:00:00+09:00",
+                            "endAt": "2026-11-12T17:00:00+09:00"
+                          },
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "transport": {
+                          "value": "WALK",
+                          "source": "DEFAULT",
+                          "strength": "SOFT"
+                        },
+                        "mobility": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "budget": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "indoorPreference": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "companions": {
+                          "value": {
+                            "type": "FAMILY",
+                            "count": 2,
+                            "hasInfant": false
+                          },
+                          "source": "USER",
+                          "strength": "SOFT"
+                        },
+                        "excludedCategories": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "preferenceTags": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "includeUnknownAccessibility": false
+                      },
+                      "profileRevision": 2,
+                      "questions": [],
+                      "warnings": [],
+                      "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+                      "requestId": "22222222-2222-4222-8222-222222222222"
+                    }
+                  },
+                  "policy-transport-put-preserves-pending": {
+                    "summary": "[가상 계약 사례] 시간만 저장해도 이동수단 확인 대기 유지",
+                    "value": {
+                      "status": "NEEDS_INPUT",
+                      "profile": {
+                        "area": {
+                          "value": "HAEUNDAE",
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "timeWindow": {
+                          "value": {
+                            "startAt": "2026-11-12T13:00:00+09:00",
+                            "endAt": "2026-11-12T18:00:00+09:00"
+                          },
+                          "source": "USER",
+                          "strength": "HARD"
+                        },
+                        "transport": {
+                          "value": "WALK",
+                          "source": "USER",
+                          "strength": "SOFT"
+                        },
+                        "mobility": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "budget": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "indoorPreference": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "companions": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "excludedCategories": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "HARD"
+                        },
+                        "preferenceTags": {
+                          "value": null,
+                          "source": "UNSET",
+                          "strength": "SOFT"
+                        },
+                        "includeUnknownAccessibility": false
+                      },
+                      "profileRevision": 2,
+                      "questions": [
+                        {
+                          "field": "transport",
+                          "message": "자차는 아직 지원하지 않아요. 도보로 코스를 만들까요?"
+                        }
+                      ],
+                      "warnings": [
+                        {
+                          "code": "UNSUPPORTED_TRANSPORT",
+                          "message": "요청한 이동수단은 아직 지원하지 않아요.",
+                          "placeIds": []
+                        }
+                      ],
+                      "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+                      "requestId": "22222222-2222-4222-8222-222222222222"
+                    }
                   }
                 }
               }
@@ -566,6 +1503,25 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "policy-transport-put-rejected": {
+                    "summary": "[가상 계약 사례] transport-put-rejected",
+                    "value": {
+                      "error": {
+                        "code": "UNSUPPORTED_CONSTRAINT",
+                        "message": "조건 카드를 확인해 주세요.",
+                        "retryable": false,
+                        "details": [
+                          {
+                            "field": "transport",
+                            "reason": "현재 지원하지 않는 조건입니다."
+                          }
+                        ]
+                      },
+                      "requestId": "22222222-2222-4222-8222-222222222222"
+                    }
+                  }
                 }
               }
             }
@@ -590,7 +1546,8 @@
               }
             }
           }
-        }
+        },
+        "description": "전체 교체. DEC-019 미지원 이동수단은 422 전체 미저장. DEC-020 USER 이동제약 우선·기본 유모차 정규화."
       }
     },
     "/api/courses": {
@@ -886,7 +1843,8 @@
               }
             }
           }
-        }
+        },
+        "description": "최신 revision과 서버 READY 상태를 확인. NEEDS_INPUT은 422 PROFILE_INCOMPLETE, 미확인 HARD를 우회해 생성하지 않음."
       }
     },
     "/api/places/{placeId}": {
@@ -1020,7 +1978,8 @@
         "type": "object",
         "properties": {
           "code": {
-            "type": "string"
+            "type": "string",
+            "description": "DEC-019~021: UNSUPPORTED_TRANSPORT, STROLLER_NOT_APPLIED, AI_FALLBACK, UNCONFIRMED_CHANGE. 기존 경고도 string으로 유지."
           },
           "message": {
             "type": "string"
@@ -1345,7 +2304,8 @@
               "source",
               "strength"
             ],
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "DEC-020: USER가 DEFAULT보다 우선. null/UNSET+영유아는 STROLLER/DEFAULT/HARD, USER []/목록은 유지 및 필요 시 STROLLER_NOT_APPLIED."
           },
           "budget": {
             "type": "object",
@@ -1781,7 +2741,8 @@
           "message",
           "expectedProfileRevision"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "기존과 같은 이동수단 값의 PUT 재전송·source/strength 변경만으로 transport 확인 대기를 해소하지 않는다. 같은 값의 명시적 수락은 최신 revision으로 POST /api/chat에 \"도보로 이동할게요\" 같은 선택 문장을 전송한다. 다른 지원 값으로 실제 변경한 USER 카드 PUT은 해당 대기를 해소한다."
       },
       "ChatResponse": {
         "type": "object",
@@ -1791,7 +2752,8 @@
             "enum": [
               "NEEDS_INPUT",
               "READY"
-            ]
+            ],
+            "description": "NEEDS_INPUT: 필수 정보 부족 또는 미확인 HARD/변경 의도. READY: 모두 해소, questions=[]; 코스 생성은 서버 READY에서만 허용."
           },
           "reply": {
             "type": "string"
@@ -1852,7 +2814,8 @@
           "expectedProfileRevision",
           "profile"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "기존과 같은 이동수단 값의 PUT 재전송·source/strength 변경만으로 transport 확인 대기를 해소하지 않는다. 같은 값의 명시적 수락은 최신 revision으로 POST /api/chat에 \"도보로 이동할게요\" 같은 선택 문장을 전송한다. 다른 지원 값으로 실제 변경한 USER 카드 PUT은 해당 대기를 해소한다."
       },
       "ProfileResponse": {
         "type": "object",
@@ -1862,7 +2825,8 @@
             "enum": [
               "NEEDS_INPUT",
               "READY"
-            ]
+            ],
+            "description": "NEEDS_INPUT: 필수 정보 부족 또는 미확인 HARD/변경 의도. READY: 모두 해소, questions=[]; 코스 생성은 서버 READY에서만 허용."
           },
           "profile": {
             "$ref": "#/components/schemas/Profile"
