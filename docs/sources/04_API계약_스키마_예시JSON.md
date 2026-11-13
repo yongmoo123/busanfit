@@ -5606,6 +5606,8 @@ JSON Schema(OpenAPI 3.1). $ref는 아래 components.schemas 이름을 가리킨�
 
 ## 2026-11-11 프론트 리뷰 보완: 같은 이동수단 수락
 
+2026-11-13 FR-009 구현 보완: 코스 요청 필드는 profileRevision이며, READY·요청 제한·revision을 검사하고 종료 전 다시 확인한다. 생성과 후보 부족은 프로필 revision을 변경하지 않는다. 최대 3회 교체·재배치 후 유효한 2~6곳은 SUCCESS, 두 곳 미만이면 INSUFFICIENT_PLACES/course=null이다. 외부 의존성 오류·출처 누락은 기존 500 INTERNAL_ERROR이며 빈 후보나 AI 장애로 바꾸지 않는다. 실제 경로 UNVERIFIED·가격 UNKNOWN·기존 JSON 필드를 유지한다. 상세는 contracts/API_CONTRACT.md 및 docs/ISSUE23_COURSES_IMPLEMENTATION.md를 따른다.
+
 2026-11-13 FR-005·006 보완: 카드에서 transport=null/UNSET이면 지원되는 WALK/DEFAULT를 적용하되 미지원 이동수단 확인 대기는 보존한다. mobility는 명시적 []를 포함해 값이 있으면 HARD만 허용한다. 예산의 제한 없음은 null/UNSET을 유지하는 기본 동작으로 안내하며 0원·무료와 구분한다. 체류시간·부상 안내 설정은 config/defaults.json, 서버 내부 체류시간 계산은 constraints/defaults.py를 따른다. 외부 프로필 필드는 추가하지 않았다. 일반 capabilities 활성화는 실제 #22 연결·검증 이후다.
 
 2026-11-13 DEC-022 보완: 혼자·친구·연인·기타의 영유아 미언급은 false로 처리한다. 혼자=1명, 연인=2명이며 그 밖의 인원 미확인만으로 질문하거나 생성 준비를 막지 않는다. 가족·아이 언급에서 영유아 여부 미확인이면 companions 질문을 한 번 표시하고, 다음 채팅에도 답이 없으면 false와 UNCONFIRMED_CHANGE 안내를 적용한다. 실제 표시한 질문만 1회로 계산한다. count 필수와 외부 JSON 형식은 유지하며, 영유아 명시 시 인원 미확인이어도 DEC-020을 적용한다. 이동제약·제외 카테고리 추가 언급은 기존 HARD 목록에 합친다. 자세한 규칙은 contracts/API_CONTRACT.md를 따른다.

@@ -1,0 +1,1633 @@
+{
+  "syntheticOnly": true,
+  "realDataVerified": false,
+  "realTravelVerified": false,
+  "referenceDate": "2026-11-13",
+  "scenarioResults": [
+    {
+      "id": "GENERAL",
+      "items": 6,
+      "legs": 5,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "httpRequests": 10,
+      "latencyMs": {
+        "min": 12.356899998849258,
+        "max": 23.120800004107878,
+        "mean": 15.861270006280392
+      },
+      "excludedUnknown": {
+        "count": 1,
+        "fields": [
+          "openHours"
+        ]
+      },
+      "sampleResponse": {
+        "suggestions": [],
+        "warnings": [
+          {
+            "code": "ROUTE_ACCESSIBILITY_UNVERIFIED",
+            "message": "장소의 접근성 정보만 확인했어요. 실제 이동 경로의 계단·경사는 확인하지 못했어요.",
+            "placeIds": []
+          },
+          {
+            "code": "TRAVEL_SCOPE",
+            "message": "첫 장소 이전과 마지막 장소 이후의 이동시간은 포함하지 않아요.",
+            "placeIds": []
+          },
+          {
+            "code": "PRICE_UNKNOWN",
+            "message": "가격 정보가 없어 전체 비용을 추정하지 않았어요.",
+            "placeIds": []
+          },
+          {
+            "code": "CANDIDATES_REJECTED",
+            "message": "조건을 충족하지 않거나 확인할 수 없는 후보를 제외했어요.",
+            "placeIds": []
+          }
+        ],
+        "excludedUnknown": {
+          "count": 1,
+          "fields": [
+            "openHours"
+          ]
+        },
+        "sessionExpiresAt": "2026-11-13T14:26:27.032703Z",
+        "requestId": "8c100aac-32c7-432c-b86e-27e7d8ace06c",
+        "status": "SUCCESS",
+        "course": {
+          "id": "26fe5ee5-9d27-4bc0-b440-25f63eafd60e",
+          "profileRevision": 1,
+          "createdAt": "2026-11-13T13:56:27.032703Z",
+          "availableWindow": {
+            "startAt": "2026-11-13T09:00:00+09:00",
+            "endAt": "2026-11-13T20:00:00+09:00"
+          },
+          "startAt": "2026-11-13T09:00:00+09:00",
+          "endAt": "2026-11-13T15:25:00+09:00",
+          "items": [
+            {
+              "id": "item-01",
+              "order": 1,
+              "place": {
+                "id": "synthetic:1",
+                "name": "[가상] 장소 1",
+                "category": "CAFE",
+                "area": "HAEUNDAE",
+                "address": "[가상] 해운대 테스트 주소",
+                "coordinates": {
+                  "latitude": 35.16,
+                  "longitude": 129.16
+                },
+                "indoor": true,
+                "openHours": {
+                  "status": "KNOWN",
+                  "description": "[가상] 정규화 운영시간"
+                },
+                "price": {
+                  "status": "UNKNOWN",
+                  "amount": null,
+                  "currency": "KRW",
+                  "basis": "UNKNOWN"
+                },
+                "defaultStayMinutes": 60,
+                "accessibility": {
+                  "grade": "VERIFIED",
+                  "wheelchair": true,
+                  "stroller": true,
+                  "elevator": null,
+                  "accessibleToilet": null,
+                  "evidence": [
+                    {
+                      "field": "wheelchair",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    },
+                    {
+                      "field": "stroller",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    }
+                  ]
+                },
+                "sourceIds": [
+                  "synthetic-source"
+                ]
+              },
+              "startAt": "2026-11-13T09:00:00+09:00",
+              "endAt": "2026-11-13T10:00:00+09:00",
+              "stayMinutes": 60,
+              "reason": "등록된 장소 정보와 이용 시간대를 기준으로 배치했어요.",
+              "reasonMethod": "TEMPLATE",
+              "isAnchor": false
+            },
+            {
+              "id": "item-02",
+              "order": 2,
+              "place": {
+                "id": "synthetic:2",
+                "name": "[가상] 장소 2",
+                "category": "CAFE",
+                "area": "HAEUNDAE",
+                "address": "[가상] 해운대 테스트 주소",
+                "coordinates": {
+                  "latitude": 35.16,
+                  "longitude": 129.16
+                },
+                "indoor": true,
+                "openHours": {
+                  "status": "KNOWN",
+                  "description": "[가상] 정규화 운영시간"
+                },
+                "price": {
+                  "status": "UNKNOWN",
+                  "amount": null,
+                  "currency": "KRW",
+                  "basis": "UNKNOWN"
+                },
+                "defaultStayMinutes": 60,
+                "accessibility": {
+                  "grade": "VERIFIED",
+                  "wheelchair": true,
+                  "stroller": true,
+                  "elevator": null,
+                  "accessibleToilet": null,
+                  "evidence": [
+                    {
+                      "field": "wheelchair",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    },
+                    {
+                      "field": "stroller",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    }
+                  ]
+                },
+                "sourceIds": [
+                  "synthetic-source"
+                ]
+              },
+              "startAt": "2026-11-13T10:05:00+09:00",
+              "endAt": "2026-11-13T11:05:00+09:00",
+              "stayMinutes": 60,
+              "reason": "등록된 장소 정보와 이용 시간대를 기준으로 배치했어요.",
+              "reasonMethod": "TEMPLATE",
+              "isAnchor": false
+            },
+            {
+              "id": "item-03",
+              "order": 3,
+              "place": {
+                "id": "synthetic:3",
+                "name": "[가상] 장소 3",
+                "category": "CAFE",
+                "area": "HAEUNDAE",
+                "address": "[가상] 해운대 테스트 주소",
+                "coordinates": {
+                  "latitude": 35.16,
+                  "longitude": 129.16
+                },
+                "indoor": true,
+                "openHours": {
+                  "status": "KNOWN",
+                  "description": "[가상] 정규화 운영시간"
+                },
+                "price": {
+                  "status": "UNKNOWN",
+                  "amount": null,
+                  "currency": "KRW",
+                  "basis": "UNKNOWN"
+                },
+                "defaultStayMinutes": 60,
+                "accessibility": {
+                  "grade": "VERIFIED",
+                  "wheelchair": true,
+                  "stroller": true,
+                  "elevator": null,
+                  "accessibleToilet": null,
+                  "evidence": [
+                    {
+                      "field": "wheelchair",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    },
+                    {
+                      "field": "stroller",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    }
+                  ]
+                },
+                "sourceIds": [
+                  "synthetic-source"
+                ]
+              },
+              "startAt": "2026-11-13T11:10:00+09:00",
+              "endAt": "2026-11-13T12:10:00+09:00",
+              "stayMinutes": 60,
+              "reason": "등록된 장소 정보와 이용 시간대를 기준으로 배치했어요.",
+              "reasonMethod": "TEMPLATE",
+              "isAnchor": false
+            },
+            {
+              "id": "item-04",
+              "order": 4,
+              "place": {
+                "id": "synthetic:4",
+                "name": "[가상] 장소 4",
+                "category": "CAFE",
+                "area": "HAEUNDAE",
+                "address": "[가상] 해운대 테스트 주소",
+                "coordinates": {
+                  "latitude": 35.16,
+                  "longitude": 129.16
+                },
+                "indoor": true,
+                "openHours": {
+                  "status": "KNOWN",
+                  "description": "[가상] 정규화 운영시간"
+                },
+                "price": {
+                  "status": "UNKNOWN",
+                  "amount": null,
+                  "currency": "KRW",
+                  "basis": "UNKNOWN"
+                },
+                "defaultStayMinutes": 60,
+                "accessibility": {
+                  "grade": "VERIFIED",
+                  "wheelchair": true,
+                  "stroller": true,
+                  "elevator": null,
+                  "accessibleToilet": null,
+                  "evidence": [
+                    {
+                      "field": "wheelchair",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    },
+                    {
+                      "field": "stroller",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    }
+                  ]
+                },
+                "sourceIds": [
+                  "synthetic-source"
+                ]
+              },
+              "startAt": "2026-11-13T12:15:00+09:00",
+              "endAt": "2026-11-13T13:15:00+09:00",
+              "stayMinutes": 60,
+              "reason": "등록된 장소 정보와 이용 시간대를 기준으로 배치했어요.",
+              "reasonMethod": "TEMPLATE",
+              "isAnchor": false
+            },
+            {
+              "id": "item-05",
+              "order": 5,
+              "place": {
+                "id": "synthetic:5",
+                "name": "[가상] 장소 5",
+                "category": "CAFE",
+                "area": "HAEUNDAE",
+                "address": "[가상] 해운대 테스트 주소",
+                "coordinates": {
+                  "latitude": 35.16,
+                  "longitude": 129.16
+                },
+                "indoor": true,
+                "openHours": {
+                  "status": "KNOWN",
+                  "description": "[가상] 정규화 운영시간"
+                },
+                "price": {
+                  "status": "UNKNOWN",
+                  "amount": null,
+                  "currency": "KRW",
+                  "basis": "UNKNOWN"
+                },
+                "defaultStayMinutes": 60,
+                "accessibility": {
+                  "grade": "VERIFIED",
+                  "wheelchair": true,
+                  "stroller": true,
+                  "elevator": null,
+                  "accessibleToilet": null,
+                  "evidence": [
+                    {
+                      "field": "wheelchair",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    },
+                    {
+                      "field": "stroller",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    }
+                  ]
+                },
+                "sourceIds": [
+                  "synthetic-source"
+                ]
+              },
+              "startAt": "2026-11-13T13:20:00+09:00",
+              "endAt": "2026-11-13T14:20:00+09:00",
+              "stayMinutes": 60,
+              "reason": "등록된 장소 정보와 이용 시간대를 기준으로 배치했어요.",
+              "reasonMethod": "TEMPLATE",
+              "isAnchor": false
+            },
+            {
+              "id": "item-06",
+              "order": 6,
+              "place": {
+                "id": "synthetic:7",
+                "name": "[가상] 장소 7",
+                "category": "CAFE",
+                "area": "HAEUNDAE",
+                "address": "[가상] 해운대 테스트 주소",
+                "coordinates": {
+                  "latitude": 35.16,
+                  "longitude": 129.16
+                },
+                "indoor": true,
+                "openHours": {
+                  "status": "KNOWN",
+                  "description": "[가상] 정규화 운영시간"
+                },
+                "price": {
+                  "status": "UNKNOWN",
+                  "amount": null,
+                  "currency": "KRW",
+                  "basis": "UNKNOWN"
+                },
+                "defaultStayMinutes": 60,
+                "accessibility": {
+                  "grade": "VERIFIED",
+                  "wheelchair": null,
+                  "stroller": true,
+                  "elevator": null,
+                  "accessibleToilet": null,
+                  "evidence": [
+                    {
+                      "field": "stroller",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    }
+                  ]
+                },
+                "sourceIds": [
+                  "synthetic-source"
+                ]
+              },
+              "startAt": "2026-11-13T14:25:00+09:00",
+              "endAt": "2026-11-13T15:25:00+09:00",
+              "stayMinutes": 60,
+              "reason": "등록된 장소 정보와 이용 시간대를 기준으로 배치했어요.",
+              "reasonMethod": "TEMPLATE",
+              "isAnchor": false
+            }
+          ],
+          "legs": [
+            {
+              "fromItemId": "item-01",
+              "toItemId": "item-02",
+              "mode": "WALK",
+              "minutes": 5,
+              "method": "DISTANCE_ESTIMATE",
+              "isEstimate": true
+            },
+            {
+              "fromItemId": "item-02",
+              "toItemId": "item-03",
+              "mode": "WALK",
+              "minutes": 5,
+              "method": "DISTANCE_ESTIMATE",
+              "isEstimate": true
+            },
+            {
+              "fromItemId": "item-03",
+              "toItemId": "item-04",
+              "mode": "WALK",
+              "minutes": 5,
+              "method": "DISTANCE_ESTIMATE",
+              "isEstimate": true
+            },
+            {
+              "fromItemId": "item-04",
+              "toItemId": "item-05",
+              "mode": "WALK",
+              "minutes": 5,
+              "method": "DISTANCE_ESTIMATE",
+              "isEstimate": true
+            },
+            {
+              "fromItemId": "item-05",
+              "toItemId": "item-06",
+              "mode": "WALK",
+              "minutes": 5,
+              "method": "DISTANCE_ESTIMATE",
+              "isEstimate": true
+            }
+          ],
+          "summary": {
+            "totalStayMinutes": 360,
+            "totalTravelMinutes": 25,
+            "totalWaitingMinutes": 0,
+            "totalMinutes": 385,
+            "estimatedCost": {
+              "status": "UNKNOWN",
+              "amount": null,
+              "currency": "KRW",
+              "basis": "UNKNOWN"
+            }
+          },
+          "validation": {
+            "status": "PASSED",
+            "checkedHardConstraints": [
+              "placeIds",
+              "area",
+              "timeWindow",
+              "openHours",
+              "transport",
+              "searchRadius",
+              "excludedCategories"
+            ],
+            "unverifiedFields": [
+              "price",
+              "routeAccessibility"
+            ],
+            "routeAccessibility": "UNVERIFIED"
+          },
+          "sources": [
+            {
+              "id": "synthetic-source",
+              "provider": "[가상] 제공기관",
+              "datasetName": "[가상] 코스 테스트 데이터",
+              "url": "https://example.invalid/synthetic",
+              "license": null,
+              "baseDate": null,
+              "retrievedAt": "2026-11-13T10:00:00+09:00"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "WHEELCHAIR",
+      "items": 5,
+      "legs": 4,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "httpRequests": 10,
+      "latencyMs": {
+        "min": 8.00649999291636,
+        "max": 19.67720000538975,
+        "mean": 16.088859998853877
+      },
+      "excludedUnknown": {
+        "count": 2,
+        "fields": [
+          "mobility.wheelchair",
+          "openHours"
+        ]
+      },
+      "sampleResponse": {
+        "suggestions": [],
+        "warnings": [
+          {
+            "code": "ROUTE_ACCESSIBILITY_UNVERIFIED",
+            "message": "장소의 접근성 정보만 확인했어요. 실제 이동 경로의 계단·경사는 확인하지 못했어요.",
+            "placeIds": []
+          },
+          {
+            "code": "TRAVEL_SCOPE",
+            "message": "첫 장소 이전과 마지막 장소 이후의 이동시간은 포함하지 않아요.",
+            "placeIds": []
+          },
+          {
+            "code": "PRICE_UNKNOWN",
+            "message": "가격 정보가 없어 전체 비용을 추정하지 않았어요.",
+            "placeIds": []
+          },
+          {
+            "code": "CANDIDATES_REJECTED",
+            "message": "조건을 충족하지 않거나 확인할 수 없는 후보를 제외했어요.",
+            "placeIds": []
+          }
+        ],
+        "excludedUnknown": {
+          "count": 2,
+          "fields": [
+            "mobility.wheelchair",
+            "openHours"
+          ]
+        },
+        "sessionExpiresAt": "2026-11-13T14:26:27.247210Z",
+        "requestId": "fabd58b8-63f9-4e88-8027-120b92cd9bc1",
+        "status": "SUCCESS",
+        "course": {
+          "id": "02b4275e-feec-46b6-96f2-4664be268d86",
+          "profileRevision": 1,
+          "createdAt": "2026-11-13T13:56:27.247210Z",
+          "availableWindow": {
+            "startAt": "2026-11-13T09:00:00+09:00",
+            "endAt": "2026-11-13T20:00:00+09:00"
+          },
+          "startAt": "2026-11-13T09:00:00+09:00",
+          "endAt": "2026-11-13T14:20:00+09:00",
+          "items": [
+            {
+              "id": "item-01",
+              "order": 1,
+              "place": {
+                "id": "synthetic:1",
+                "name": "[가상] 장소 1",
+                "category": "CAFE",
+                "area": "HAEUNDAE",
+                "address": "[가상] 해운대 테스트 주소",
+                "coordinates": {
+                  "latitude": 35.16,
+                  "longitude": 129.16
+                },
+                "indoor": true,
+                "openHours": {
+                  "status": "KNOWN",
+                  "description": "[가상] 정규화 운영시간"
+                },
+                "price": {
+                  "status": "UNKNOWN",
+                  "amount": null,
+                  "currency": "KRW",
+                  "basis": "UNKNOWN"
+                },
+                "defaultStayMinutes": 60,
+                "accessibility": {
+                  "grade": "VERIFIED",
+                  "wheelchair": true,
+                  "stroller": true,
+                  "elevator": null,
+                  "accessibleToilet": null,
+                  "evidence": [
+                    {
+                      "field": "wheelchair",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    },
+                    {
+                      "field": "stroller",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    }
+                  ]
+                },
+                "sourceIds": [
+                  "synthetic-source"
+                ]
+              },
+              "startAt": "2026-11-13T09:00:00+09:00",
+              "endAt": "2026-11-13T10:00:00+09:00",
+              "stayMinutes": 60,
+              "reason": "등록된 장소 정보와 이용 시간대를 기준으로 배치했어요.",
+              "reasonMethod": "TEMPLATE",
+              "isAnchor": false
+            },
+            {
+              "id": "item-02",
+              "order": 2,
+              "place": {
+                "id": "synthetic:2",
+                "name": "[가상] 장소 2",
+                "category": "CAFE",
+                "area": "HAEUNDAE",
+                "address": "[가상] 해운대 테스트 주소",
+                "coordinates": {
+                  "latitude": 35.16,
+                  "longitude": 129.16
+                },
+                "indoor": true,
+                "openHours": {
+                  "status": "KNOWN",
+                  "description": "[가상] 정규화 운영시간"
+                },
+                "price": {
+                  "status": "UNKNOWN",
+                  "amount": null,
+                  "currency": "KRW",
+                  "basis": "UNKNOWN"
+                },
+                "defaultStayMinutes": 60,
+                "accessibility": {
+                  "grade": "VERIFIED",
+                  "wheelchair": true,
+                  "stroller": true,
+                  "elevator": null,
+                  "accessibleToilet": null,
+                  "evidence": [
+                    {
+                      "field": "wheelchair",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    },
+                    {
+                      "field": "stroller",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    }
+                  ]
+                },
+                "sourceIds": [
+                  "synthetic-source"
+                ]
+              },
+              "startAt": "2026-11-13T10:05:00+09:00",
+              "endAt": "2026-11-13T11:05:00+09:00",
+              "stayMinutes": 60,
+              "reason": "등록된 장소 정보와 이용 시간대를 기준으로 배치했어요.",
+              "reasonMethod": "TEMPLATE",
+              "isAnchor": false
+            },
+            {
+              "id": "item-03",
+              "order": 3,
+              "place": {
+                "id": "synthetic:3",
+                "name": "[가상] 장소 3",
+                "category": "CAFE",
+                "area": "HAEUNDAE",
+                "address": "[가상] 해운대 테스트 주소",
+                "coordinates": {
+                  "latitude": 35.16,
+                  "longitude": 129.16
+                },
+                "indoor": true,
+                "openHours": {
+                  "status": "KNOWN",
+                  "description": "[가상] 정규화 운영시간"
+                },
+                "price": {
+                  "status": "UNKNOWN",
+                  "amount": null,
+                  "currency": "KRW",
+                  "basis": "UNKNOWN"
+                },
+                "defaultStayMinutes": 60,
+                "accessibility": {
+                  "grade": "VERIFIED",
+                  "wheelchair": true,
+                  "stroller": true,
+                  "elevator": null,
+                  "accessibleToilet": null,
+                  "evidence": [
+                    {
+                      "field": "wheelchair",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    },
+                    {
+                      "field": "stroller",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    }
+                  ]
+                },
+                "sourceIds": [
+                  "synthetic-source"
+                ]
+              },
+              "startAt": "2026-11-13T11:10:00+09:00",
+              "endAt": "2026-11-13T12:10:00+09:00",
+              "stayMinutes": 60,
+              "reason": "등록된 장소 정보와 이용 시간대를 기준으로 배치했어요.",
+              "reasonMethod": "TEMPLATE",
+              "isAnchor": false
+            },
+            {
+              "id": "item-04",
+              "order": 4,
+              "place": {
+                "id": "synthetic:4",
+                "name": "[가상] 장소 4",
+                "category": "CAFE",
+                "area": "HAEUNDAE",
+                "address": "[가상] 해운대 테스트 주소",
+                "coordinates": {
+                  "latitude": 35.16,
+                  "longitude": 129.16
+                },
+                "indoor": true,
+                "openHours": {
+                  "status": "KNOWN",
+                  "description": "[가상] 정규화 운영시간"
+                },
+                "price": {
+                  "status": "UNKNOWN",
+                  "amount": null,
+                  "currency": "KRW",
+                  "basis": "UNKNOWN"
+                },
+                "defaultStayMinutes": 60,
+                "accessibility": {
+                  "grade": "VERIFIED",
+                  "wheelchair": true,
+                  "stroller": true,
+                  "elevator": null,
+                  "accessibleToilet": null,
+                  "evidence": [
+                    {
+                      "field": "wheelchair",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    },
+                    {
+                      "field": "stroller",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    }
+                  ]
+                },
+                "sourceIds": [
+                  "synthetic-source"
+                ]
+              },
+              "startAt": "2026-11-13T12:15:00+09:00",
+              "endAt": "2026-11-13T13:15:00+09:00",
+              "stayMinutes": 60,
+              "reason": "등록된 장소 정보와 이용 시간대를 기준으로 배치했어요.",
+              "reasonMethod": "TEMPLATE",
+              "isAnchor": false
+            },
+            {
+              "id": "item-05",
+              "order": 5,
+              "place": {
+                "id": "synthetic:5",
+                "name": "[가상] 장소 5",
+                "category": "CAFE",
+                "area": "HAEUNDAE",
+                "address": "[가상] 해운대 테스트 주소",
+                "coordinates": {
+                  "latitude": 35.16,
+                  "longitude": 129.16
+                },
+                "indoor": true,
+                "openHours": {
+                  "status": "KNOWN",
+                  "description": "[가상] 정규화 운영시간"
+                },
+                "price": {
+                  "status": "UNKNOWN",
+                  "amount": null,
+                  "currency": "KRW",
+                  "basis": "UNKNOWN"
+                },
+                "defaultStayMinutes": 60,
+                "accessibility": {
+                  "grade": "VERIFIED",
+                  "wheelchair": true,
+                  "stroller": true,
+                  "elevator": null,
+                  "accessibleToilet": null,
+                  "evidence": [
+                    {
+                      "field": "wheelchair",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    },
+                    {
+                      "field": "stroller",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    }
+                  ]
+                },
+                "sourceIds": [
+                  "synthetic-source"
+                ]
+              },
+              "startAt": "2026-11-13T13:20:00+09:00",
+              "endAt": "2026-11-13T14:20:00+09:00",
+              "stayMinutes": 60,
+              "reason": "등록된 장소 정보와 이용 시간대를 기준으로 배치했어요.",
+              "reasonMethod": "TEMPLATE",
+              "isAnchor": false
+            }
+          ],
+          "legs": [
+            {
+              "fromItemId": "item-01",
+              "toItemId": "item-02",
+              "mode": "WALK",
+              "minutes": 5,
+              "method": "DISTANCE_ESTIMATE",
+              "isEstimate": true
+            },
+            {
+              "fromItemId": "item-02",
+              "toItemId": "item-03",
+              "mode": "WALK",
+              "minutes": 5,
+              "method": "DISTANCE_ESTIMATE",
+              "isEstimate": true
+            },
+            {
+              "fromItemId": "item-03",
+              "toItemId": "item-04",
+              "mode": "WALK",
+              "minutes": 5,
+              "method": "DISTANCE_ESTIMATE",
+              "isEstimate": true
+            },
+            {
+              "fromItemId": "item-04",
+              "toItemId": "item-05",
+              "mode": "WALK",
+              "minutes": 5,
+              "method": "DISTANCE_ESTIMATE",
+              "isEstimate": true
+            }
+          ],
+          "summary": {
+            "totalStayMinutes": 300,
+            "totalTravelMinutes": 20,
+            "totalWaitingMinutes": 0,
+            "totalMinutes": 320,
+            "estimatedCost": {
+              "status": "UNKNOWN",
+              "amount": null,
+              "currency": "KRW",
+              "basis": "UNKNOWN"
+            }
+          },
+          "validation": {
+            "status": "PASSED",
+            "checkedHardConstraints": [
+              "placeIds",
+              "area",
+              "timeWindow",
+              "openHours",
+              "transport",
+              "searchRadius",
+              "excludedCategories",
+              "mobility"
+            ],
+            "unverifiedFields": [
+              "price",
+              "routeAccessibility"
+            ],
+            "routeAccessibility": "UNVERIFIED"
+          },
+          "sources": [
+            {
+              "id": "synthetic-source",
+              "provider": "[가상] 제공기관",
+              "datasetName": "[가상] 코스 테스트 데이터",
+              "url": "https://example.invalid/synthetic",
+              "license": null,
+              "baseDate": null,
+              "retrievedAt": "2026-11-13T10:00:00+09:00"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "STROLLER",
+      "items": 6,
+      "legs": 5,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "httpRequests": 10,
+      "latencyMs": {
+        "min": 9.833099989918992,
+        "max": 15.465800010133535,
+        "mean": 12.502949999179691
+      },
+      "excludedUnknown": {
+        "count": 2,
+        "fields": [
+          "mobility.stroller",
+          "openHours"
+        ]
+      },
+      "sampleResponse": {
+        "suggestions": [],
+        "warnings": [
+          {
+            "code": "ROUTE_ACCESSIBILITY_UNVERIFIED",
+            "message": "장소의 접근성 정보만 확인했어요. 실제 이동 경로의 계단·경사는 확인하지 못했어요.",
+            "placeIds": []
+          },
+          {
+            "code": "TRAVEL_SCOPE",
+            "message": "첫 장소 이전과 마지막 장소 이후의 이동시간은 포함하지 않아요.",
+            "placeIds": []
+          },
+          {
+            "code": "PRICE_UNKNOWN",
+            "message": "가격 정보가 없어 전체 비용을 추정하지 않았어요.",
+            "placeIds": []
+          },
+          {
+            "code": "CANDIDATES_REJECTED",
+            "message": "조건을 충족하지 않거나 확인할 수 없는 후보를 제외했어요.",
+            "placeIds": []
+          }
+        ],
+        "excludedUnknown": {
+          "count": 2,
+          "fields": [
+            "mobility.stroller",
+            "openHours"
+          ]
+        },
+        "sessionExpiresAt": "2026-11-13T14:26:27.424637Z",
+        "requestId": "ed0f88c7-4184-4974-8af9-f222e866aa91",
+        "status": "SUCCESS",
+        "course": {
+          "id": "3c62dd01-3f0d-4f8e-bac4-76c84e129612",
+          "profileRevision": 1,
+          "createdAt": "2026-11-13T13:56:27.414843Z",
+          "availableWindow": {
+            "startAt": "2026-11-13T09:00:00+09:00",
+            "endAt": "2026-11-13T20:00:00+09:00"
+          },
+          "startAt": "2026-11-13T09:00:00+09:00",
+          "endAt": "2026-11-13T15:25:00+09:00",
+          "items": [
+            {
+              "id": "item-01",
+              "order": 1,
+              "place": {
+                "id": "synthetic:1",
+                "name": "[가상] 장소 1",
+                "category": "CAFE",
+                "area": "HAEUNDAE",
+                "address": "[가상] 해운대 테스트 주소",
+                "coordinates": {
+                  "latitude": 35.16,
+                  "longitude": 129.16
+                },
+                "indoor": true,
+                "openHours": {
+                  "status": "KNOWN",
+                  "description": "[가상] 정규화 운영시간"
+                },
+                "price": {
+                  "status": "UNKNOWN",
+                  "amount": null,
+                  "currency": "KRW",
+                  "basis": "UNKNOWN"
+                },
+                "defaultStayMinutes": 60,
+                "accessibility": {
+                  "grade": "VERIFIED",
+                  "wheelchair": true,
+                  "stroller": true,
+                  "elevator": null,
+                  "accessibleToilet": null,
+                  "evidence": [
+                    {
+                      "field": "wheelchair",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    },
+                    {
+                      "field": "stroller",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    }
+                  ]
+                },
+                "sourceIds": [
+                  "synthetic-source"
+                ]
+              },
+              "startAt": "2026-11-13T09:00:00+09:00",
+              "endAt": "2026-11-13T10:00:00+09:00",
+              "stayMinutes": 60,
+              "reason": "등록된 장소 정보와 이용 시간대를 기준으로 배치했어요.",
+              "reasonMethod": "TEMPLATE",
+              "isAnchor": false
+            },
+            {
+              "id": "item-02",
+              "order": 2,
+              "place": {
+                "id": "synthetic:2",
+                "name": "[가상] 장소 2",
+                "category": "CAFE",
+                "area": "HAEUNDAE",
+                "address": "[가상] 해운대 테스트 주소",
+                "coordinates": {
+                  "latitude": 35.16,
+                  "longitude": 129.16
+                },
+                "indoor": true,
+                "openHours": {
+                  "status": "KNOWN",
+                  "description": "[가상] 정규화 운영시간"
+                },
+                "price": {
+                  "status": "UNKNOWN",
+                  "amount": null,
+                  "currency": "KRW",
+                  "basis": "UNKNOWN"
+                },
+                "defaultStayMinutes": 60,
+                "accessibility": {
+                  "grade": "VERIFIED",
+                  "wheelchair": true,
+                  "stroller": true,
+                  "elevator": null,
+                  "accessibleToilet": null,
+                  "evidence": [
+                    {
+                      "field": "wheelchair",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    },
+                    {
+                      "field": "stroller",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    }
+                  ]
+                },
+                "sourceIds": [
+                  "synthetic-source"
+                ]
+              },
+              "startAt": "2026-11-13T10:05:00+09:00",
+              "endAt": "2026-11-13T11:05:00+09:00",
+              "stayMinutes": 60,
+              "reason": "등록된 장소 정보와 이용 시간대를 기준으로 배치했어요.",
+              "reasonMethod": "TEMPLATE",
+              "isAnchor": false
+            },
+            {
+              "id": "item-03",
+              "order": 3,
+              "place": {
+                "id": "synthetic:3",
+                "name": "[가상] 장소 3",
+                "category": "CAFE",
+                "area": "HAEUNDAE",
+                "address": "[가상] 해운대 테스트 주소",
+                "coordinates": {
+                  "latitude": 35.16,
+                  "longitude": 129.16
+                },
+                "indoor": true,
+                "openHours": {
+                  "status": "KNOWN",
+                  "description": "[가상] 정규화 운영시간"
+                },
+                "price": {
+                  "status": "UNKNOWN",
+                  "amount": null,
+                  "currency": "KRW",
+                  "basis": "UNKNOWN"
+                },
+                "defaultStayMinutes": 60,
+                "accessibility": {
+                  "grade": "VERIFIED",
+                  "wheelchair": true,
+                  "stroller": true,
+                  "elevator": null,
+                  "accessibleToilet": null,
+                  "evidence": [
+                    {
+                      "field": "wheelchair",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    },
+                    {
+                      "field": "stroller",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    }
+                  ]
+                },
+                "sourceIds": [
+                  "synthetic-source"
+                ]
+              },
+              "startAt": "2026-11-13T11:10:00+09:00",
+              "endAt": "2026-11-13T12:10:00+09:00",
+              "stayMinutes": 60,
+              "reason": "등록된 장소 정보와 이용 시간대를 기준으로 배치했어요.",
+              "reasonMethod": "TEMPLATE",
+              "isAnchor": false
+            },
+            {
+              "id": "item-04",
+              "order": 4,
+              "place": {
+                "id": "synthetic:4",
+                "name": "[가상] 장소 4",
+                "category": "CAFE",
+                "area": "HAEUNDAE",
+                "address": "[가상] 해운대 테스트 주소",
+                "coordinates": {
+                  "latitude": 35.16,
+                  "longitude": 129.16
+                },
+                "indoor": true,
+                "openHours": {
+                  "status": "KNOWN",
+                  "description": "[가상] 정규화 운영시간"
+                },
+                "price": {
+                  "status": "UNKNOWN",
+                  "amount": null,
+                  "currency": "KRW",
+                  "basis": "UNKNOWN"
+                },
+                "defaultStayMinutes": 60,
+                "accessibility": {
+                  "grade": "VERIFIED",
+                  "wheelchair": true,
+                  "stroller": true,
+                  "elevator": null,
+                  "accessibleToilet": null,
+                  "evidence": [
+                    {
+                      "field": "wheelchair",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    },
+                    {
+                      "field": "stroller",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    }
+                  ]
+                },
+                "sourceIds": [
+                  "synthetic-source"
+                ]
+              },
+              "startAt": "2026-11-13T12:15:00+09:00",
+              "endAt": "2026-11-13T13:15:00+09:00",
+              "stayMinutes": 60,
+              "reason": "등록된 장소 정보와 이용 시간대를 기준으로 배치했어요.",
+              "reasonMethod": "TEMPLATE",
+              "isAnchor": false
+            },
+            {
+              "id": "item-05",
+              "order": 5,
+              "place": {
+                "id": "synthetic:5",
+                "name": "[가상] 장소 5",
+                "category": "CAFE",
+                "area": "HAEUNDAE",
+                "address": "[가상] 해운대 테스트 주소",
+                "coordinates": {
+                  "latitude": 35.16,
+                  "longitude": 129.16
+                },
+                "indoor": true,
+                "openHours": {
+                  "status": "KNOWN",
+                  "description": "[가상] 정규화 운영시간"
+                },
+                "price": {
+                  "status": "UNKNOWN",
+                  "amount": null,
+                  "currency": "KRW",
+                  "basis": "UNKNOWN"
+                },
+                "defaultStayMinutes": 60,
+                "accessibility": {
+                  "grade": "VERIFIED",
+                  "wheelchair": true,
+                  "stroller": true,
+                  "elevator": null,
+                  "accessibleToilet": null,
+                  "evidence": [
+                    {
+                      "field": "wheelchair",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    },
+                    {
+                      "field": "stroller",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    }
+                  ]
+                },
+                "sourceIds": [
+                  "synthetic-source"
+                ]
+              },
+              "startAt": "2026-11-13T13:20:00+09:00",
+              "endAt": "2026-11-13T14:20:00+09:00",
+              "stayMinutes": 60,
+              "reason": "등록된 장소 정보와 이용 시간대를 기준으로 배치했어요.",
+              "reasonMethod": "TEMPLATE",
+              "isAnchor": false
+            },
+            {
+              "id": "item-06",
+              "order": 6,
+              "place": {
+                "id": "synthetic:7",
+                "name": "[가상] 장소 7",
+                "category": "CAFE",
+                "area": "HAEUNDAE",
+                "address": "[가상] 해운대 테스트 주소",
+                "coordinates": {
+                  "latitude": 35.16,
+                  "longitude": 129.16
+                },
+                "indoor": true,
+                "openHours": {
+                  "status": "KNOWN",
+                  "description": "[가상] 정규화 운영시간"
+                },
+                "price": {
+                  "status": "UNKNOWN",
+                  "amount": null,
+                  "currency": "KRW",
+                  "basis": "UNKNOWN"
+                },
+                "defaultStayMinutes": 60,
+                "accessibility": {
+                  "grade": "VERIFIED",
+                  "wheelchair": null,
+                  "stroller": true,
+                  "elevator": null,
+                  "accessibleToilet": null,
+                  "evidence": [
+                    {
+                      "field": "stroller",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    }
+                  ]
+                },
+                "sourceIds": [
+                  "synthetic-source"
+                ]
+              },
+              "startAt": "2026-11-13T14:25:00+09:00",
+              "endAt": "2026-11-13T15:25:00+09:00",
+              "stayMinutes": 60,
+              "reason": "등록된 장소 정보와 이용 시간대를 기준으로 배치했어요.",
+              "reasonMethod": "TEMPLATE",
+              "isAnchor": false
+            }
+          ],
+          "legs": [
+            {
+              "fromItemId": "item-01",
+              "toItemId": "item-02",
+              "mode": "WALK",
+              "minutes": 5,
+              "method": "DISTANCE_ESTIMATE",
+              "isEstimate": true
+            },
+            {
+              "fromItemId": "item-02",
+              "toItemId": "item-03",
+              "mode": "WALK",
+              "minutes": 5,
+              "method": "DISTANCE_ESTIMATE",
+              "isEstimate": true
+            },
+            {
+              "fromItemId": "item-03",
+              "toItemId": "item-04",
+              "mode": "WALK",
+              "minutes": 5,
+              "method": "DISTANCE_ESTIMATE",
+              "isEstimate": true
+            },
+            {
+              "fromItemId": "item-04",
+              "toItemId": "item-05",
+              "mode": "WALK",
+              "minutes": 5,
+              "method": "DISTANCE_ESTIMATE",
+              "isEstimate": true
+            },
+            {
+              "fromItemId": "item-05",
+              "toItemId": "item-06",
+              "mode": "WALK",
+              "minutes": 5,
+              "method": "DISTANCE_ESTIMATE",
+              "isEstimate": true
+            }
+          ],
+          "summary": {
+            "totalStayMinutes": 360,
+            "totalTravelMinutes": 25,
+            "totalWaitingMinutes": 0,
+            "totalMinutes": 385,
+            "estimatedCost": {
+              "status": "UNKNOWN",
+              "amount": null,
+              "currency": "KRW",
+              "basis": "UNKNOWN"
+            }
+          },
+          "validation": {
+            "status": "PASSED",
+            "checkedHardConstraints": [
+              "placeIds",
+              "area",
+              "timeWindow",
+              "openHours",
+              "transport",
+              "searchRadius",
+              "excludedCategories",
+              "mobility"
+            ],
+            "unverifiedFields": [
+              "price",
+              "routeAccessibility"
+            ],
+            "routeAccessibility": "UNVERIFIED"
+          },
+          "sources": [
+            {
+              "id": "synthetic-source",
+              "provider": "[가상] 제공기관",
+              "datasetName": "[가상] 코스 테스트 데이터",
+              "url": "https://example.invalid/synthetic",
+              "license": null,
+              "baseDate": null,
+              "retrievedAt": "2026-11-13T10:00:00+09:00"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "INJURY",
+      "items": 2,
+      "legs": 1,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "httpRequests": 10,
+      "latencyMs": {
+        "min": 8.120000013150275,
+        "max": 17.368000000715256,
+        "mean": 12.4597400019411
+      },
+      "excludedUnknown": {
+        "count": 2,
+        "fields": [
+          "mobility.wheelchair",
+          "openHours"
+        ]
+      },
+      "sampleResponse": {
+        "suggestions": [],
+        "warnings": [
+          {
+            "code": "ROUTE_ACCESSIBILITY_UNVERIFIED",
+            "message": "장소의 접근성 정보만 확인했어요. 실제 이동 경로의 계단·경사는 확인하지 못했어요.",
+            "placeIds": []
+          },
+          {
+            "code": "TRAVEL_SCOPE",
+            "message": "첫 장소 이전과 마지막 장소 이후의 이동시간은 포함하지 않아요.",
+            "placeIds": []
+          },
+          {
+            "code": "PRICE_UNKNOWN",
+            "message": "가격 정보가 없어 전체 비용을 추정하지 않았어요.",
+            "placeIds": []
+          },
+          {
+            "code": "CANDIDATES_REJECTED",
+            "message": "조건을 충족하지 않거나 확인할 수 없는 후보를 제외했어요.",
+            "placeIds": []
+          }
+        ],
+        "excludedUnknown": {
+          "count": 2,
+          "fields": [
+            "mobility.wheelchair",
+            "openHours"
+          ]
+        },
+        "sessionExpiresAt": "2026-11-13T14:26:27.614269Z",
+        "requestId": "da0a65d8-a25c-4a48-9661-76c9931aa4ec",
+        "status": "SUCCESS",
+        "course": {
+          "id": "2b9e8236-adac-4469-a490-75d41aaa76f2",
+          "profileRevision": 1,
+          "createdAt": "2026-11-13T13:56:27.613353Z",
+          "availableWindow": {
+            "startAt": "2026-11-13T09:00:00+09:00",
+            "endAt": "2026-11-13T20:00:00+09:00"
+          },
+          "startAt": "2026-11-13T09:00:00+09:00",
+          "endAt": "2026-11-13T20:00:00+09:00",
+          "items": [
+            {
+              "id": "item-01",
+              "order": 1,
+              "place": {
+                "id": "synthetic:1",
+                "name": "[가상] 장소 1",
+                "category": "CAFE",
+                "area": "HAEUNDAE",
+                "address": "[가상] 해운대 테스트 주소",
+                "coordinates": {
+                  "latitude": 35.16,
+                  "longitude": 129.16
+                },
+                "indoor": true,
+                "openHours": {
+                  "status": "KNOWN",
+                  "description": "[가상] 정규화 운영시간"
+                },
+                "price": {
+                  "status": "UNKNOWN",
+                  "amount": null,
+                  "currency": "KRW",
+                  "basis": "UNKNOWN"
+                },
+                "defaultStayMinutes": 60,
+                "accessibility": {
+                  "grade": "VERIFIED",
+                  "wheelchair": true,
+                  "stroller": true,
+                  "elevator": null,
+                  "accessibleToilet": null,
+                  "evidence": [
+                    {
+                      "field": "wheelchair",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    },
+                    {
+                      "field": "stroller",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    }
+                  ]
+                },
+                "sourceIds": [
+                  "synthetic-source"
+                ]
+              },
+              "startAt": "2026-11-13T09:00:00+09:00",
+              "endAt": "2026-11-13T10:00:00+09:00",
+              "stayMinutes": 60,
+              "reason": "등록된 장소 정보와 이용 시간대를 기준으로 배치했어요.",
+              "reasonMethod": "TEMPLATE",
+              "isAnchor": false
+            },
+            {
+              "id": "item-02",
+              "order": 2,
+              "place": {
+                "id": "synthetic:2",
+                "name": "[가상] 장소 2",
+                "category": "CAFE",
+                "area": "HAEUNDAE",
+                "address": "[가상] 해운대 테스트 주소",
+                "coordinates": {
+                  "latitude": 35.16,
+                  "longitude": 129.16
+                },
+                "indoor": true,
+                "openHours": {
+                  "status": "KNOWN",
+                  "description": "[가상] 정규화 운영시간"
+                },
+                "price": {
+                  "status": "UNKNOWN",
+                  "amount": null,
+                  "currency": "KRW",
+                  "basis": "UNKNOWN"
+                },
+                "defaultStayMinutes": 60,
+                "accessibility": {
+                  "grade": "VERIFIED",
+                  "wheelchair": true,
+                  "stroller": true,
+                  "elevator": null,
+                  "accessibleToilet": null,
+                  "evidence": [
+                    {
+                      "field": "wheelchair",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    },
+                    {
+                      "field": "stroller",
+                      "sourceId": "synthetic-source",
+                      "note": "제공된 구조화 접근성 항목 기준입니다."
+                    }
+                  ]
+                },
+                "sourceIds": [
+                  "synthetic-source"
+                ]
+              },
+              "startAt": "2026-11-13T10:05:00+09:00",
+              "endAt": "2026-11-13T20:00:00+09:00",
+              "stayMinutes": 595,
+              "reason": "등록된 장소 정보와 이용 시간대를 기준으로 배치했어요.",
+              "reasonMethod": "TEMPLATE",
+              "isAnchor": false
+            }
+          ],
+          "legs": [
+            {
+              "fromItemId": "item-01",
+              "toItemId": "item-02",
+              "mode": "WALK",
+              "minutes": 5,
+              "method": "DISTANCE_ESTIMATE",
+              "isEstimate": true
+            }
+          ],
+          "summary": {
+            "totalStayMinutes": 655,
+            "totalTravelMinutes": 5,
+            "totalWaitingMinutes": 0,
+            "totalMinutes": 660,
+            "estimatedCost": {
+              "status": "UNKNOWN",
+              "amount": null,
+              "currency": "KRW",
+              "basis": "UNKNOWN"
+            }
+          },
+          "validation": {
+            "status": "PASSED",
+            "checkedHardConstraints": [
+              "placeIds",
+              "area",
+              "timeWindow",
+              "openHours",
+              "transport",
+              "searchRadius",
+              "excludedCategories",
+              "mobility"
+            ],
+            "unverifiedFields": [
+              "price",
+              "routeAccessibility"
+            ],
+            "routeAccessibility": "UNVERIFIED"
+          },
+          "sources": [
+            {
+              "id": "synthetic-source",
+              "provider": "[가상] 제공기관",
+              "datasetName": "[가상] 코스 테스트 데이터",
+              "url": "https://example.invalid/synthetic",
+              "license": null,
+              "baseDate": null,
+              "retrievedAt": "2026-11-13T10:00:00+09:00"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "negativeControls": [
+    {
+      "id": "unknown-place",
+      "rejected": true
+    },
+    {
+      "id": "outside-window",
+      "rejected": true
+    },
+    {
+      "id": "injury-long-leg",
+      "rejected": true
+    },
+    {
+      "id": "unverified-hard",
+      "rejected": true
+    },
+    {
+      "id": "missing-source",
+      "rejected": true
+    }
+  ],
+  "runDate": "2026-11-13T22:56:27.634507+09:00",
+  "codeRevision": "432da7e46546692d7e0b9c37c5f14f9a8ed404f2",
+  "workingTreeModified": true,
+  "totalRequests": 40,
+  "hardViolations": 0,
+  "maxResponseMs": 23.120800004107878,
+  "synthetic15SecondTargetMet": true
+}

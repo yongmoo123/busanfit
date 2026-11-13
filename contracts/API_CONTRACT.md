@@ -116,6 +116,8 @@ FR-005·006 구현 보완: 카드 PUT에서 transport=null/UNSET이면 지원되
 - 추천 이유 생성 실패는 TEMPLATE 설명과 warnings로 처리할 수 있다.
 
 ## 7. 오류
+
+FR-009 구현 연결: POST /api/courses는 CourseRequest의 sessionId·profileRevision만 받으며 expectedProfileRevision을 대신 받지 않는다. READY·미확인 항목·요청 제한·revision을 먼저 확인하고 생성 후 최신 revision·만료를 다시 검사한다. 성공과 후보 부족 모두 프로필 revision은 변경하지 않고 세션 TTL만 갱신한다. 실패는 프로필·revision·TTL을 갱신하지 않는다. 조회 장애·이동시간 오류·출처 누락은 후보 부족으로 숨기지 않고 기존 500 INTERNAL_ERROR로 처리하며, AI 장애로 분류하지 않는다. 스케줄러 초안 뒤 최대 3회 교체·재배치를 허용하고 검증을 통과한 2~6곳만 SUCCESS로 반환한다. 안전한 두 곳을 확보하지 못하면 INSUFFICIENT_PLACES/course=null이다. 부분 성공 상태·위반 코스·CONDITIONAL 우회는 추가하지 않는다. 최소 템플릿 이유와 suggestions=[]는 #25·#26 연결 전의 범위다. 실제 검색·이동시간 검증 완료와 가상 API 검증은 별개다.
 형식: {"error":{"code":"...","message":"...","retryable":false,"details":[{"field":"...","reason":"..."}]},"requestId":"UUID"}
 | HTTP | code | 처리 |
 |---|---|---|
