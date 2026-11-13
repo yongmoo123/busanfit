@@ -1,6 +1,6 @@
 # 원본 컴포넌트와 구현 위치
 
-기준: SDD 2~3장 및 내장 아키텍처·서비스 클래스 도식. 파일명은 구현 배치안이고 원본이 요구한 정확한 폴더명은 아니다. 업무 기능은 모두 미구현이며 API 오류 처리 골격만 존재한다.
+기준: SDD 2~3장 및 내장 아키텍처·서비스 클래스 도식. 파일명은 구현 배치안이고 원본이 요구한 정확한 폴더명은 아니다. 세션 생성·조건 카드 검증은 구현되어 있다. 조건 채팅·정규화·확인 대기 구현과 PR #17 의존성은 ISSUE6_8_IMPLEMENTATION.md를 따른다. 코스·데이터 연동은 별도다.
 
 | ID | 원본 책임 | 담당 | 위치 |
 |---|---|---|---|
@@ -55,9 +55,9 @@ API는 입출력·오류를 처리하고 application이 실행 순서·실패·�
 ## API 추적
 | SDD ID | 경로/작업 | 현 계약 |
 |---|---|---|
-| API-001 | POST /api/sessions | 포함, 미구현 |
-| API-002 | POST /api/chat | 포함, 미구현 |
-| API-003 | PUT /api/sessions/{id}/profile | {sessionId}로 명확화, 포함·미구현 |
+| API-001 | POST /api/sessions | 구현 |
+| API-002 | POST /api/chat | PR #13 구현, PR #17 의존 모듈 반영 시 등록 |
+| API-003 | PUT /api/sessions/{id}/profile | {sessionId}, 구현·DEC-020 정규화는 #17과 함께 적용 |
 | API-004 | POST /api/courses | 포함, 미구현 |
 | API-005 | POST /api/courses/{courseId}/adjust | 후속 계약 |
 | API-006 | GET /api/places/{placeId} | 포함, 미구현 |

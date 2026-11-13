@@ -7,6 +7,7 @@ from pathlib import Path
 from datetime import datetime, date
 from urllib.parse import urlparse
 from uuid import UUID
+import runpy
 
 ROOT = Path(__file__).resolve().parent
 spec = json.loads((ROOT / "openapi.json").read_text(encoding="utf-8"))
@@ -155,4 +156,7 @@ for invalid, schema in [
         continue
     raise AssertionError("Negative control unexpectedly accepted")
 operations = sum(len(v) for v in spec["paths"].values())
+policy_cases = json.loads((ROOT / 'policy-cases.json').read_text(encoding='utf-8'))
+runpy.run_path(str(ROOT / 'policy_contract.py'))['validate_cases'](policy_cases, spec, check)
 print(f"PASS: {operations} operations, {len(schemas)} schemas, {len(index)} JSON examples; references, embedded examples, timeline, source links, negative controls.")
+print(f"PASS: {len(policy_cases['cases'])} synthetic policy cases (DEC-019~021), including negative controls; no HTTP calls.")
