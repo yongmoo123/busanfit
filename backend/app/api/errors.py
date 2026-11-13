@@ -31,6 +31,7 @@ def install_error_handlers(app: FastAPI) -> None:
             'SESSION_EXPIRED': '세션이 없거나 만료되었습니다. 새 세션을 시작해 주세요.',
             'REVISION_CONFLICT': '조건이 변경되었습니다. 최신 조건을 확인해 주세요.',
             'RATE_LIMITED': '요청이 많습니다. 잠시 후 다시 시도해 주세요.',
+            'PROFILE_INCOMPLETE': '조건 카드에서 확인할 항목을 확인해 주세요.',
         }
         response = error_response(exc.status, exc.code, messages[exc.code], exc.status == 429)
         if exc.retry_after is not None:

@@ -1,9 +1,9 @@
 # 부산핏 공통 API 계약 v0.1.0
-기존 SDD v0.1 및 첫 주 개발 계획에 따른 **팀 합의용 초안**. 서버 구현물이나 실제 API 검증 결과는 아니다. 원본 문서는 수정하지 않았다.
+기존 SDD v0.1 및 첫 주 개발 계획에 따른 **팀 합의용 초안**. 서버 구현물이나 실제 API 검증 결과는 아니다. DEC-019~021은 PM의 2026-11-09 명시적 결정에 따라 2026-11-10 계약 의미에 반영했다. 근거는 PR #13 PM 댓글과 PR #18 결정 기록이며, PR #18은 확인 시점에 미병합이다. 이 반영은 다른 초안 항목의 승인이나 서버 구현 완료를 뜻하지 않는다.
 
 ## 파일 구성
 - openapi.json: OpenAPI 3.1 요청·응답 스키마와 예시.
-- examples/: 프론트 mock과 백엔드 검수에 사용할 20개 순수 JSON.
+- examples/: 기존 가상 JSON 예시. policy-cases.json: DEC-019~021의 가상 사전 상태·요청·기대 응답 사례(실행 결과 아님).
 - example-index.json: 예시별 대응 스키마.
 - validate_contract.py: 외부 패키지 없는 계약·예시 일관성 검사. 전체 OpenAPI 표준 검증기나 서버 통합 테스트는 아니다.
 
@@ -52,25 +52,39 @@ example.invalid는 의도적으로 사용할 수 없는 출처 주소다. 실제
 - area/timeWindow는 코스 생성 필수이고 HARD다.
 - mobility=null은 미입력. []는 사용자가 이동 제약이 없다고 명시한 경우다. 미입력을 제약 없음으로 확정하지 않는다.
 - “실내 위주”는 SOFT, “실외는 절대 안 돼”는 HARD. 단어 하나만 보고 부정 표현을 오해하지 않는다.
-- companions.hasInfant=true만으로 유모차 제약을 자동 확정하지 않는다.
+- DEC-002·020: companions.hasInfant=true이고 mobility=null/UNSET이면 [STROLLER]/DEFAULT/HARD를 자동 적용한다. 추가 확인 질문은 하지 않는다.
+- mobility.source=USER는 자동 기본값보다 우선한다. USER의 []와 비어 있지 않은 목록을 유지하고 STROLLER를 자동 추가하지 않는다.
+- 영유아 동반이지만 USER 목록에 STROLLER가 없으면 STROLLER_NOT_APPLIED 경고를 붙인다. 이는 질문 수 한도를 소비하지 않는다.
+- 카드에서 STROLLER만 해제하면 다른 이동제약을 유지하고 USER로 저장한다. 해제 상태는 이후 대화에서 자동 재적용하지 않는다. 명시적으로 유모차 사용을 요청하면 기존 제약을 보존하며 STROLLER를 USER/HARD로 추가한다.
+- mobility를 null/UNSET으로 초기화하면 영유아 동반 시 기본값 적용 대상으로 돌아간다. 영유아 동반 취소 시 DEFAULT로 적용된 STROLLER만 제거하며 USER 조건은 유지한다. 제거 뒤 남은 값이 없으면 null/UNSET으로 표현한다. 이를 USER의 명시적 [] 선택으로 바꾸지 않는다.
 - budget은 amount, currency, basis(PER_PERSON/TOTAL), includes(ADMISSION/FOOD/TRANSPORT)를 함께 저장한다.
-- 첫 주 예시 기본 이동수단은 도보(DEFAULT)이며 카드에 표시한다. 최종 기본값은 SRS와 합의해 맞춘다.
-- chat은 언급된 조건만 기존 프로필에 반영한다. “카페는 빼줘”가 기존 시간을 지우면 안 된다.
+- DEC-001: 스프린트 2 기본 이동수단은 WALK/DEFAULT이며 카드에 표시한다. 스프린트 3 PUBLIC 지원과 함께 기본값을 PUBLIC으로 전환한다. 최종 기본값은 PUBLIC이다. 명시적 미지원 요청을 기본값으로 대체하지 않는다.
+- chat은 언급된 조건만 기존 프로필에 반영한다. “카페는 빼줘”가 기존 시간을 지우면 안 된다. 파서의 UNSET으로 기존 USER/HARD 조건을 덮어쓰지 않는다. 변경 의도를 해석하지 못했다면 기존 값은 보존하되 UNCONFIRMED_CHANGE와 해당 field 질문으로 확인하고, 확인 전에는 기존 값으로도 코스를 생성하지 않는다.
 - PUT은 전체 교체다. 삭제할 값은 null/UNSET으로 명시한다. 카드에서 바꾼 값은 USER로 표시한다.
 - 서버는 클라이언트의 source/strength도 검증한다. 지역·시간의 HARD를 임의로 낮추지 못하게 한다.
-- NEEDS_INPUT: 생성 필수 정보가 부족하다. questions는 1~2개.
-- READY: 생성 요청이 가능한 구조이며 questions=[]. 후보 존재나 코스 성공을 보장하지 않는다.
+- DEC-021 NEEDS_INPUT: 생성 필수 정보가 부족하거나 미확인 HARD 조건·변경 의도가 남아 있다. questions는 해당 field를 지정하여 1~2개씩 반환한다. 지역·시간이 있어도 미확인 항목이 남으면 NEEDS_INPUT이다.
+- 새 외부 상태·필드는 추가하지 않는다. 서버는 아직 질문하지 못한 항목을 포함해 내부 확인 대기 상태를 유지하며, 질문 2개를 답했다고 다른 미확인 항목을 지우지 않는다. warnings가 없거나 questions에 현재 표시되지 않는다는 이유로 확인 완료로 판정하지 않는다.
+- READY: 생성 필수 정보와 확인 대기 항목이 모두 해소된 상태이며 questions=[]. 후보 존재나 코스 성공을 보장하지 않는다. 코스 생성은 서버 최신 revision과 READY를 함께 확인한다. NEEDS_INPUT이면 422 PROFILE_INCOMPLETE로 생성하지 않는다.
 - 질문은 최대 2개씩 한다. 불확실한 중요한 조건을 기본값으로 덮어쓰지 않는다.
 
 ## 5. capabilities와 첫 주 지원
 예시 capabilities는 HAEUNDAE/WALK 및 area,timeWindow,transport,indoorPreference,companions,excludedCategories를 지원한다.
 budget/mobility/preferenceTags도 최종 프로필 모양에는 있으나 예시 서버의 첫 주 활성 조건 지원 범위에는 없다.
 - 미지원 필드가 null/빈 목록이면 미설정으로 취급할 수 있다.
-- 비어 있지 않은 미지원 조건을 요청하면 HARD/SOFT 모두 422 UNSUPPORTED_CONSTRAINT.
-- AI가 미지원 조건을 인식하면 요청 전체를 저장하지 않고 관련 필드를 오류 details로 반환한다.
+- 일반 규칙: 비어 있지 않은 미지원 조건은 HARD/SOFT 모두 422 UNSUPPORTED_CONSTRAINT이며 요청 전체를 저장하지 않고 관련 field만 오류 details로 안내한다. 원문을 복사하지 않는다.
+- DEC-019 카드 PUT: 미지원 이동수단도 위 규칙대로 422, 요청 전체 미저장 및 기존 프로필·revision·대화·TTL 유지.
+- DEC-019 채팅 예외(이동수단만): 해석한 나머지 조건이 유효하면 반영하고 revision을 1 증가시킨다. 미지원 이동수단은 반영하지 않고 questions(field=transport)와 UNSUPPORTED_TRANSPORT 경고를 반환한다. 사용자 수락 전 NEEDS_INPUT이며 기존 이동수단이 있어도 코스를 생성하지 않는다.
+- transport 확인 대기 중 시간 등 다른 항목만 수정한 전체 PUT은 기존 WALK/USER가 함께 전송돼도 수락이 아니다. 같은 transport.value의 재전송·source/strength만 변경해도 질문·경고·NEEDS_INPUT을 유지한다. 다른 지원 값으로 실제 변경한 USER 카드 PUT은 해당 대기를 해소한다.
+- 같은 도보 값을 다시 선택하는 명시적 수락은 POST /api/chat에 `message="도보로 이동할게요"`와 최신 `expectedProfileRevision`을 보낸다. 카드 저장 후라면 그 응답의 revision을 사용한다. 프론트는 이 문장을 사용자의 명시적 선택 때만 전송하며 경고 닫기·시간 저장에서 자동 전송하지 않는다. 409·422·503 또는 네트워크 실패를 수락 성공으로 표시하지 않고 서버 최신 status·revision을 따른다. 새 외부 필드는 추가하지 않는다.
+- 채팅에서 미지원 이동수단을 WALK로 자동 변경하거나 새 DEFAULT를 넣어 수락한 것으로 처리하지 않는다. 기존 값이 없다면 transport=null/UNSET, 기존 값이 있으면 보존한다. 사용자가 명시적으로 수락하면 그때 지원되는 값을 USER로 저장하고 해당 확인 대기를 해소한다.
+- 다른 미지원 조건까지 함께 들어온 경우에는 일반 422 규칙을 유지한다. 이동수단 예외가 지역·이동제약 등 모든 미지원 조건을 허용하는 예외는 아니다.
 - includeUnknownAccessibility는 첫 주 false만 허용한다. true 요청은 422.
 - 권역/이동수단도 capabilities로 검증한다. 구현되지 않은 조건을 지원한다고 표시하지 않는다.
 - 이는 최종 SRS Must 요구사항의 삭제가 아니다. 이후 검증을 마친 기능부터 지원 범위를 넓힌다.
+
+동행 보완(DEC-022): 혼자·친구·연인·기타의 영유아 미언급은 false로 처리하며 묻지 않는다. 혼자=1명, 연인=2명이고, 다른 동행 인원을 모르면 companions는 null/UNSET으로 유지하되 인원만을 위한 질문은 하지 않는다. 가족 또는 '아이' 언급에서 영유아 여부가 미확인이면 companions 질문을 한 번 표시한다(지역·시간 우선, 총 최대 2개). 실제 표시된 질문 뒤 다음 채팅에서도 답하지 않으면 false로 처리하고 UNCONFIRMED_CHANGE 경고로 '영유아 동반이면 조건 카드에서 바꿔 주세요.'를 안내한다. 질문 표시 여부와 부분 동행 정보는 세션 내부 상태이며 외부 JSON 필드를 추가하지 않는다. 영유아가 명시되면 인원이 없어도 DEC-020 이동제약 정책은 적용한다.
+
+조건 추출에서 이동제약·제외 카테고리를 추가 언급하면 기존 목록에 합쳐 기존 HARD 제외를 유지한다. 명시적 빈 USER 목록 또는 카드 전체 교체로 목록을 해제할 수 있다. 이동수단 미언급 시 WALK/DEFAULT를 적용하되 기존 값과 미지원·미확인 이동수단 확인 대기는 보존한다.
 
 ## 6. 코스 의미·검증
 - SUCCESS는 course가 존재, INSUFFICIENT_PLACES는 HTTP 200 + course=null.
@@ -117,6 +131,34 @@ details에 민감한 원문을 넣지 않는다.
 retryable=true는 즉시 자동 재전송하라는 뜻이 아니다.
 AI 해석 실패 시 하드 조건을 지우고 일반 코스를 만들지 않는다.
 
+### 7.1 DEC-021 LLM 실패·503 판정
+
+LLM 지연(10초 초과)·스키마 불일치는 1회 재시도하고 재실패 시 규칙 파서로 대체한다. 해석하지 못한 HARD 판단 항목(지역·시간·이동제약·제외 카테고리·예산 상한)은 추측하지 않고 UNSET/확인 대상으로 두며 기존 USER/HARD 값을 삭제하지 않는다. 소프트 기본값도 확정된 기본값만 사용한다.
+
+| 상황 | 응답·저장 규칙 |
+|---|---|
+| LLM 정상, 지역·시간 미입력 | 200 NEEDS_INPUT, 부족 항목 질문 |
+| LLM 재실패 → 파서, 기존 유효 값을 포함해 지역도 시간도 없음 | 503 AI_UNAVAILABLE, 카드 직접 입력 안내. 프로필·revision·대화·TTL 미변경 |
+| 대체 파서 결과·기존 값으로 하나만 확보 | 200 NEEDS_INPUT, 부족 항목 질문 및 AI_FALLBACK |
+| 대체 파서 결과·기존 값으로 둘 다 확보 | 일반 검증 결과. 미확인 HARD·변경 의도가 있으면 200 NEEDS_INPUT, 모두 해소됐으면 READY, 미지원/잘못된 조건은 422 |
+
+이 판정은 세션·revision·요청 제한·입력/지원 범위 검증을 대체하지 않는다. 409·410·422·429를 AI 성공/실패로 덮어쓰지 않는다. 503은 일반 ErrorResponse이며 ChatResponse나 warnings 필드를 추가하지 않는다. 응답 성공 시에만 chat/PUT revision 증가와 TTL 갱신을 적용한다.
+
+200 대체 처리에서는 reply와 AI_FALLBACK 경고로 안내한다. Timeout 안내는 “응답이 늦어 일부 조건을 확인하지 못했어요. 조건 카드에서 확인해 주세요.”를 사용한다. Timeout 후 503이면 같은 안내와 직접 입력 안내를 error.message에 넣을 수 있다. 실패한 해석 결과를 일반 코스 생성에 사용하지 않으며 추천 이유 생성 실패는 기존 템플릿 방식으로 처리한다.
+
+### 7.2 경고 코드 — 김영무 정의 (DEC-019~021 위임 범위)
+
+Warning의 필드는 기존 code/message/placeIds를 유지한다. code는 기존 string 타입을 유지하며 아래 이름을 고정해 호출부·프론트에서 함께 사용한다. 다른 기존 경고 코드를 금지하는 enum 변경은 하지 않는다. 조건 관련 경고의 placeIds는 []이다.
+
+| code | 발생 상황 | 표시·해소 |
+|---|---|---|
+| UNSUPPORTED_TRANSPORT | 채팅에서 미지원 이동수단을 반영하지 않음 | transport 질문과 함께 표시. 지원 값의 명시적 선택/수락으로 해소 |
+| STROLLER_NOT_APPLIED | 영유아 동반 + USER 이동제약 목록에 STROLLER 없음([] 포함) | “유모차 조건은 자동으로 넣지 않았어요. 필요하면 조건 카드에서 추가해 주세요.” 질문을 만들지 않으며 이 경고만으로 NEEDS_INPUT을 강제하지 않음 |
+| AI_FALLBACK | LLM 재실패 후 규칙 파서로 응답 | 대체 처리 사실 안내. 이 경고만으로 READY 여부를 판정하지 않음 |
+| UNCONFIRMED_CHANGE | 변경 의도 또는 HARD 판단이 미확인 | 해당 field 질문과 NEEDS_INPUT. 확인 전 생성 금지 |
+
+경고는 입력 원문·건강 원문을 복사하지 않는다. 확인 대기 해소는 서버 내부 조건 검증으로 판단하며 프론트가 경고를 닫았다는 이유로 READY가 되지 않는다.
+
 ## 8. 예시 사용 순서
 기본 흐름:
 1. 01-session.request → 01-session.response. 내부 revision=0.
@@ -148,3 +190,7 @@ needs-input/insufficient/오류 파일은 서로 독립된 상태 예시다.
 - 배진호: examples로 mock 연결, 상태별 화면 분기, 지원 범위 표시.
 - 김세민: 예시별 검수 시나리오, 실제 데이터·출처 확인, SRS/SDD 변경 기록.
 GitHub에 합의 버전을 커밋하고 필드·enum·상태 의미 변경은 프론트·백엔드 공동 PR 검토로 진행한다.
+
+## 구현 상태 기록 (2026-11-11)
+
+이 문서는 형식·의미 계약이며 실행 서버의 지원 선언은 capabilities를 따른다. 기존 PR #13에 조건 chat·카드 정책·내부 확인 대기·코스 진입 guard를 구현했다. #17 모듈을 함께 반영해야 새 처리를 등록하며, 아직 실제 LLM·코스 엔진·프론트는 연결하지 않았다. 기존 JSON 필드·타입·경로의 추가 변경은 없다. 단독/통합 검증과 지원 활성화 계획은 ../docs/ISSUE6_8_IMPLEMENTATION.md를 참고한다.
