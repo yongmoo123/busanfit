@@ -6,13 +6,18 @@ from fastapi import FastAPI
 from app.api.errors import install_error_handlers
 from app.api.sessions import router
 from app.api.profiles import router as profile_router
-from app.api.session_models import Capabilities
+from app.application.profile_support import ProfileSupport, build_profile_capabilities
 from app.api.profile_models import ProfileUpdateRequest
 from app.sessions.store import SessionStore
+from app.application.extraction import build_extractor
+from app.api.chat import router as chat_router
+from app.api.courses import router as course_router
 
 
-def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1) -> FastAPI:
+def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1, extractor=None,
+               profile_support: ProfileSupport | None = None, course_service=None) -> FastAPI:
     sessions = store if store is not None else SessionStore()
+    condition_extractor = extractor if extractor is not None else build_extractor()
 
     @asynccontextmanager
     async def lifespan(app):
@@ -30,21 +35,25 @@ def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1
             sessions.clear()
 
     app = FastAPI(
-        title="BusanFit — 세션·조건 카드 API",
-        version="0.0.3",
-        description="세션 생성·조건 카드 전체 교체를 지원합니다. 추천 엔진 미연결로 활성 조건은 현재 거절합니다. LLM·코스·장소 API는 미구현입니다.",
+        title="BusanFit — 세션·조건 API",
+        version="0.0.4",
+        description=("세션 생성·조건 카드 전체 교체를 지원합니다. "
+                     + ("조건 채팅·규칙 대체 처리를 지원합니다. " if condition_extractor is not None else
+                        "조건 채팅을 사용할 수 없습니다. ")
+                     + "Gemini는 환경변수 설정 시 추출에 연결됩니다. 일반 capabilities는 연결 검증 전 비어 있습니다. 코스 API는 검색·이동시간·Repository 주입이 필요하며 장소 상세 API는 미구현입니다."),
         debug=False,
         lifespan=lifespan,
     )
     app.state.sessions = sessions
-    app.state.capabilities = Capabilities(
-        supportedAreas=[], supportedTransports=[], supportedProfileFields=[],
-        supportsUnknownAccessibilityInclusion=False,
-        supportsCourseAdjustment=False, supportsWeather=False,
-    )
+    app.state.extractor = condition_extractor
+    app.state.course_service = course_service
+    app.state.capabilities = build_profile_capabilities(profile_support)
     install_error_handlers(app)
     app.include_router(router)
     app.include_router(profile_router)
+    app.include_router(course_router)
+    if app.state.extractor is not None:
+        app.include_router(chat_router)
     generated_openapi = app.openapi
 
     def openapi_with_nullable_example():

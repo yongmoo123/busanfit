@@ -1,0 +1,3010 @@
+{
+  "description": "가상 계약 검수 사례. assumedCapabilities는 예시 가정이며 현재 서버 지원 아님. before/pending/extractedProfile 등은 검수 메타데이터이고 API 필드가 아님. HTTP 호출/정책 구현 결과 아님.",
+  "cases": [
+    {
+      "id": "transport-chat-partial",
+      "operation": "chat",
+      "assumedCapabilities": {
+        "supportedAreas": [
+          "HAEUNDAE"
+        ],
+        "supportedTransports": [
+          "WALK"
+        ],
+        "supportedProfileFields": [
+          "area",
+          "timeWindow",
+          "transport",
+          "mobility",
+          "budget",
+          "indoorPreference",
+          "companions",
+          "excludedCategories",
+          "preferenceTags"
+        ]
+      },
+      "before": {
+        "profile": {
+          "area": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 1,
+        "sessionExpiresAt": "2026-11-12T10:20:00+09:00",
+        "pendingFields": []
+      },
+      "request": {
+        "expectedProfileRevision": 1,
+        "sessionId": "11111111-1111-4111-8111-111111111111",
+        "message": "[가상] 해운대 2026-11-12 오후 1시부터 5시까지, 자차로 갈게요"
+      },
+      "extractedProfile": {
+        "area": {
+          "value": "HAEUNDAE",
+          "source": "USER",
+          "strength": "HARD"
+        },
+        "timeWindow": {
+          "value": {
+            "startAt": "2026-11-12T13:00:00+09:00",
+            "endAt": "2026-11-12T17:00:00+09:00"
+          },
+          "source": "USER",
+          "strength": "HARD"
+        },
+        "transport": {
+          "value": "CAR",
+          "source": "USER",
+          "strength": "HARD"
+        },
+        "mobility": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "budget": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "indoorPreference": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "companions": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "excludedCategories": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "preferenceTags": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "includeUnknownAccessibility": false
+      },
+      "fallbackUsed": false,
+      "expectedHttp": 200,
+      "expectedResponse": {
+        "status": "NEEDS_INPUT",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 2,
+        "questions": [
+          {
+            "field": "transport",
+            "message": "자차는 아직 지원하지 않아요. 도보로 코스를 만들까요?"
+          }
+        ],
+        "warnings": [
+          {
+            "code": "UNSUPPORTED_TRANSPORT",
+            "message": "요청한 이동수단은 아직 지원하지 않아요.",
+            "placeIds": []
+          }
+        ],
+        "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+        "requestId": "22222222-2222-4222-8222-222222222222",
+        "reply": "조건을 확인해 주세요."
+      },
+      "expectedPendingFields": [
+        "transport"
+      ]
+    },
+    {
+      "id": "transport-put-rejected",
+      "operation": "put",
+      "assumedCapabilities": {
+        "supportedAreas": [
+          "HAEUNDAE"
+        ],
+        "supportedTransports": [
+          "WALK"
+        ],
+        "supportedProfileFields": [
+          "area",
+          "timeWindow",
+          "transport",
+          "mobility",
+          "budget",
+          "indoorPreference",
+          "companions",
+          "excludedCategories",
+          "preferenceTags"
+        ]
+      },
+      "before": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 1,
+        "sessionExpiresAt": "2026-11-12T10:20:00+09:00",
+        "pendingFields": []
+      },
+      "request": {
+        "expectedProfileRevision": 1,
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "CAR",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        }
+      },
+      "extractedProfile": null,
+      "fallbackUsed": false,
+      "expectedHttp": 422,
+      "expectedResponse": {
+        "error": {
+          "code": "UNSUPPORTED_CONSTRAINT",
+          "message": "조건 카드를 확인해 주세요.",
+          "retryable": false,
+          "details": [
+            {
+              "field": "transport",
+              "reason": "현재 지원하지 않는 조건입니다."
+            }
+          ]
+        },
+        "requestId": "22222222-2222-4222-8222-222222222222"
+      },
+      "expectedPendingFields": []
+    },
+    {
+      "id": "transport-chat-accepted",
+      "operation": "chat",
+      "assumedCapabilities": {
+        "supportedAreas": [
+          "HAEUNDAE"
+        ],
+        "supportedTransports": [
+          "WALK"
+        ],
+        "supportedProfileFields": [
+          "area",
+          "timeWindow",
+          "transport",
+          "mobility",
+          "budget",
+          "indoorPreference",
+          "companions",
+          "excludedCategories",
+          "preferenceTags"
+        ]
+      },
+      "before": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 1,
+        "sessionExpiresAt": "2026-11-12T10:20:00+09:00",
+        "pendingFields": [
+          "transport"
+        ]
+      },
+      "request": {
+        "expectedProfileRevision": 1,
+        "sessionId": "11111111-1111-4111-8111-111111111111",
+        "message": "[가상] 도보로 진행할게요"
+      },
+      "extractedProfile": {
+        "area": {
+          "value": "HAEUNDAE",
+          "source": "USER",
+          "strength": "HARD"
+        },
+        "timeWindow": {
+          "value": {
+            "startAt": "2026-11-12T13:00:00+09:00",
+            "endAt": "2026-11-12T17:00:00+09:00"
+          },
+          "source": "USER",
+          "strength": "HARD"
+        },
+        "transport": {
+          "value": "WALK",
+          "source": "USER",
+          "strength": "SOFT"
+        },
+        "mobility": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "budget": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "indoorPreference": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "companions": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "excludedCategories": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "preferenceTags": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "includeUnknownAccessibility": false
+      },
+      "fallbackUsed": false,
+      "expectedHttp": 200,
+      "expectedResponse": {
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 2,
+        "questions": [],
+        "warnings": [],
+        "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+        "requestId": "22222222-2222-4222-8222-222222222222",
+        "reply": "조건을 확인해 주세요."
+      },
+      "expectedPendingFields": []
+    },
+    {
+      "id": "stroller-auto",
+      "operation": "put",
+      "assumedCapabilities": {
+        "supportedAreas": [
+          "HAEUNDAE"
+        ],
+        "supportedTransports": [
+          "WALK"
+        ],
+        "supportedProfileFields": [
+          "area",
+          "timeWindow",
+          "transport",
+          "mobility",
+          "budget",
+          "indoorPreference",
+          "companions",
+          "excludedCategories",
+          "preferenceTags"
+        ]
+      },
+      "before": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 1,
+        "sessionExpiresAt": "2026-11-12T10:20:00+09:00",
+        "pendingFields": []
+      },
+      "request": {
+        "expectedProfileRevision": 1,
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 2,
+              "hasInfant": true
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        }
+      },
+      "extractedProfile": null,
+      "fallbackUsed": false,
+      "expectedHttp": 200,
+      "expectedResponse": {
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "STROLLER"
+            ],
+            "source": "DEFAULT",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 2,
+              "hasInfant": true
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 2,
+        "questions": [],
+        "warnings": [],
+        "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+        "requestId": "22222222-2222-4222-8222-222222222222"
+      },
+      "expectedPendingFields": []
+    },
+    {
+      "id": "stroller-user-empty",
+      "operation": "put",
+      "assumedCapabilities": {
+        "supportedAreas": [
+          "HAEUNDAE"
+        ],
+        "supportedTransports": [
+          "WALK"
+        ],
+        "supportedProfileFields": [
+          "area",
+          "timeWindow",
+          "transport",
+          "mobility",
+          "budget",
+          "indoorPreference",
+          "companions",
+          "excludedCategories",
+          "preferenceTags"
+        ]
+      },
+      "before": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 1,
+        "sessionExpiresAt": "2026-11-12T10:20:00+09:00",
+        "pendingFields": []
+      },
+      "request": {
+        "expectedProfileRevision": 1,
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 2,
+              "hasInfant": true
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        }
+      },
+      "extractedProfile": null,
+      "fallbackUsed": false,
+      "expectedHttp": 200,
+      "expectedResponse": {
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 2,
+              "hasInfant": true
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 2,
+        "questions": [],
+        "warnings": [
+          {
+            "code": "STROLLER_NOT_APPLIED",
+            "message": "유모차 조건은 자동으로 넣지 않았어요. 필요하면 조건 카드에서 추가해 주세요.",
+            "placeIds": []
+          }
+        ],
+        "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+        "requestId": "22222222-2222-4222-8222-222222222222"
+      },
+      "expectedPendingFields": []
+    },
+    {
+      "id": "stroller-user-injury",
+      "operation": "put",
+      "assumedCapabilities": {
+        "supportedAreas": [
+          "HAEUNDAE"
+        ],
+        "supportedTransports": [
+          "WALK"
+        ],
+        "supportedProfileFields": [
+          "area",
+          "timeWindow",
+          "transport",
+          "mobility",
+          "budget",
+          "indoorPreference",
+          "companions",
+          "excludedCategories",
+          "preferenceTags"
+        ]
+      },
+      "before": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 1,
+        "sessionExpiresAt": "2026-11-12T10:20:00+09:00",
+        "pendingFields": []
+      },
+      "request": {
+        "expectedProfileRevision": 1,
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "INJURY"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 2,
+              "hasInfant": true
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        }
+      },
+      "extractedProfile": null,
+      "fallbackUsed": false,
+      "expectedHttp": 200,
+      "expectedResponse": {
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "INJURY"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 2,
+              "hasInfant": true
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 2,
+        "questions": [],
+        "warnings": [
+          {
+            "code": "STROLLER_NOT_APPLIED",
+            "message": "유모차 조건은 자동으로 넣지 않았어요. 필요하면 조건 카드에서 추가해 주세요.",
+            "placeIds": []
+          }
+        ],
+        "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+        "requestId": "22222222-2222-4222-8222-222222222222"
+      },
+      "expectedPendingFields": []
+    },
+    {
+      "id": "stroller-remove-only",
+      "operation": "put",
+      "assumedCapabilities": {
+        "supportedAreas": [
+          "HAEUNDAE"
+        ],
+        "supportedTransports": [
+          "WALK"
+        ],
+        "supportedProfileFields": [
+          "area",
+          "timeWindow",
+          "transport",
+          "mobility",
+          "budget",
+          "indoorPreference",
+          "companions",
+          "excludedCategories",
+          "preferenceTags"
+        ]
+      },
+      "before": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "WHEELCHAIR",
+              "STROLLER"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 2,
+              "hasInfant": true
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 1,
+        "sessionExpiresAt": "2026-11-12T10:20:00+09:00",
+        "pendingFields": []
+      },
+      "request": {
+        "expectedProfileRevision": 1,
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "WHEELCHAIR"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 2,
+              "hasInfant": true
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        }
+      },
+      "extractedProfile": null,
+      "fallbackUsed": false,
+      "expectedHttp": 200,
+      "expectedResponse": {
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "WHEELCHAIR"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 2,
+              "hasInfant": true
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 2,
+        "questions": [],
+        "warnings": [
+          {
+            "code": "STROLLER_NOT_APPLIED",
+            "message": "유모차 조건은 자동으로 넣지 않았어요. 필요하면 조건 카드에서 추가해 주세요.",
+            "placeIds": []
+          }
+        ],
+        "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+        "requestId": "22222222-2222-4222-8222-222222222222"
+      },
+      "expectedPendingFields": []
+    },
+    {
+      "id": "stroller-reset-unset",
+      "operation": "put",
+      "assumedCapabilities": {
+        "supportedAreas": [
+          "HAEUNDAE"
+        ],
+        "supportedTransports": [
+          "WALK"
+        ],
+        "supportedProfileFields": [
+          "area",
+          "timeWindow",
+          "transport",
+          "mobility",
+          "budget",
+          "indoorPreference",
+          "companions",
+          "excludedCategories",
+          "preferenceTags"
+        ]
+      },
+      "before": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 2,
+              "hasInfant": true
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 1,
+        "sessionExpiresAt": "2026-11-12T10:20:00+09:00",
+        "pendingFields": []
+      },
+      "request": {
+        "expectedProfileRevision": 1,
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 2,
+              "hasInfant": true
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        }
+      },
+      "extractedProfile": null,
+      "fallbackUsed": false,
+      "expectedHttp": 200,
+      "expectedResponse": {
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "STROLLER"
+            ],
+            "source": "DEFAULT",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 2,
+              "hasInfant": true
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 2,
+        "questions": [],
+        "warnings": [],
+        "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+        "requestId": "22222222-2222-4222-8222-222222222222"
+      },
+      "expectedPendingFields": []
+    },
+    {
+      "id": "stroller-cancel-default",
+      "operation": "put",
+      "assumedCapabilities": {
+        "supportedAreas": [
+          "HAEUNDAE"
+        ],
+        "supportedTransports": [
+          "WALK"
+        ],
+        "supportedProfileFields": [
+          "area",
+          "timeWindow",
+          "transport",
+          "mobility",
+          "budget",
+          "indoorPreference",
+          "companions",
+          "excludedCategories",
+          "preferenceTags"
+        ]
+      },
+      "before": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "STROLLER"
+            ],
+            "source": "DEFAULT",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 2,
+              "hasInfant": true
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 1,
+        "sessionExpiresAt": "2026-11-12T10:20:00+09:00",
+        "pendingFields": []
+      },
+      "request": {
+        "expectedProfileRevision": 1,
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "STROLLER"
+            ],
+            "source": "DEFAULT",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 2,
+              "hasInfant": false
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        }
+      },
+      "extractedProfile": null,
+      "fallbackUsed": false,
+      "expectedHttp": 200,
+      "expectedResponse": {
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 2,
+              "hasInfant": false
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 2,
+        "questions": [],
+        "warnings": [],
+        "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+        "requestId": "22222222-2222-4222-8222-222222222222"
+      },
+      "expectedPendingFields": []
+    },
+    {
+      "id": "fallback-both-missing",
+      "operation": "chat",
+      "assumedCapabilities": {
+        "supportedAreas": [
+          "HAEUNDAE"
+        ],
+        "supportedTransports": [
+          "WALK"
+        ],
+        "supportedProfileFields": [
+          "area",
+          "timeWindow",
+          "transport",
+          "mobility",
+          "budget",
+          "indoorPreference",
+          "companions",
+          "excludedCategories",
+          "preferenceTags"
+        ]
+      },
+      "before": {
+        "profile": {
+          "area": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 1,
+        "sessionExpiresAt": "2026-11-12T10:20:00+09:00",
+        "pendingFields": []
+      },
+      "request": {
+        "expectedProfileRevision": 1,
+        "sessionId": "11111111-1111-4111-8111-111111111111",
+        "message": "[가상] 조건 입력"
+      },
+      "extractedProfile": {
+        "area": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "timeWindow": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "transport": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "mobility": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "budget": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "indoorPreference": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "companions": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "excludedCategories": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "preferenceTags": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "includeUnknownAccessibility": false
+      },
+      "fallbackUsed": true,
+      "expectedHttp": 503,
+      "expectedResponse": {
+        "error": {
+          "code": "AI_UNAVAILABLE",
+          "message": "조건을 확인하지 못했어요. 조건 카드에 직접 입력해 주세요.",
+          "retryable": true,
+          "details": []
+        },
+        "requestId": "22222222-2222-4222-8222-222222222222"
+      },
+      "expectedPendingFields": []
+    },
+    {
+      "id": "fallback-one-present",
+      "operation": "chat",
+      "assumedCapabilities": {
+        "supportedAreas": [
+          "HAEUNDAE"
+        ],
+        "supportedTransports": [
+          "WALK"
+        ],
+        "supportedProfileFields": [
+          "area",
+          "timeWindow",
+          "transport",
+          "mobility",
+          "budget",
+          "indoorPreference",
+          "companions",
+          "excludedCategories",
+          "preferenceTags"
+        ]
+      },
+      "before": {
+        "profile": {
+          "area": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 1,
+        "sessionExpiresAt": "2026-11-12T10:20:00+09:00",
+        "pendingFields": []
+      },
+      "request": {
+        "expectedProfileRevision": 1,
+        "sessionId": "11111111-1111-4111-8111-111111111111",
+        "message": "[가상] 조건 입력"
+      },
+      "extractedProfile": {
+        "area": {
+          "value": "HAEUNDAE",
+          "source": "USER",
+          "strength": "HARD"
+        },
+        "timeWindow": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "transport": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "mobility": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "budget": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "indoorPreference": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "companions": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "excludedCategories": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "preferenceTags": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "includeUnknownAccessibility": false
+      },
+      "fallbackUsed": true,
+      "expectedHttp": 200,
+      "expectedResponse": {
+        "status": "NEEDS_INPUT",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 2,
+        "questions": [
+          {
+            "field": "timeWindow",
+            "message": "시간을 확인해 주세요."
+          }
+        ],
+        "warnings": [
+          {
+            "code": "AI_FALLBACK",
+            "message": "규칙 파서로 처리했어요. 조건을 확인해 주세요.",
+            "placeIds": []
+          }
+        ],
+        "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+        "requestId": "22222222-2222-4222-8222-222222222222",
+        "reply": "조건을 확인해 주세요."
+      },
+      "expectedPendingFields": [
+        "timeWindow"
+      ]
+    },
+    {
+      "id": "fallback-unconfirmed-change",
+      "operation": "chat",
+      "assumedCapabilities": {
+        "supportedAreas": [
+          "HAEUNDAE"
+        ],
+        "supportedTransports": [
+          "WALK"
+        ],
+        "supportedProfileFields": [
+          "area",
+          "timeWindow",
+          "transport",
+          "mobility",
+          "budget",
+          "indoorPreference",
+          "companions",
+          "excludedCategories",
+          "preferenceTags"
+        ]
+      },
+      "before": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "WHEELCHAIR"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 1,
+        "sessionExpiresAt": "2026-11-12T10:20:00+09:00",
+        "pendingFields": []
+      },
+      "request": {
+        "expectedProfileRevision": 1,
+        "sessionId": "11111111-1111-4111-8111-111111111111",
+        "message": "[가상] 이동제약을 수정하려 하나 해석 미확인"
+      },
+      "extractedProfile": {
+        "area": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "timeWindow": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "transport": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "mobility": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "budget": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "indoorPreference": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "companions": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "excludedCategories": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "preferenceTags": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "includeUnknownAccessibility": false
+      },
+      "fallbackUsed": true,
+      "expectedHttp": 200,
+      "expectedResponse": {
+        "status": "NEEDS_INPUT",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "WHEELCHAIR"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 2,
+        "questions": [
+          {
+            "field": "mobility",
+            "message": "이동제약 변경 내용을 확인해 주세요."
+          }
+        ],
+        "warnings": [
+          {
+            "code": "AI_FALLBACK",
+            "message": "규칙 파서로 처리했어요. 조건을 확인해 주세요.",
+            "placeIds": []
+          },
+          {
+            "code": "UNCONFIRMED_CHANGE",
+            "message": "변경 내용을 확인해 주세요.",
+            "placeIds": []
+          }
+        ],
+        "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+        "requestId": "22222222-2222-4222-8222-222222222222",
+        "reply": "조건을 확인해 주세요."
+      },
+      "expectedPendingFields": [
+        "mobility"
+      ]
+    },
+    {
+      "id": "fallback-existing-ready",
+      "operation": "chat",
+      "assumedCapabilities": {
+        "supportedAreas": [
+          "HAEUNDAE"
+        ],
+        "supportedTransports": [
+          "WALK"
+        ],
+        "supportedProfileFields": [
+          "area",
+          "timeWindow",
+          "transport",
+          "mobility",
+          "budget",
+          "indoorPreference",
+          "companions",
+          "excludedCategories",
+          "preferenceTags"
+        ]
+      },
+      "before": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 1,
+        "sessionExpiresAt": "2026-11-12T10:20:00+09:00",
+        "pendingFields": []
+      },
+      "request": {
+        "expectedProfileRevision": 1,
+        "sessionId": "11111111-1111-4111-8111-111111111111",
+        "message": "[가상] 조건 입력"
+      },
+      "extractedProfile": {
+        "area": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "timeWindow": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "transport": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "mobility": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "budget": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "indoorPreference": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "companions": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "excludedCategories": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "preferenceTags": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "includeUnknownAccessibility": false
+      },
+      "fallbackUsed": true,
+      "expectedHttp": 200,
+      "expectedResponse": {
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 2,
+        "questions": [],
+        "warnings": [
+          {
+            "code": "AI_FALLBACK",
+            "message": "규칙 파서로 처리했어요. 조건을 확인해 주세요.",
+            "placeIds": []
+          }
+        ],
+        "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+        "requestId": "22222222-2222-4222-8222-222222222222",
+        "reply": "조건을 확인해 주세요."
+      },
+      "expectedPendingFields": []
+    },
+    {
+      "id": "normal-missing",
+      "operation": "chat",
+      "assumedCapabilities": {
+        "supportedAreas": [
+          "HAEUNDAE"
+        ],
+        "supportedTransports": [
+          "WALK"
+        ],
+        "supportedProfileFields": [
+          "area",
+          "timeWindow",
+          "transport",
+          "mobility",
+          "budget",
+          "indoorPreference",
+          "companions",
+          "excludedCategories",
+          "preferenceTags"
+        ]
+      },
+      "before": {
+        "profile": {
+          "area": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 1,
+        "sessionExpiresAt": "2026-11-12T10:20:00+09:00",
+        "pendingFields": []
+      },
+      "request": {
+        "expectedProfileRevision": 1,
+        "sessionId": "11111111-1111-4111-8111-111111111111",
+        "message": "[가상] 조건 입력"
+      },
+      "extractedProfile": {
+        "area": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "timeWindow": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "transport": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "mobility": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "budget": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "indoorPreference": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "companions": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "excludedCategories": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "HARD"
+        },
+        "preferenceTags": {
+          "value": null,
+          "source": "UNSET",
+          "strength": "SOFT"
+        },
+        "includeUnknownAccessibility": false
+      },
+      "fallbackUsed": false,
+      "expectedHttp": 200,
+      "expectedResponse": {
+        "status": "NEEDS_INPUT",
+        "profile": {
+          "area": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 2,
+        "questions": [
+          {
+            "field": "area",
+            "message": "지역을 확인해 주세요."
+          },
+          {
+            "field": "timeWindow",
+            "message": "시간을 확인해 주세요."
+          }
+        ],
+        "warnings": [],
+        "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+        "requestId": "22222222-2222-4222-8222-222222222222",
+        "reply": "조건을 확인해 주세요."
+      },
+      "expectedPendingFields": [
+        "area",
+        "timeWindow"
+      ]
+    },
+    {
+      "id": "transport-put-preserves-pending",
+      "operation": "put",
+      "assumedCapabilities": {
+        "supportedAreas": [
+          "HAEUNDAE"
+        ],
+        "supportedTransports": [
+          "WALK"
+        ],
+        "supportedProfileFields": [
+          "area",
+          "timeWindow",
+          "transport",
+          "mobility",
+          "budget",
+          "indoorPreference",
+          "companions",
+          "excludedCategories",
+          "preferenceTags"
+        ]
+      },
+      "before": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 1,
+        "sessionExpiresAt": "2026-11-12T10:20:00+09:00",
+        "pendingFields": [
+          "transport"
+        ]
+      },
+      "request": {
+        "expectedProfileRevision": 1,
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T18:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        }
+      },
+      "extractedProfile": null,
+      "fallbackUsed": false,
+      "expectedHttp": 200,
+      "expectedResponse": {
+        "status": "NEEDS_INPUT",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T13:00:00+09:00",
+              "endAt": "2026-11-12T18:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "profileRevision": 2,
+        "questions": [
+          {
+            "field": "transport",
+            "message": "자차는 아직 지원하지 않아요. 도보로 코스를 만들까요?"
+          }
+        ],
+        "warnings": [
+          {
+            "code": "UNSUPPORTED_TRANSPORT",
+            "message": "요청한 이동수단은 아직 지원하지 않아요.",
+            "placeIds": []
+          }
+        ],
+        "sessionExpiresAt": "2026-11-12T10:30:00+09:00",
+        "requestId": "22222222-2222-4222-8222-222222222222"
+      },
+      "expectedPendingFields": [
+        "transport"
+      ]
+    }
+  ]
+}
