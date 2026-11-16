@@ -58,9 +58,9 @@ API는 입출력·오류를 처리하고 application이 실행 순서·실패·�
 | API-001 | POST /api/sessions | 구현 |
 | API-002 | POST /api/chat | PR #13 구현, PR #17 의존 모듈 반영 시 등록 |
 | API-003 | PUT /api/sessions/{id}/profile | {sessionId}, 구현·DEC-020 정규화는 #17과 함께 적용 |
-| API-004 | POST /api/courses | 포함, 미구현 |
+| API-004 | POST /api/courses | 스케줄러·검증기 구현, 실제 포트 연결 후속 |
 | API-005 | POST /api/courses/{courseId}/adjust | 후속 계약 |
-| API-006 | GET /api/places/{placeId} | 포함, 미구현 |
+| API-006 | GET /api/places/{placeId} | #25 구현, Repository 주입·가상 검증 |
 | API-007 | GET /api/facilities | 후속 계약 |
 | API-008 | POST /api/courses/{courseId}/share | 후속 계약 |
 | API-009 | GET /api/share/{shareId} | 후속 계약 |

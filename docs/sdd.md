@@ -373,3 +373,8 @@ FR-005·006 보완: config/defaults.json을 서버 기본 체류시간 함수와
 ## 구현 보완 기록 — FR-002·006·018 / DEC-019~021 (2026-11-11)
 
 COMP-02/03의 application/condition_policy.py는 부분 추출을 기존 프로필과 병합하고 미확인 항목을 세션 내부 pending_fields에 유지한다. 외부 응답 필드는 늘리지 않는다. 질문은 최대 2개이며 코스 진입은 SessionStore.begin_course의 최신 revision·READY 검사를 거친다. 실제 코스 엔진은 아직 미연결이다. AIService·규칙 파서·유모차 정규화는 PR #17, 계약·HTTP 연결은 PR #13으로 구분한다. 구현 상세와 단독/통합 검증, 활성화 계획은 [구현 기록](ISSUE6_8_IMPLEMENTATION.md)을 참조한다. PM의 DEC-019~021은 확정이며 결정 기록 PR #18·SDD 정책 상세 PR #40의 병합 상태와 구분한다.
+
+
+## FR-012 구현 추적 (2026-11-16)
+
+이슈 #25의 COMP-08/API-006을 구현했다. 검증된 최종 코스에서만 구조화 근거를 선택하고 시스템이1~2문장·숫자를 조립한다. 실패 시TEMPLATE/AI_FALLBACK을 사용한다. 사용자 원문·세션·전체 프로필은 설명에 보내지 않으며 개요는200자로 제한한다. GET /api/places/{placeId}는 기존 PlaceResponse로 장소·출처·정보 없음·공공데이터 고지를 반환하며 없는 장소404와 저장소 오류500을 구분한다. 코스와 상세의 Place/Source 변환을 공통화했다. 실제 DB·모델·UI-04 연결과 인수 검증은 후속이다. [구현·검증 기록](ISSUE25_EXPLANATIONS_IMPLEMENTATION.md).
