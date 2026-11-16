@@ -225,7 +225,7 @@ Software Design Document (SDD)
 
 ## 7.3 Prompt 설계
 
-- System Prompt 목적: 용도별 3종으로 분리한다. ① 추출: "부산 놀거리 코스 서비스의 조건 분석기" 역할로, 지정 JSON 스키마의 필드만 채우고 언급 없는 필드는 null, 장소 추천 금지, "꼭·절대·못" 표현은 strength=HARD. ② 수정 해석: 코스 요약과 메시지를 받아 ChangeOp(REMOVE·REPLACE·EXTEND_STAY·INDOOR·INCLUDE_UNKNOWN) 하나로만 응답. ③ 설명: 제공된 장소 필드만 근거로 1~2문장 작성, 새 장소·가격·시간 언급 금지.
+- System Prompt 목적: 용도별 3종으로 분리한다. ① 추출: "부산 놀거리 코스 서비스의 조건 분석기" 역할로, 지정 JSON 스키마의 필드만 채우고 언급 없는 필드는 null, 장소 추천 금지, "꼭·절대·못" 표현은 strength=HARD. ② 수정 해석: 코스 요약과 메시지를 받아 ChangeOp(REMOVE·REPLACE·EXTEND_STAY·INDOOR·INCLUDE_UNKNOWN) 하나로만 응답. 수정이 여러 개면 첫 번째만 만들고 나머지는 확인 질문으로 넘긴다(DEC-024). 조건 자체를 바꾸는 요청은 ChangeOp 대신 조건 변경으로 분류해 추출 경로로 보낸다(DEC-025). ③ 설명: 제공된 장소 필드만 근거로 1~2문장 작성, 새 장소·가격·시간 언급 금지.
 
 - 검색 대상 데이터/Chunk 전략: 문서 청크 대신 구조화 DB 레코드를 사용한다. 장소 1개 = 컨텍스트 1단위(이름, 카테고리, 개요 200자 이내, 접근성 등급, 운영시간, 실내 여부)로 구성한다.
 

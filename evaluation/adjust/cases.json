@@ -1,7 +1,7 @@
 {
   "description": "수정 요청 평가셋 초안 (AI-REQ-07: 의도(대상·변경 내용) 해석 정확도 80% 이상, FR-015, UC-005). 입력은 전부 가상이다. 기대 결과만 적은 사례를 통과로 표시하지 않는다.",
   "version": "draft-2026-11-16",
-  "status": "초안 — 수정 API 계약(#32) 확정 전. 변경 연산 형식은 SDD 7.2의 ChangeOp 5종을 바탕으로 한 평가용 표기다.",
+  "status": "초안 — 수정 API 계약(#32) 확정 전. Q2·Q3은 DEC-024·025로 결정. 변경 연산 형식은 SDD 7.2의 ChangeOp 5종을 바탕으로 한 평가용 표기다.",
   "referenceNow": "2026-11-12T10:00:00+09:00",
   "baseCourse": {
     "note": "[가상] 모든 사례가 공유하는 기존 코스. 장소 ID는 mock 값이며 실제 부산 데이터가 아니다. 이 코스 요약(건강 정보는 범주값만, DEC-006)과 메시지가 해석 호출의 입력이다.",
@@ -15,7 +15,7 @@
     "timeWindow": {"startAt": "2026-11-14T13:00:00+09:00", "endAt": "2026-11-14T18:00:00+09:00"}
   },
   "opFormat": {
-    "op": "REMOVE | REPLACE | EXTEND_STAY | INDOOR | INCLUDE_UNKNOWN | UNCLEAR (SDD 7.2의 5종 + 해석 불가 UNCLEAR, UC-005 3a)",
+    "op": "REMOVE | REPLACE | EXTEND_STAY | INDOOR | INCLUDE_UNKNOWN (SDD 7.2의 5종) | UNCLEAR (해석 불가, UC-005 3a) | PROFILE_CHANGE (조건 변경으로 분류, DEC-025 — 연산이 아니라 평가용 표기)",
     "targets": "대상 장소의 order 목록. 코스 전체면 [] (INDOOR·INCLUDE_UNKNOWN). UNCLEAR면 null",
     "params": "REPLACE: {category: 바꿀 카테고리 또는 null(같은 카테고리 조건 없음)}, EXTEND_STAY: {minutes: 늘릴 분 또는 null(말하지 않음)}"
   },
@@ -26,9 +26,10 @@
     "unchangedOrders는 수정 후 바뀌면 안 되는 장소(AC-007)다. 해석 평가가 아니라 재스케줄링 검증용이라 따로 기록한다.",
     "openQuestion이 있는 사례는 결정 전까지 채점에서 뺀다."
   ],
-  "openQuestions": {
-    "Q2": "여러 변경을 한 번에 요청할 때. UC-005 예시는 \"2번 빼고 실내로 바꿔줘\"인데 SDD 7.2는 ChangeOp '하나로만 응답'이다. 연산 목록을 허용할지, 하나씩 확인 질문할지 정해야 한다.",
-    "Q3": "코스가 아니라 조건을 바꾸는 요청(예: \"7시까지로 늘려줘\" — 시간창 변경). 수정 API에서 처리할지, 조건 카드·채팅으로 보내고 코스를 다시 만들지 정해야 한다. SDD ChangeOp 5종에는 없다."
+  "openQuestions": {},
+  "resolvedQuestions": {
+    "Q2": "여러 변경 → DEC-024: 말한 순서대로 첫 번째만 연산으로 만들고, 나머지는 확인 질문으로 넘긴다. 말없이 버리면 실패.",
+    "Q3": "조건 변경 → DEC-025: 연산을 만들지 않고 PROFILE_CHANGE로 분류해 조건 변경 경로로 보낸 뒤 코스 재생성을 안내한다."
   },
   "cases": [
     {"id": "AD-01", "category": "빼기", "input": "[가상] 2번 빼줘.",
@@ -72,7 +73,7 @@
      "notes": "REPLACE로 해석해도 실내 조건이 함께 전달되면 정답으로 본다(사람 검토).", "result": null},
     {"id": "AD-14", "category": "실내로", "input": "[가상] 야외는 하나도 없었으면 좋겠어요.",
      "expected": {"op": "INDOOR", "targets": [], "mustNot": ["SOFT 선호로만 처리하고 4번 유지"]},
-     "notes": "'하나도 없었으면'은 강한 표현이다. 이후 조건 프로필 반영 여부는 Q3과 함께 정한다.", "result": null},
+     "notes": "'하나도 없었으면'은 강한 표현이지만 이번 코스 수정(INDOOR)으로 처리한다. 계속 실내만 원하면 조건 카드로 안내한다(DEC-025).", "result": null},
     {"id": "AD-15", "category": "정보 없음 포함", "input": "[가상] 정보 없는 장소도 넣어서 다시 만들어 주세요.",
      "before": {"mobility": "WHEELCHAIR(범주값)", "excludedUnknown": 3},
      "expected": {"op": "INCLUDE_UNKNOWN", "targets": []},
@@ -89,11 +90,12 @@
      "acceptable": [{"op": "REMOVE", "targets": [5]}],
      "notes": "코스에 5번이 없다. REMOVE [5]로 해석해도 서버 검증에서 거절되면 정답으로 본다.", "result": null},
     {"id": "AD-19", "category": "여러 변경", "input": "[가상] 2번 빼고 실내로 바꿔줘.",
-     "expected": {"op": "MULTIPLE", "ops": [{"op": "REMOVE", "targets": [2]}, {"op": "INDOOR", "targets": []}], "openQuestion": "Q2"},
-     "notes": "UC-005 기본 흐름의 예시 문장 그대로다.", "result": null},
+     "expected": {"op": "REMOVE", "targets": [2], "followUp": {"op": "INDOOR", "targets": []},
+                  "mustNot": ["INDOOR 요청을 확인 질문 없이 버림", "두 연산을 한 번에 적용"]},
+     "notes": "UC-005 기본 흐름의 예시 문장. DEC-024: 첫 번째(REMOVE)만 적용하고 '실내로 바꾸는 것도 할까요?'를 묻는다. followUp은 질문 내용이 남은 요청을 가리키는지로 채점한다.", "result": null},
     {"id": "AD-20", "category": "조건 변경", "input": "[가상] 저녁 7시까지로 늘려 주세요.",
-     "expected": {"op": "PROFILE_CHANGE", "field": "timeWindow", "value": {"endAt": "2026-11-14T19:00:00+09:00"}, "openQuestion": "Q3",
-                  "mustNot": ["EXTEND_STAY로 특정 장소 체류만 늘림"]},
-     "result": null}
+     "expected": {"op": "PROFILE_CHANGE", "field": "timeWindow", "value": {"endAt": "2026-11-14T19:00:00+09:00"},
+                  "mustNot": ["EXTEND_STAY로 특정 장소 체류만 늘림", "확인 없이 코스 재생성"]},
+     "notes": "DEC-025: 조건을 고치고 코스 재생성을 안내한다. 재생성은 AC-007(나머지 유지) 대상이 아니다.", "result": null}
   ]
 }
