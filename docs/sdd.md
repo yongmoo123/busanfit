@@ -383,3 +383,8 @@ COMP-02/03의 application/condition_policy.py는 부분 추출을 기존 프로�
 ## FR-014 ① 구현 추적 (2026-11-17)
 
 이슈 #26 서버 제안 생성을 구현했다. 최종 적용 프로필의 DEFAULT·값 있음·capabilities 지원 항목에서 기존 카드 EDIT_PROFILE을 최대 3개 만든다. 클릭으로 값을 자동 변경하거나 하드 제약을 완화하지 않으며 사용자 카드 저장 후 새 revision으로 재생성한다. 체류시간은 이번 범위에서 제외했다. 정보 없음·날씨·부분 수정 및 프론트 칩·화면 캡처는 후속이다. [구현·검증·인계 기록](ISSUE26_SUGGESTIONS_IMPLEMENTATION.md).
+
+
+## FR-018 구현 추적 (2026-11-17, 이슈 #27)
+
+동행 카테고리 점수 함수와 가중치 제안 설정을 구현해 가상 후보로 검증했다. 가족 관광·전시·공원 우대 방향은 DEC-013을 따르지만 수치·다른 동행 매핑·실내 대비 계수는 PM 미확정이다. 일반 경로에는 활성화하지 않고 기존 default_score를 유지한다. 가격·분위기·야경·활동성·인원 적합성을 추정하지 않으며 하드 필터·검증기·영유아 유모차·부상 규칙을 유지한다. [제안 표](proposals/issue-27-companion-weights.md), [구현·검증 기록](ISSUE27_COMPANION_SCORING_IMPLEMENTATION.md).

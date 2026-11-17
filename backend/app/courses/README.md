@@ -9,4 +9,4 @@ FR-009 / COMP-05·07의 스케줄러·검증기를 구현했다. #22 후보 검�
 
 `application/course_service.py`가 조회→Repository 사실 재조회→배치→검증→최대 3회 교체·재배치→응답을 제어한다. 출처 조회 중 장소 사실이 바뀌는 경우도 마지막에 재검사한다. 안전하게 배치한 장소가 두 곳 미만이면 course=null/INSUFFICIENT_PLACES다. 장애를 빈 후보로 바꾸지 않는다.
 
-추천 이유는 #25의 ExplanationGenerator를 최종 검증 뒤 주입한다. Place/Source 변환은 places/presentation.py와 공유한다. #26 기본값 조정 제안은 application/suggestions.py로 연결했다. 체류시간·정보 없음·날씨 제안은 제외한다. 앵커·부분 수정·동행별 가중치는 각각 #29·#32·#27 후속이다. 동행 가중치는 임의로 확정하지 않는다. 기본 SOFT 실내 선호의 이진 우선순위와 scorer 주입 지점만 제공한다.
+추천 이유는 #25의 ExplanationGenerator를 최종 검증 뒤 주입한다. Place/Source 변환은 places/presentation.py와 공유한다. #26 기본값 조정 제안은 application/suggestions.py로 연결했다. 체류시간·정보 없음·날씨 제안은 제외한다. 앵커·부분 수정은 #29·#32 후속이다. #27 동행 가중치는 companion_scoring.py에 미승인 제안으로 구현했고 일반 경로는 비활성이다. 가중치 표·계수는 PM 확인 전 확정하지 않는다. app.companion_demo만 명시적으로 제안을 주입하고 기본 scorer는 그대로다. [#27 제안·검증](../../../docs/ISSUE27_COMPANION_SCORING_IMPLEMENTATION.md). 기본 SOFT 실내 선호의 이진 우선순위와 scorer 주입 지점만 제공한다.
