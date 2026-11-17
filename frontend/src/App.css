@@ -15,6 +15,7 @@
 /* 왼쪽 사이드바 */
 
 .sidebar {
+  position: relative;
   width: 270px;
   flex-shrink: 0;
   display: flex;
@@ -721,7 +722,6 @@
 /* ===== 사이드바 드래그 크기 조절 ===== */
 
 .sidebar {
-  position: relative;
   min-width: 220px;
   max-width: 480px;
 }
@@ -1072,4 +1072,17 @@
   .main-panel > .topbar {
     display: none;
   }
+}
+.course-map-marker {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #245f53;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 25%);
 }
