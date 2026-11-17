@@ -1,9 +1,17 @@
-from uuid import uuid4
+from uuid import UUID, uuid4
 from fastapi import APIRouter, Request, Response
 
 from app.api.session_models import SessionRequest, SessionResponse
 
 router = APIRouter()
+
+
+@router.delete('/api/sessions/{sessionId}', status_code=204, response_class=Response,
+               responses={422: {'description': '잘못된 sessionId 형식'},
+                          500: {'description': '서버 내부 오류'}})
+def delete_session(sessionId: UUID, request: Request):
+    request.app.state.sessions.delete(str(sessionId))
+    return Response(status_code=204, headers={'Cache-Control': 'no-store'})
 
 
 @router.post('/api/sessions', status_code=201, response_model=SessionResponse)
