@@ -402,6 +402,7 @@ function App() {
         key={editor.isMock ? 'mock' : 'live'}
         initialProfile={editor.isMock ? readyMock.profile : session?.savedProfile ?? createEmptyProfile()}
         isMock={editor.isMock}
+        capabilities={editor.isMock ? null : session?.capabilities}
         canSave={editor.isMock || Boolean(session)}
         sessionError={editor.isMock ? '' : sessionError}
         onSave={handleSaveProfile}
