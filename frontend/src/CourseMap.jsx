@@ -29,7 +29,7 @@ function loadKakaoMaps() {
   return sdkPromise
 }
 
-export default function CourseMap({ items }) {
+export default function CourseMap({ items, isMock = true }) {
   const mapRef = useRef(null)
   const [error, setError] = useState('')
 
@@ -94,9 +94,11 @@ export default function CourseMap({ items }) {
     }
   }, [items])
 
+  const title = isMock ? '가상 코스 지도' : '코스 지도'
+
   return (
-    <section aria-label="가상 코스 지도">
-      <h4>가상 코스 지도</h4>
+    <section aria-label={title}>
+      <h4>{title}</h4>
       {error ? (
         <p role="status">{error}</p>
       ) : (

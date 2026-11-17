@@ -6,6 +6,7 @@ import { createSession, saveProfile } from './sessionApi.js'
 import { createEmptyProfile } from './profile.js'
 import ProfileEditor from './ProfileEditor.jsx'
 import CourseTimeline from './CourseTimeline.jsx'
+import { createCourse } from './courseApi.js'
 import './App.css'
 
 const MIN_SIDEBAR_WIDTH = 220
@@ -227,6 +228,8 @@ function App() {
   const [sessionAttempt, setSessionAttempt] = useState(0)
   const sessionRequestRef = useRef(null)
   const profileSaveRef = useRef(false)
+  const courseRequestRef = useRef(null)
+  const [isCreatingCourse, setIsCreatingCourse] = useState(false)
 
   useEffect(() => {
     if (isQaEditor) return undefined
@@ -257,6 +260,7 @@ function App() {
   }, [isQaEditor, sessionAttempt])
 
   function retrySession() {
+    courseRequestRef.current?.abort()
     sessionRequestRef.current = null
     setSession(null)
     setSessionError('')
@@ -368,6 +372,7 @@ function App() {
         return {
           ...current,
           savedProfile: result.profile,
+          profileStatus: result.status,
           profileRevision: result.profileRevision,
           expiresAt: result.sessionExpiresAt,
         }
@@ -383,23 +388,43 @@ function App() {
   }
 
   function renderProfileEditor() {
-    return (
+  return (
+    <>
       <ProfileEditor
         key={editor.isMock ? 'mock' : 'live'}
-        initialProfile={editor.isMock ? readyMock.profile : session?.savedProfile ?? createEmptyProfile()}
+        initialProfile={
+          editor.isMock
+            ? readyMock.profile
+            : session?.savedProfile ?? createEmptyProfile()
+        }
         isMock={editor.isMock}
         capabilities={editor.isMock ? null : session?.capabilities}
-        canSave={editor.isMock || Boolean(session)}
+        canSave={editor.isMock || (Boolean(session) && !isCreatingCourse)}
         sessionError={editor.isMock ? '' : sessionError}
         onSave={handleSaveProfile}
         onRestart={retrySession}
         onClose={() => setEditor(null)}
       />
-    )
-  }
+
+      {!editor.isMock && session?.profileStatus === 'READY' && (
+        <div className="profile-actions">
+          <button
+            type="button"
+            className="primary-button"
+            onClick={handleCreateCourse}
+            disabled={isCreatingCourse}
+          >
+            {isCreatingCourse ? '코스 만드는 중…' : '저장한 조건으로 코스 만들기'}
+          </button>
+        </div>
+      )}
+    </>
+  )
+}
 
   function handleNewChat() {
     if (profileSaveRef.current) return
+    courseRequestRef.current?.abort()
 
     if (sendTimerRef.current) {
       clearTimeout(sendTimerRef.current)
@@ -456,6 +481,63 @@ function App() {
       sendTimerRef.current = null
     }, 800)
   }
+
+  async function handleCreateCourse() {
+  if (
+    session?.profileStatus !== 'READY' ||
+    profileSaveRef.current ||
+    courseRequestRef.current
+  ) {
+    return
+  }
+
+  const controller = new AbortController()
+  courseRequestRef.current = controller
+  setIsCreatingCourse(true)
+
+  try {
+    const response = await createCourse(
+      session.sessionId,
+      session.profileRevision,
+      controller.signal,
+    )
+
+    if (controller.signal.aborted) return
+
+    const isDemo =
+      import.meta.env.DEV &&
+      new URLSearchParams(window.location.search).get('qa') === 'course-api'
+
+    setMessages((previous) => [
+      ...previous,
+      {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: response.status === 'INSUFFICIENT_PLACES'
+          ? '저장한 조건으로 방문할 수 있는 장소가 부족해요.'
+          : '저장한 조건으로 코스를 만들었어요.',
+        courseResponse: response,
+        isMock: isDemo,
+      },
+    ])
+  } catch (error) {
+    if (!controller.signal.aborted) {
+      setMessages((previous) => [
+        ...previous,
+        {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: error.status
+            ? error.message
+            : '서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.',
+        },
+      ])
+    }
+  } finally {
+    courseRequestRef.current = null
+    setIsCreatingCourse(false)
+  }
+}
 
   function handleRecommend() {
     setMessages((prev) => [
@@ -588,8 +670,11 @@ function App() {
                         )
                       )}
 
-                      {message.showCoursePlaceholder && (
-                        <CourseTimeline />
+                      {(message.showCoursePlaceholder || message.courseResponse) && (
+                         <CourseTimeline
+                           courseResponse={message.courseResponse}
+                           isMock={message.isMock}
+                         />
                       )}
                     </div>
                   </div>
