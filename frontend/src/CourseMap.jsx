@@ -70,6 +70,8 @@ export default function CourseMap({ items }) {
           const badge = document.createElement('span')
           badge.className = 'course-map-marker'
           badge.textContent = String(index + 1)
+          badge.setAttribute('role', 'img')
+          badge.setAttribute('aria-label', `${index + 1}번 방문 장소, ${items[index].place.name}`)
 
           const marker = new maps.CustomOverlay({
             position,
