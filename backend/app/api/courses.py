@@ -33,7 +33,7 @@ async def generate_course(body: CourseRequest, request: Request, response: Respo
             result.course = explained.course
             result.warnings.extend(explained.warnings)
             store.check_current(sid, revision)
-        payload = dict(course=result.course, suggestions=[], warnings=result.warnings,
+        payload = dict(course=result.course, suggestions=result.suggestions, warnings=result.warnings,
                        excludedUnknown=result.excluded_unknown, sessionExpiresAt=current.expires_at,
                        requestId=uuid4())
         if result.course is None:

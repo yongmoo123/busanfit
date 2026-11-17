@@ -378,3 +378,8 @@ COMP-02/03의 application/condition_policy.py는 부분 추출을 기존 프로�
 ## FR-012 구현 추적 (2026-11-16)
 
 이슈 #25의 COMP-08/API-006을 구현했다. 검증된 최종 코스에서만 구조화 근거를 선택하고 시스템이1~2문장·숫자를 조립한다. 실패 시TEMPLATE/AI_FALLBACK을 사용한다. 사용자 원문·세션·전체 프로필은 설명에 보내지 않으며 개요는200자로 제한한다. GET /api/places/{placeId}는 기존 PlaceResponse로 장소·출처·정보 없음·공공데이터 고지를 반환하며 없는 장소404와 저장소 오류500을 구분한다. 코스와 상세의 Place/Source 변환을 공통화했다. 실제 DB·모델·UI-04 연결과 인수 검증은 후속이다. [구현·검증 기록](ISSUE25_EXPLANATIONS_IMPLEMENTATION.md).
+
+
+## FR-014 ① 구현 추적 (2026-11-17)
+
+이슈 #26 서버 제안 생성을 구현했다. 최종 적용 프로필의 DEFAULT·값 있음·capabilities 지원 항목에서 기존 카드 EDIT_PROFILE을 최대 3개 만든다. 클릭으로 값을 자동 변경하거나 하드 제약을 완화하지 않으며 사용자 카드 저장 후 새 revision으로 재생성한다. 체류시간은 이번 범위에서 제외했다. 정보 없음·날씨·부분 수정 및 프론트 칩·화면 캡처는 후속이다. [구현·검증·인계 기록](ISSUE26_SUGGESTIONS_IMPLEMENTATION.md).

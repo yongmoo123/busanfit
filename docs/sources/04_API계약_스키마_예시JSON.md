@@ -5620,3 +5620,10 @@ JSON Schema(OpenAPI 3.1). $ref는 아래 components.schemas 이름을 가리킨�
 GET /api/places/{placeId}를 기존 PlaceResponse(place/sources/warnings/requestId)로 구현했다. 코스와 공통 변환을 사용하며 기본/접근성 출처는 합집합·중복 제거한다. 구조화 운영시간이 없으면 UNKNOWN, 원문은 description에 보존한다. 가격·접근성 미확인을 무료·이용 가능으로 바꾸지 않는다. 없는 ID는404, 저장소 장애·깨진 출처·유효하지 않은 저장 레코드는500이며 세션·LLM은 사용하지 않는다.
 
 추천 이유는 기존 CourseItem.reason/reasonMethod에 있다. 최종 검증된 장소의 확인된 사실 키1~2개를 모델이 선택하면 시스템이 문장과 숫자를 조립한다. 임의 모델 문장·가격·영업시간·출처는 채택하지 않는다. 사용자 원문·세션·전체 프로필을 보내지 않고 개요는200자로 제한한다. 실패·미확인 출력은 TEMPLATE와 AI_FALLBACK으로 대체하며, 코스의 장소·시간·검증 결과는 바꾸지 않는다. 상세 화면은 코스 항목의 이유와 PlaceResponse를 함께 사용한다. 외부 JSON 필드·enum 변경은 없고 실제 DB·LLM·화면 검증은 후속이다.
+
+
+## FR-014 ① 구현 상태 (2026-11-17, 이슈 #26)
+
+성공 코스의 suggestions를 최종 적용 프로필에서 생성한다. 값이 null이 아니고 source=DEFAULT이며 capabilities와 기존 카드에서 지원하는 필드만 EDIT_PROFILE로 최대 3개 반환한다. area/transport는 지원 값 목록도 확인한다. 기존 카드 순서로 표시하며 필드별 중복은 없다. id는 edit-default-{field}이고 사용자 값·건강 원문을 문구에 넣지 않는다. USER·UNSET·미지원 항목은 제외하며 현재 실제 자동 기본값은 도보·영유아 동반 시 유모차다. 다른 필드에 새 기본값을 적용하지 않는다.
+
+칩 선택은 field에 해당하는 카드를 여는 동작이며 자동 변경·저장·하드 완화가 아니다. 사용자가 USER로 저장한 최신 profileRevision으로 재생성하면 해당 제안이 사라진다. 같은 DEFAULT를 유지하면 제안도 유지하며 최신 응답으로 칩을 교체한다. INSUFFICIENT_PLACES는 suggestions=[]이다. 프로필·revision·코스 내용을 제안 생성으로 변경하지 않는다. 체류시간 제안은 기존 프로필 필드가 없어 이번 범위에서 제외하고, 정보 없음·날씨 제안은 후속이다. 외부 JSON 필드·enum 변경은 없다. 프론트 칩 연결·캡처는 후속이며 현재는 가상 HTTP 흐름으로 검증한다.
