@@ -105,3 +105,5 @@ GitHub Actions는 main/develop push와 PR에서 같은 검사를 실행합니다
 #17 모듈이 함께 반영되면 `/api/chat`과 DEC-020 카드 정규화를 사용한다. #13 단독에서는 기존 세션·카드 API만 등록된다. 실제 Provider는 미설정이며 재시도 후 규칙 파서로 대체한다. 현재 capabilities는 비어 있어 활성 조건은 거절된다. 검토 순서·검증·실행 제한·capabilities 활성화 계획은 [구현 기록](docs/ISSUE6_8_IMPLEMENTATION.md)을 따른다. PR/브랜치 병합 없이 소스 검토 사본에서 188개 통합 테스트를 통과했다.
 
 세션 종료는 기존 PR #12를 로컬 통합해 DELETE /api/sessions/{sessionId}의 멱등204·no-store를 제공한다. SQLite Repository는 PR #41의 구현을 재사용해 가상행으로만 검증하며 실제 검색/이동시간·일반 capabilities는 연결 전 닫혀 있다.
+
+[2026-11-17 서버 완료 기준 점검](docs/SERVER_COMPLETION_AUDIT_2026-11-17.md): 새 PR 없이 기존 #48·#49·#50·#54·#55·#56에 서버 보완을 반영했다. 실제 LLM 평가는 사용자 보류, 실제 해운대 검색/이동시간·프론트·PM 확인은 후속이며 일반 가중치는 비활성이다. `python evaluation/server/run.py --output evaluation/server/results/offline-2026-11-17.json`으로 근거를 수집한다.
