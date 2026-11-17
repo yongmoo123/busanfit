@@ -5,6 +5,7 @@ import readyMock from './mocks/02-chat.ready.response.json'
 import { createSession, saveProfile } from './sessionApi.js'
 import { createEmptyProfile } from './profile.js'
 import ProfileEditor from './ProfileEditor.jsx'
+import CourseTimeline from './CourseTimeline.jsx'
 import './App.css'
 
 const MIN_SIDEBAR_WIDTH = 220
@@ -124,21 +125,6 @@ function ConditionCard({ profile, onRecommend, onEdit }) {
       <div className="profile-actions">
         <button type="button" className="primary-button" onClick={onEdit}>조건 편집</button>
         <button type="button" className="profile-secondary" onClick={onRecommend}>가상 코스 미리보기</button>
-      </div>
-    </div>
-  )
-}
-
-function CoursePlaceholder() {
-  return (
-    <div className="course-placeholder">
-      <div className="course-placeholder-icon">◇</div>
-      <div>
-        <h3>추천 코스 화면 준비 중</h3>
-        <p>
-          실제 장소와 이동 경로를 포함한 추천 결과는
-          코스 API 연동 후 제공될 예정이에요.
-        </p>
       </div>
     </div>
   )
@@ -477,7 +463,7 @@ function App() {
       {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: '여행 코스 추천 기능은 현재 준비 중이에요.',
+        content: '가상 코스 결과를 확인해 보세요.',
         showCoursePlaceholder: true,
         isMock: true,
       },
@@ -603,7 +589,7 @@ function App() {
                       )}
 
                       {message.showCoursePlaceholder && (
-                        <CoursePlaceholder />
+                        <CourseTimeline />
                       )}
                     </div>
                   </div>
