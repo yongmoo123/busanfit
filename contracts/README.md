@@ -10,3 +10,5 @@ validate_contract.py는 기존 검사, validate_source_sync.py는 docs/sources/0
 `policy_contract.py`는 정적 기대 사례의 상태·출처·질문·경고·revision을 검사하고 잘못된 사례를 넣은 negative control도 확인합니다. 실행은 기존 `python contracts/validate_contract.py`에 포함됩니다. `validate_source_sync.py`는 04번 참고 문서의 정책 사례도 비교합니다. 이 검사들은 서버의 정책 처리 구현을 검증하지 않습니다.
 
 DEC-009 세션 종료는 별도 PR #12의 변경으로, 아직 이 브랜치 기준 develop 계약에는 포함되지 않았습니다. 이 작업은 기존 5 operations·31 schemas의 필드·타입·enum을 유지합니다.
+
+기존 PR #12의 DELETE204 계약을 통합해6 operations를 검사한다. 204에는 JSON 본문이 없고 contracts/examples/06-session-delete.http를 따른다.
