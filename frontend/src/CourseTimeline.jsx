@@ -1,4 +1,6 @@
+import { useId, useState } from 'react'
 import CourseMap from './CourseMap.jsx'
+import PlaceDetail from './PlaceDetail.jsx'
 import courseExample from './mocks/04-course.success.response.json'
 import insufficientExample from './mocks/04-course.insufficient.response.json'
 
@@ -20,8 +22,13 @@ function formatTime(value) {
 }
 
 export default function CourseTimeline() {
-  const showInsufficient = import.meta.env.DEV
-    && new URLSearchParams(window.location.search).get('qa') === 'course-insufficient'
+  const [selectedItemId, setSelectedItemId] = useState(null)
+  const detailId = useId()
+
+  const showInsufficient =
+    import.meta.env.DEV &&
+    new URLSearchParams(window.location.search).get('qa') === 'course-insufficient'
+
   const response = showInsufficient ? insufficientExample : courseExample
   const { status, course, warnings, excludedUnknown } = response
 
@@ -40,9 +47,12 @@ export default function CourseTimeline() {
     )
   }
 
+  const selectedItem = course.items.find((item) => item.id === selectedItemId)
+
   return (
     <section className="condition-card" aria-label="가상 코스 타임라인">
       <h3>가상 코스 타임라인</h3>
+
       <ol>
         {course.items.map((item) => {
           const incomingLeg = course.legs.find(
@@ -51,19 +61,35 @@ export default function CourseTimeline() {
 
           return (
             <li key={item.id}>
-              <strong>{item.place.name}</strong>
+              <button
+                type="button"
+                className="profile-secondary"
+                aria-expanded={selectedItemId === item.id}
+                aria-controls={detailId}
+                onClick={() =>
+                  setSelectedItemId((currentId) =>
+                    currentId === item.id ? null : item.id,
+                  )
+                }
+              >
+                {item.place.name} 상세 보기
+              </button>
+
               {incomingLeg && (
                 <p>
                   이전 장소에서 이동 {incomingLeg.minutes}분
                   {incomingLeg.isEstimate && ' (추정)'}
                 </p>
               )}
+
               <p>
                 <time dateTime={item.startAt}>{formatTime(item.startAt)}</time>
                 {' ~ '}
                 <time dateTime={item.endAt}>{formatTime(item.endAt)}</time>
-                {' · 체류 '}{item.stayMinutes}분
+                {' · 체류 '}
+                {item.stayMinutes}분
               </p>
+
               <p>
                 접근성 등급:{' '}
                 {accessibilityLabels[item.place.accessibility?.grade] ?? '정보 없음'}
@@ -72,7 +98,25 @@ export default function CourseTimeline() {
           )
         })}
       </ol>
+
+      <div id={detailId} hidden={!selectedItem}>
+        {selectedItem && (
+          <PlaceDetail
+            detail={{
+              place: selectedItem.place,
+              sources: course.sources.filter((source) =>
+                selectedItem.place.sourceIds.includes(source.id),
+              ),
+              warnings: [],
+            }}
+            courseItem={selectedItem}
+            isMock
+          />
+        )}
+      </div>
+
       <CourseMap items={course.items} />
+
       {warnings.map((warning) => (
         <p key={warning.code}>{warning.message}</p>
       ))}
