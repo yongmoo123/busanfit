@@ -7,6 +7,7 @@ from app.api.profile_models import NonnegativeInt, ProfileResponse
 from app.api.session_models import ContractModel
 from app.api.errors import error_response
 from app.application.condition_policy import analyze_chat
+from app.constraints.profile import ProfileError
 
 
 class ChatRequest(ContractModel):
@@ -29,7 +30,16 @@ async def chat(body: ChatRequest, request: Request, response: Response):
     store = request.app.state.sessions
     sid, revision = str(body.sessionId), body.expectedProfileRevision
     current = store.begin(sid, revision)
-    analysis = await request.app.state.extractor.extract(body.message)
+    try:
+        analysis = await request.app.state.extractor.extract(body.message)
+    except ProfileError:
+        store.check_current(sid, revision)
+        raise
+    except Exception:
+        # A late extractor error cannot override deletion/revision changes or
+        # escape into server middleware logs with a sensitive exception string.
+        store.check_current(sid, revision)
+        return error_response(500, 'INTERNAL_ERROR', '조건을 처리하지 못했어요. 잠시 후 다시 시도해 주세요.', True)
     # Recheck slow results before returning503; commit rechecks atomically too.
     store.check_current(sid, revision)
     result = analyze_chat(current, analysis, request.app.state.capabilities)

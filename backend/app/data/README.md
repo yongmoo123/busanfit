@@ -5,3 +5,5 @@ DB는 확정 결정 DEC-005의 SQLite를 따른다. 기존 PostgreSQL+PostGIS �
 좌표·원본 ID·중복·출처 연결·누락을 검증하고 UNKNOWN은 그대로 유지합니다.
 외부 수집은 pipelines, 요청 시 검색은 이 영역입니다. 초기 적재 재현은 pipelines와 함께 검수합니다.
 FR-017의 역·주차장·엘리베이터·보관함 조회도 담당합니다. FR-019 공유 저장은 Could 후속이며 세션/건강 원문 저장과 구분합니다.
+
+2026-11-17: 기존 PR #50에서 PR #41(451b3f0)의 db/geo/memory/schema/settings/sqlite_repository와 공통 검사를 재사용했다. application/sqlite_adapter.ConnectionPerCallRepository(path)는 호출한 worker thread에서 연결을 열고 닫는다. 테스트 행·후보·이동시간은 가상이고 일반 앱은 자동 연결하지 않는다. 주소 nullable인 원본 스키마의 DEC-023 반영은 데이터 담당 후속이다.
