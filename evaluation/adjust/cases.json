@@ -10,7 +10,7 @@
       {"order": 1, "placeId": "mock:cafe-a", "name": "[가상] 바다카페", "category": "CAFE", "indoor": true, "startAt": "13:00", "endAt": "14:00"},
       {"order": 2, "placeId": "mock:museum-b", "name": "[가상] 해변미술관", "category": "EXHIBITION", "indoor": true, "startAt": "14:15", "endAt": "15:15"},
       {"order": 3, "placeId": "mock:food-c", "name": "[가상] 국밥집", "category": "FOOD", "indoor": true, "startAt": "15:30", "endAt": "16:40"},
-      {"order": 4, "placeId": "mock:park-d", "name": "[가상] 동백공원", "category": "PARK", "indoor": false, "startAt": "16:55", "endAt": "17:55"}
+      {"order": 4, "placeId": "mock:park-d", "name": "[가상] 동백공원", "category": "PARK", "indoor": false, "startAt": "16:55", "endAt": "17:40"}
     ],
     "timeWindow": {"startAt": "2026-11-14T13:00:00+09:00", "endAt": "2026-11-14T18:00:00+09:00"}
   },
@@ -29,6 +29,7 @@
   "openQuestions": {},
   "resolvedQuestions": {
     "Q2": "여러 변경 → DEC-024: 말한 순서대로 첫 번째만 연산으로 만들고, 나머지는 확인 질문으로 넘긴다. 말없이 버리면 실패.",
+    "AC-007": "체류 연장 → DEC-027: 대상 앞 장소는 그대로, 뒤 장소는 장소·순서를 유지한 채 시각만 밀 수 있다. 시간창·영업시간을 넘으면 바꾸지 않고 대안 안내.",
     "Q3": "조건 변경 → DEC-025: 연산을 만들지 않고 PROFILE_CHANGE로 분류해 조건 변경 경로로 보낸 뒤 코스 재생성을 안내한다."
   },
   "cases": [
@@ -56,13 +57,22 @@
                   "mustNot": ["'조용한'을 하드 조건으로 확정"]},
      "notes": "'조용한'은 DB에 근거가 없는 선호라 카테고리로 바꾸지 않는다.", "result": null},
     {"id": "AD-09", "category": "체류 늘리기", "input": "[가상] 카페에 30분 더 있고 싶어요.",
-     "expected": {"op": "EXTEND_STAY", "targets": [1], "params": {"minutes": 30}},
-     "notes": "뒤 장소 시각은 밀릴 수 있다. 시간창을 넘으면 4a(수정 불가 안내·대안).", "result": null},
-    {"id": "AD-10", "category": "체류 늘리기", "input": "[가상] 2번에서 한 시간 더 볼게요.",
-     "expected": {"op": "EXTEND_STAY", "targets": [2], "params": {"minutes": 60}}, "result": null},
+     "expected": {"op": "EXTEND_STAY", "targets": [1], "params": {"minutes": 30},
+                  "reschedule": {"result": "INFEASIBLE", "unchangedOrders": [1, 2, 3, 4],
+                                 "why": "2~4번을 30분씩 밀면 4번이 18:10에 끝나 시간창(18:00)을 넘는다"},
+                  "mustNot": ["시간창을 넘긴 코스", "다른 장소를 말없이 빼거나 바꿈"]},
+     "notes": "DEC-027: 불가능하면 코스를 바꾸지 않고 이유와 대안(예: 마지막 장소 빼기)을 안내한다(UC-005 4a).", "result": null},
+    {"id": "AD-10", "category": "체류 늘리기", "input": "[가상] 2번에서 15분만 더 볼게요.",
+     "expected": {"op": "EXTEND_STAY", "targets": [2], "params": {"minutes": 15},
+                  "reschedule": {"result": "SHIFTED", "unchangedOrders": [1], "shiftedOrders": [3, 4],
+                                 "why": "2번 종료 15:30, 3·4번은 장소·순서 그대로 15분씩 뒤로 밀려 4번이 17:55에 끝난다"},
+                  "mustNot": ["3·4번 장소 교체", "1번 시각 변경"]},
+     "notes": "DEC-027: 대상 뒤 장소의 시각만 밀 수 있다. 밀린 장소도 영업시간 검증을 다시 받는다.", "result": null},
     {"id": "AD-11", "category": "체류 늘리기", "input": "[가상] 밥은 좀 여유 있게 먹고 싶어요.",
-     "expected": {"op": "EXTEND_STAY", "targets": [3], "params": {"minutes": null}, "mustNot": ["늘릴 시간을 지어냄(예: 30분)"]},
-     "notes": "분을 말하지 않았다. 늘릴 양은 시스템 규칙이나 확인 질문으로 정한다.", "result": null},
+     "expected": {"op": "EXTEND_STAY", "targets": [3], "params": {"minutes": null},
+                  "reschedule": {"unchangedOrders": [1, 2]},
+                  "mustNot": ["늘릴 시간을 지어냄(예: 30분)"]},
+     "notes": "분을 말하지 않았다. 늘릴 양은 확인 질문이나 시스템 규칙으로 정한다. 4번 뒤 여유는 20분이다.", "result": null},
     {"id": "AD-12", "category": "실내로", "input": "[가상] 비 올 것 같은데 실내 위주로 바꿔줘.",
      "expected": {"op": "INDOOR", "targets": []},
      "acceptable": [{"op": "INDOOR", "targets": [4]}],
