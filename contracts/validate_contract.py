@@ -158,5 +158,11 @@ for invalid, schema in [
 operations = sum(len(v) for v in spec["paths"].values())
 policy_cases = json.loads((ROOT / 'policy-cases.json').read_text(encoding='utf-8'))
 runpy.run_path(str(ROOT / 'policy_contract.py'))['validate_cases'](policy_cases, spec, check)
+delete = spec['paths']['/api/sessions/{sessionId}']['delete']
+assert 'requestBody' not in delete and 'content' not in delete['responses']['204']
+assert delete['parameters'][0]['schema'] == {'type': 'string', 'format': 'uuid'}
+assert delete['responses']['204']['headers']['Cache-Control']['schema']['const'] == 'no-store'
+for code in ['422', '500']:
+    assert delete['responses'][code]['content']['application/json']['schema']['$ref'] == '#/components/schemas/ErrorResponse'
 print(f"PASS: {operations} operations, {len(schemas)} schemas, {len(index)} JSON examples; references, embedded examples, timeline, source links, negative controls.")
 print(f"PASS: {len(policy_cases['cases'])} synthetic policy cases (DEC-019~021), including negative controls; no HTTP calls.")

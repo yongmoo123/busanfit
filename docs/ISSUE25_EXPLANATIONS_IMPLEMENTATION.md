@@ -60,3 +60,8 @@ python evaluation/explanations/run.py --output evaluation/explanations/results/s
 3. 실제 모델의 사실 키 선택·설명 품질·지연·실패율을 가상 입력으로 평가하고 시연용 유료 API 정책 확인. 실제 외부 API·호스팅 포함 15초 목표 검증.
 4. 배진호 UI-04: CourseItem.reason/reasonMethod + 상세 API의 place/sources/warnings 조합. 상세 계약에 reason 추가 없음. null은 정보 없음으로, 제공기관·데이터명·기준일·이용조건과 공공데이터 고지 표시. 화면·캡처·프론트 lint/build는 이번 범위에 없음.
 5. #26 제안·#27 점수화·#29 앵커·#32 수정은 별도. 선행 PR과 develop 반영 후 통합 검사 필요. 이번 작업은 로컬 구현·검증이며 PR 게시·원격 CI·이슈 종료는 수행하지 않음.
+
+
+## 기존 PR #54 보완 (2026-11-17)
+
+최신 #50의 세션 종료·SQLite 연결 검증을 통합하고, 실제 SQLite 코드/가상행의 설명·상세·두 출처 일치와 HTTP 삭제 중 설명 성공/오류의410 우선 검사를 보완했다. 전체610 passed(기존 경고1건), 계약6 operations·참고 문서 동기화 통과. 실제 모델 평가는 사용자 요청으로 보류하고 UI-04·실데이터 연결은 후속이다. 새 PR을 만들지 않고 기존 브랜치를 갱신한다.
