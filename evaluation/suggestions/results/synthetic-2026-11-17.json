@@ -1,0 +1,61 @@
+{
+  "syntheticOnly": true,
+  "frontendVerified": false,
+  "realDbVerified": false,
+  "realLlmVerified": false,
+  "codeRevision": "020e1061cc3ccf6286d37c4392d9fc203c7d8bc8",
+  "workingTreeModified": false,
+  "runDate": "2026-11-17T12:02:34.584365+09:00",
+  "scenarios": [
+    {
+      "id": "confirm-transport",
+      "beforeFields": [
+        "transport"
+      ],
+      "afterFields": [],
+      "status": "SUCCESS",
+      "hardViolations": 0,
+      "newRevision": 2,
+      "staleRevisionRejected": true,
+      "editRequired": true
+    },
+    {
+      "id": "confirm-mobility",
+      "beforeFields": [
+        "transport",
+        "mobility"
+      ],
+      "afterFields": [
+        "transport"
+      ],
+      "status": "SUCCESS",
+      "hardViolations": 0,
+      "newRevision": 2,
+      "staleRevisionRejected": true,
+      "editRequired": true
+    },
+    {
+      "id": "remove-mobility",
+      "beforeFields": [
+        "transport",
+        "mobility"
+      ],
+      "afterFields": [
+        "transport"
+      ],
+      "status": "SUCCESS",
+      "hardViolations": 0,
+      "newRevision": 2,
+      "staleRevisionRejected": true,
+      "editRequired": true
+    },
+    {
+      "id": "insufficient",
+      "beforeFields": [],
+      "afterFields": [],
+      "status": "INSUFFICIENT_PLACES",
+      "hardViolations": 0,
+      "editRequired": false
+    }
+  ]
+}

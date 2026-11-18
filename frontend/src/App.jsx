@@ -1,10 +1,12 @@
 
 import { useEffect, useRef, useState } from 'react'
 import readyMock from './mocks/02-chat.ready.response.json'
-import { createSession, saveProfile, sendChatMessage } from './sessionApi.js'
+import { createSession, saveProfile, sendChat, deleteSession } from './sessionApi.js'
 import { createEmptyProfile } from './profile.js'
+import { budgetLabel } from './profileDefaults.js'
 import ProfileEditor from './ProfileEditor.jsx'
 import CourseTimeline from './CourseTimeline.jsx'
+import { createCourse } from './courseApi.js'
 import './App.css'
 
 const MIN_SIDEBAR_WIDTH = 220
@@ -80,17 +82,19 @@ function getCompanionsName(value) {
   return value.count ? `${type} · ${value.count}명` : type
 }
 
-function ConditionCard({ profile, onRecommend, onEdit }) {
+function ConditionCard({ profile, onRecommend, onEdit, ready }) {
   const timeWindow = profile?.timeWindow?.value
-  const budget = profile?.budget?.value
 
   const items = [
-    { label: '여행 지역', value: getAreaName(profile?.area?.value) },
-    { label: '이동수단', value: getTransportName(profile?.transport?.value), source: profile?.transport?.source },
-    { label: '시작 시간', value: formatDateTime(timeWindow?.startAt) },
-    { label: '종료 시간', value: formatDateTime(timeWindow?.endAt) },
-    { label: '동행 인원', value: getCompanionsName(profile?.companions?.value) },
-    { label: '예산', value: budget == null ? '미입력' : budget.amount.toLocaleString('ko-KR') + '원' },
+    { field: 'area', label: '여행 지역', value: getAreaName(profile?.area?.value) },
+    { field: 'transport', label: '이동수단', value: getTransportName(profile?.transport?.value) },
+    { field: 'timeWindow', label: '시작 시간', value: formatDateTime(timeWindow?.startAt) },
+    { field: 'timeWindow', label: '종료 시간', value: formatDateTime(timeWindow?.endAt) },
+    { field: 'companions', label: '동행 인원', value: getCompanionsName(profile?.companions?.value) },
+    { field: 'budget', label: '예산', value: budgetLabel(profile.budget) },
+    { field: 'mobility', label: '이동제약', value: profile?.mobility?.value?.map((value) => ({ WHEELCHAIR: '휠체어', STROLLER: '유모차', INJURY: '부상' })[value]).join(', ') || (profile?.mobility?.value === null ? '미입력' : '제약 없음') },
+    { field: 'indoorPreference', label: '장소 선호', value: ({ INDOOR: '실내', OUTDOOR: '실외', ANY: '상관없음' })[profile?.indoorPreference?.value] ?? '미입력' },
+    { field: 'excludedCategories', label: '제외 카테고리', value: profile?.excludedCategories?.value?.map((value) => ({ CAFE: '카페', FOOD: '음식점', EXHIBITION: '전시', ATTRACTION: '관광지', PARK: '공원', SHOPPING: '쇼핑', OTHER: '기타' })[value]).join(', ') || (profile?.excludedCategories?.value === null ? '미입력' : '제외 없음') },
   ]
 
   return (
@@ -106,18 +110,15 @@ function ConditionCard({ profile, onRecommend, onEdit }) {
           <div className="condition-item" key={item.label}>
             <span>{item.label}</span>
             <strong>{item.value}</strong>
-            {item.source === 'DEFAULT' && <span className="profile-default">기본값</span>}
+            {(profile?.[item.field]?.source === 'DEFAULT' || (item.field === 'budget' && profile.budget.value === null)) && <span className="profile-default">기본값</span>}
+            {profile?.[item.field]?.value !== null && <span className="condition-strength">{profile?.[item.field]?.strength === 'HARD' ? '필수' : '선호'}</span>}
           </div>
         ))}
       </div>
 
       <div className="profile-actions">
         <button type="button" className="primary-button" onClick={onEdit}>조건 편집</button>
-        {onRecommend && (
-          <button type="button" className="profile-secondary" onClick={onRecommend}>
-            가상 코스 미리보기
-          </button>
-        )}
+        <button type="button" className="profile-secondary" disabled={!ready} onClick={onRecommend}>가상 코스 미리보기</button>
       </div>
     </div>
   )
@@ -220,6 +221,8 @@ function App() {
   const [sessionAttempt, setSessionAttempt] = useState(0)
   const sessionRequestRef = useRef(null)
   const profileSaveRef = useRef(false)
+  const courseRequestRef = useRef(null)
+  const [isCreatingCourse, setIsCreatingCourse] = useState(false)
 
   useEffect(() => {
     if (isQaEditor) return undefined
@@ -250,12 +253,14 @@ function App() {
   }, [isQaEditor, sessionAttempt])
 
   function retrySession() {
-    chatRequestRef.current?.abort()
-    chatRequestRef.current = null
-    setIsSending(false)
+    if (profileSaveRef.current) return
+    courseRequestRef.current?.abort()
+    if (session?.sessionId) deleteSession(session.sessionId).catch(() => {})
     sessionRequestRef.current = null
     setSession(null)
     setSessionError('')
+    setMessages([])
+    setEditor(null)
     setSessionAttempt((current) => current + 1)
   }
 
@@ -267,7 +272,7 @@ function App() {
   const [isResizing, setIsResizing] = useState(false)
 
   const messagesEndRef = useRef(null)
-  const chatRequestRef = useRef(null)
+  const chatAbortRef = useRef(null)
   const resizingRef = useRef(false)
 
   const hasMessages = messages.length > 0
@@ -280,7 +285,10 @@ function App() {
   }, [messages, isSending])
 
   useEffect(() => {
-    return () => chatRequestRef.current?.abort()
+    return () => {
+      chatAbortRef.current?.abort()
+      courseRequestRef.current?.abort()
+    }
   }, [])
 
   useEffect(() => {
@@ -348,9 +356,7 @@ function App() {
       return { profile, status: questions.length ? 'NEEDS_INPUT' : 'READY', questions, warnings: [] }
     }
 
-    const targetMessageId = editor?.target
-
-    if (!session || profileSaveRef.current || chatRequestRef.current) {
+    if (!session || profileSaveRef.current) {
       throw new Error('서버 연결 또는 이전 저장이 끝날 때까지 기다려 주세요.')
     }
 
@@ -362,150 +368,205 @@ function App() {
         return {
           ...current,
           savedProfile: result.profile,
+          profileStatus: result.status,
           profileRevision: result.profileRevision,
           expiresAt: result.sessionExpiresAt,
         }
       })
-      const notes = [
-        ...(result.questions ?? []),
-        ...(result.warnings ?? []),
-      ].map((item) => item.message).filter(Boolean)
-
-      setMessages((previous) =>
-        previous.map((message) =>
-          message.id === targetMessageId
-            ? {
-                ...message,
-                content: ['여행 조건을 저장했어요.', ...notes].join('\n\n'),
-                status: result.status,
-                profile: result.profile,
-                hasSavedProfile: true,
-              }
-            : message,
-        ),
-      )
-
+      setMessages((current) => {
+        const updated = { role: 'assistant', profile: result.profile, status: result.status,
+          warnings: result.warnings,
+          content: ['조건을 저장했어요.', ...result.questions.map((q) => q.message)].join('\n\n') }
+        return current.some((message) => message.id === editor?.target)
+          ? current.map((message) => message.id === editor?.target ? { ...message, ...updated } : message)
+          : [...current, { id: crypto.randomUUID(), ...updated }]
+      })
       return result
+    } catch (error) {
+      if ([409, 410].includes(error.status) || !error.status) {
+        setSessionError('조건 저장 상태를 확인할 수 없어요. 새 대화를 시작해 주세요.')
+      }
+      throw error
     } finally {
       profileSaveRef.current = false
     }
   }
 
   function openEditor(target) {
-    if (!profileSaveRef.current) setEditor({ target, isMock: false })
+    if (!profileSaveRef.current && !isSending) setEditor({ target, isMock: false })
   }
 
   function renderProfileEditor() {
     return (
-      <ProfileEditor
-        key={editor.isMock ? 'mock' : 'live'}
-        initialProfile={editor.isMock ? readyMock.profile : session?.savedProfile ?? createEmptyProfile()}
-        isMock={editor.isMock}
-        capabilities={editor.isMock ? null : session?.capabilities}
-        canSave={editor.isMock || Boolean(session)}
-        sessionError={editor.isMock ? '' : sessionError}
-        onSave={handleSaveProfile}
-        onRestart={retrySession}
-        onClose={() => setEditor(null)}
-      />
+      <>
+        <ProfileEditor
+          key={editor.isMock ? 'mock' : 'live'}
+          initialProfile={
+            editor.isMock
+              ? readyMock.profile
+              : session?.savedProfile ?? createEmptyProfile()
+          }
+          isMock={editor.isMock}
+          capabilities={editor.isMock ? null : session?.capabilities}
+          canSave={
+            editor.isMock || (Boolean(session) && !isSending && !isCreatingCourse && !sessionError)
+          }
+          sessionError={editor.isMock ? '' : sessionError}
+          onSave={handleSaveProfile}
+          onRestart={retrySession}
+          onClose={() => setEditor(null)}
+        />
+
+        {!editor.isMock && session?.profileStatus === 'READY' && (
+          <div className="profile-actions">
+            <button
+              type="button"
+              className="primary-button"
+              onClick={handleCreateCourse}
+              disabled={isCreatingCourse || isSending || Boolean(sessionError)}
+            >
+              {isCreatingCourse ? '코스 만드는 중…' : '저장한 조건으로 코스 만들기'}
+            </button>
+          </div>
+        )}
+      </>
     )
   }
 
   function handleNewChat() {
     if (profileSaveRef.current) return
-
     retrySession()
-    setEditor(null)
-    setMessages([])
     setInput('')
+    setIsSending(false)
     setSidebarOpen(false)
   }
 
-  async function handleSubmit(event) {
+  function handleSubmit(event) {
     event.preventDefault()
-
     const text = input.trim()
-    if (!text || chatRequestRef.current || profileSaveRef.current) return
+    if (!text) return
+    sendMessage(text)
+  }
 
-    if (!session) {
-      setMessages((previous) => [
-        ...previous,
+  async function sendMessage(text) {
+    if (!session || sessionError || isSending || profileSaveRef.current || courseRequestRef.current || editor) return
+    profileSaveRef.current = true
+    const controller = new AbortController()
+    chatAbortRef.current = controller
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        role: 'user',
+        content: text,
+      },
+    ])
+
+    setInput('')
+    setIsSending(true)
+
+    try {
+      const response = await sendChat(session.sessionId, text, session.profileRevision, controller.signal)
+      setSession((current) => ({
+        ...current,
+        savedProfile: response.profile,
+        profileStatus: response.status,
+        profileRevision: response.profileRevision,
+        expiresAt: response.sessionExpiresAt,
+      }))
+      const questions = response.status === 'NEEDS_INPUT'
+        ? (response.questions ?? []).slice(0, 2)
+        : []
+
+      setMessages((prev) => [
+        ...prev,
         {
           id: crypto.randomUUID(),
           role: 'assistant',
-          content: sessionError || '서버에 연결 중이에요. 잠시 후 다시 보내 주세요.',
-          canRestartSession: Boolean(sessionError),
+          content: [
+            response.reply,
+            ...questions.map((question) => question.message),
+          ].join('\n\n'),
+          status: response.status,
+          profile: response.profile,
+          warnings: response.warnings,
         },
       ])
+
+    } catch (error) {
+      if (error.name === 'AbortError') return
+      const restart = [409, 410].includes(error.status) || !error.status
+      const content = error.status === 429
+        ? `요청이 많아요. ${error.retryAfter ?? '잠시'}초 뒤 다시 입력해 주세요.`
+        : error.status ? error.message : '연결이 끊겼어요. 저장 여부를 확인할 수 없어 새 대화가 필요해요.'
+      if (restart) setSessionError(content)
+      setMessages((current) => [...current, {
+        id: crypto.randomUUID(), role: 'assistant', content,
+        directInput: error.status === 503 || error.status === 422,
+      }])
+    } finally {
+      profileSaveRef.current = false
+      chatAbortRef.current = null
+      setIsSending(false)
+    }
+  }
+
+  async function handleCreateCourse() {
+    if (
+      session?.profileStatus !== 'READY' ||
+      sessionError ||
+      profileSaveRef.current ||
+      courseRequestRef.current
+    ) {
       return
     }
 
     const controller = new AbortController()
-    chatRequestRef.current = controller
-    setIsSending(true)
-    setInput('')
-    setMessages((previous) => [
-      ...previous,
-      { id: crypto.randomUUID(), role: 'user', content: text },
-    ])
+    courseRequestRef.current = controller
+    setIsCreatingCourse(true)
 
     try {
-      const result = await sendChatMessage(
+      const response = await createCourse(
         session.sessionId,
-        text,
         session.profileRevision,
         controller.signal,
       )
 
       if (controller.signal.aborted) return
 
-      setSession((current) => {
-        if (current?.sessionId !== session.sessionId) return current
-
-        return {
-          ...current,
-          savedProfile: result.profile,
-          profileRevision: result.profileRevision,
-          expiresAt: result.sessionExpiresAt,
-        }
-      })
-
-      const details = [
-        ...(result.questions ?? []),
-        ...(result.warnings ?? []),
-      ].map((item) => item.message)
+      const isDemo =
+        import.meta.env.DEV &&
+        new URLSearchParams(window.location.search).get('qa') === 'course-api'
 
       setMessages((previous) => [
         ...previous,
         {
           id: crypto.randomUUID(),
           role: 'assistant',
-          content: [result.reply, ...details].filter(Boolean).join('\n\n'),
-          status: result.status,
-          profile: result.profile,
-          canEditProfile: result.status === 'NEEDS_INPUT',
+          content: response.status === 'INSUFFICIENT_PLACES'
+            ? '저장한 조건으로 방문할 수 있는 장소가 부족해요.'
+            : '저장한 조건으로 코스를 만들었어요.',
+          courseResponse: response,
+          isMock: isDemo,
         },
       ])
     } catch (error) {
-      if (controller.signal.aborted) return
-
-      setMessages((previous) => [
-        ...previous,
-        {
-          id: crypto.randomUUID(),
-          role: 'assistant',
-          content: error.status
-            ? error.message
-            : '서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.',
-          canEditProfile: error.status === 503,
-          canRestartSession: error.status === 410,
-        },
-      ])
-    } finally {
-      if (chatRequestRef.current === controller) {
-        chatRequestRef.current = null
-        setIsSending(false)
+      if (!controller.signal.aborted) {
+        setMessages((previous) => [
+          ...previous,
+          {
+            id: crypto.randomUUID(),
+            role: 'assistant',
+            content: error.status
+              ? error.message
+              : '서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.',
+          },
+        ])
       }
+    } finally {
+      courseRequestRef.current = null
+      setIsCreatingCourse(false)
     }
   }
 
@@ -538,7 +599,8 @@ function App() {
         placeholder="부산에서 어떤 하루를 보내고 싶으세요?"
         aria-label="여행 조건 입력"
         rows={1}
-        disabled={isSending}
+        maxLength={1000}
+        disabled={isSending || isCreatingCourse || !session || Boolean(sessionError) || Boolean(editor)}
       />
       <div className="composer-bottom">
         <span>✦ BusanFit AI</span>
@@ -546,7 +608,7 @@ function App() {
           type="submit"
           className="send-button"
           aria-label="메시지 전송"
-          disabled={!input.trim() || isSending}
+          disabled={!input.trim() || isSending || isCreatingCourse || !session || Boolean(sessionError) || Boolean(editor)}
         >
           ↑
         </button>
@@ -577,7 +639,13 @@ function App() {
 
         </header>
 
-        {isQaEditor ? (
+        {!isQaEditor && <div className="chat-notice" role="status">
+          <span>개발 검증 중 · 가상 시나리오만 입력해 주세요. 코스 추천은 준비 중입니다.</span>
+          {sessionError ? <><p>{sessionError}</p><button type="button" onClick={handleNewChat}>새 대화 시작</button></>
+            : !session ? <p>서버 연결 중…</p> : <button type="button" disabled={isSending || Boolean(editor)} onClick={() => openEditor('manual')}>조건 직접 입력</button>}
+        </div>}
+
+        {isQaEditor || editor?.target === 'manual' ? (
           <div className="profile-editor-page">{renderProfileEditor()}</div>
         ) : !hasMessages ? (
           <div className="welcome-layout">
@@ -622,46 +690,40 @@ function App() {
                     )}
 
                     <div className="message-body">
-                      {(!message.hasSavedProfile || editor?.target !== message.id) && (
-                        <div className="message-bubble">
-                          {message.content}
-                        </div>
-                      )}
+                      <div className="message-bubble">
+                        {message.content}
+                      </div>
 
                       {message.isMock && (
                         <span className="message-caption">가상 응답</span>
                       )}
 
-                      {editor?.target === message.id ? (
-                        renderProfileEditor()
-                      ) : message.profile && (message.status === 'READY' || message.hasSavedProfile) ? (
-                        <ConditionCard
-                          profile={message.profile}
-                          onRecommend={message.status === 'READY' ? handleRecommend : undefined}
-                          onEdit={() => openEditor(message.id)}
-                        />
-                      ) : message.canEditProfile ? (
-                        <button
-                          type="button"
-                          className="profile-secondary"
-                          onClick={() => openEditor(message.id)}
-                        >
-                          조건 직접 입력
-                        </button>
-                      ) : null}
+                      {message.warnings?.map((warning, index) => <p className="chat-warning" role="status" key={`${warning.code}-${index}`}>{warning.message}</p>)}
 
-                      {message.canRestartSession && (
-                        <button
-                          type="button"
-                          className="profile-secondary"
-                          onClick={retrySession}
-                        >
-                          새 세션 시작
-                        </button>
+                      {message.directInput && <button type="button" disabled={isSending} onClick={() => openEditor(message.id)}>조건 카드에 직접 입력</button>}
+
+                      {message.profile && message.id === messages.findLast((item) => item.profile)?.id && (
+                        editor?.target === message.id ? renderProfileEditor() : (
+                          <ConditionCard
+                            profile={message.profile}
+                            ready={message.status === 'READY'}
+                            onRecommend={handleRecommend}
+                            onEdit={() => openEditor(message.id)}
+                          />
+                        )
                       )}
 
-                      {message.showCoursePlaceholder && (
-                        <CourseTimeline />
+                      {message.id === messages.findLast((item) => item.profile)?.id && message.warnings?.some((w) => w.code === 'UNSUPPORTED_TRANSPORT') && (
+                        <button type="button" disabled={isSending || isCreatingCourse || Boolean(editor)} onClick={() => sendMessage('도보로 이동할게요')}>도보로 이동할게요</button>
+                      )}
+
+                      {editor?.target === message.id && !message.profile && renderProfileEditor()}
+
+                      {(message.showCoursePlaceholder || message.courseResponse) && (
+                        <CourseTimeline
+                          courseResponse={message.courseResponse}
+                          isMock={message.isMock}
+                        />
                       )}
                     </div>
                   </div>
