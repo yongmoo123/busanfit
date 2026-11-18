@@ -71,16 +71,6 @@ Linux/macOS에서는 `.venv/Scripts/python.exe` 대신 `.venv/bin/python`을 사
 PUT은 전체 교체이므로 모든 필드를 보내야 합니다. 삭제할 조건은 null/UNSET, 직접 지정한 값은 USER입니다. 기존 서버 DEFAULT는 값·강도를 그대로 유지하는 경우에만 보낼 수 있습니다. 현재 서버는 기본값을 생성하지 않습니다.
 지원 여부는 세션 생성과 수정 검증이 같은 capabilities를 사용합니다. HAEUNDAE/WALK 계약 예시는 가상 시연 자료이며 현재 지원을 뜻하지 않습니다. READY 경로는 테스트 전용 지원 설정으로 검증했으며 운영 앱에서는 아직 반환하지 않습니다.
 
-### 세션 종료 확인 (DEC-009)
-
-1. `/docs`에서 POST /api/sessions로 새 sessionId를 받습니다.
-2. DELETE /api/sessions/{sessionId} → Try it out → 해당 sessionId 입력 → Execute.
-3. **204**와 빈 응답 본문을 확인합니다. 같은 UUID로 다시 실행해도 204입니다.
-4. 같은 세션으로 PUT 프로필 요청을 보내면 **410 SESSION_EXPIRED**입니다. 새 테스트는 새 세션을 만듭니다.
-
-종료는 요청 본문·revision 없이 호출합니다. 프로필·대화 이력·revision·세션별 요청 횟수를 저장소에서 제거합니다. 다른 세션과 IP별 생성 제한은 유지합니다. 진행 중 작업의 완료 시 상태 확인도 종료 후에는 410이며, 이미 완료된 작업의 응답 전달 순서를 보장하지는 않습니다.
-프론트 담당은 “새로 시작”에서 종료 호출 및 화면 상태 정리를 연결하고 이전 세션의 늦은 응답을 무시해야 합니다. 탭 종료 호출은 보장되지 않으므로 30분 비활동 만료를 유지합니다. HTTP 예시는 `contracts/examples/06-session-delete.http`이며 204 응답 JSON은 없습니다.
-
 ## 검사
 
 ```powershell
@@ -93,6 +83,8 @@ PUT은 전체 교체이므로 모든 필드를 보내야 합니다. 삭제할 �
 GitHub Actions는 main/develop push와 PR에서 같은 검사를 실행합니다. 원격 CI의 실제 결과는 Actions에서 확인합니다.
 
 ## 다음 작업
+
+이슈 #23의 스케줄러·검증기·코스 API는 [가상 연동 구현·검증 기록](docs/ISSUE23_COURSES_IMPLEMENTATION.md)을 참고하세요. 실제 후보 검색·도보 이동시간·DB 연결과 실데이터 인수는 남아 있으며, 일반 서버 지원 범위는 계속 비활성입니다.
 
 이슈 #21 기본값·카드 보완과 #22 후속 연결 지점은 [구현 기록](docs/ISSUE21_DEFAULTS_IMPLEMENTATION.md)에 정리했습니다. 체류시간·부상 안내는 공통 설정을 사용하며 일반 서버 활성화·실제 스케줄러 연결은 아직 하지 않았습니다.
 
@@ -111,6 +103,8 @@ GitHub Actions는 main/develop push와 PR에서 같은 검사를 실행합니다
 아래는 당시 기록이다. 최신 로컬 통합 상태·검증은 [이슈 #20 기록](docs/ISSUE20_CHAT_IMPLEMENTATION.md)을 따른다.
 
 #17 모듈이 함께 반영되면 `/api/chat`과 DEC-020 카드 정규화를 사용한다. #13 단독에서는 기존 세션·카드 API만 등록된다. 실제 Provider는 미설정이며 재시도 후 규칙 파서로 대체한다. 현재 capabilities는 비어 있어 활성 조건은 거절된다. 검토 순서·검증·실행 제한·capabilities 활성화 계획은 [구현 기록](docs/ISSUE6_8_IMPLEMENTATION.md)을 따른다. PR/브랜치 병합 없이 소스 검토 사본에서 188개 통합 테스트를 통과했다.
+
+세션 종료는 기존 PR #12를 로컬 통합해 DELETE /api/sessions/{sessionId}의 멱등204·no-store를 제공한다. SQLite Repository는 PR #41의 구현을 재사용해 가상행으로만 검증하며 실제 검색/이동시간·일반 capabilities는 연결 전 닫혀 있다.
 
 ## 2026-11-11 프론트 종료 연동 검토
 

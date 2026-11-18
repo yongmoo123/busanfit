@@ -159,8 +159,7 @@ operations = sum(len(v) for v in spec["paths"].values())
 policy_cases = json.loads((ROOT / 'policy-cases.json').read_text(encoding='utf-8'))
 runpy.run_path(str(ROOT / 'policy_contract.py'))['validate_cases'](policy_cases, spec, check)
 delete = spec['paths']['/api/sessions/{sessionId}']['delete']
-assert 'requestBody' not in delete
-assert 'content' not in delete['responses']['204']
+assert 'requestBody' not in delete and 'content' not in delete['responses']['204']
 assert delete['parameters'][0]['schema'] == {'type': 'string', 'format': 'uuid'}
 assert delete['responses']['204']['headers']['Cache-Control']['schema']['const'] == 'no-store'
 for code in ['422', '500']:

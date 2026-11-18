@@ -225,6 +225,8 @@ Software Design Document (SDD)
 
 ## 7.3 Prompt 설계
 
+FR-009 구현 보완: CourseService가 CandidateRetriever·TravelTimeProvider·PlaceRepository를 주입받아 CourseScheduler와 CourseValidator를 호출한다. 실제 검색/이동시간을 구현하지 않고 가짜 포트로 먼저 검증했다. 스케줄러는 DB·LLM을 호출하지 않고 검증기는 Repository에서 장소 사실을 다시 확인한다. 배치 초안 후 최대 3회 수리·재검증, 마지막 사실 재검사, API 반환 전 세션 revision/만료 재검사를 수행한다. 코스 경로·필드와 장소 2~6곳 제한은 기존 Course 계약을 유지한다. [#23 연결·검증 기록](ISSUE23_COURSES_IMPLEMENTATION.md).
+
 FR-005·006 보완: config/defaults.json을 서버 기본 체류시간 함수와 카드 안내가 공유한다. application/profile_support.py는 실제 후보 검색 연결·필드 검증 완료를 받은 뒤 지원 범위를 만드는 구성 경계이며 기본 앱은 비활성이다. #22의 검색·항목별 판정과 #23 스케줄러를 새로 구현하지 않았다. [이슈 #21 구현·후속 연결 기록](ISSUE21_DEFAULTS_IMPLEMENTATION.md).
 
 이슈 #20 구현: 추출 Provider는 취소 가능한 Gemini generateContent REST 어댑터이며 JSON 스키마·업무 의미를 검증한다. 실패 시 각 10초·1회 재시도 후 ChatRuleParser로 대체하고 COMP-02가 정책·revision을 처리한다. 기준 한국 날짜를 프롬프트에 제공하며 평가 시에는 평가셋 referenceNow를 고정한다. DEC-022의 영유아 질문 표시 이력·부분 동행은 메모리 세션에만 저장한다. 프론트는 실제 chat/profile API를 순차 호출한다. 일반 capabilities 활성화는 #21·#22의 기존 합의를 유지한다. [실행·검증 기록](ISSUE20_CHAT_IMPLEMENTATION.md).
