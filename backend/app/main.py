@@ -6,14 +6,15 @@ from fastapi import FastAPI
 from app.api.errors import install_error_handlers
 from app.api.sessions import router
 from app.api.profiles import router as profile_router
-from app.api.session_models import Capabilities
+from app.application.profile_support import ProfileSupport, build_profile_capabilities
 from app.api.profile_models import ProfileUpdateRequest
 from app.sessions.store import SessionStore
 from app.application.extraction import build_extractor
 from app.api.chat import router as chat_router
 
 
-def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1, extractor=None) -> FastAPI:
+def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1, extractor=None,
+               profile_support: ProfileSupport | None = None) -> FastAPI:
     sessions = store if store is not None else SessionStore()
     condition_extractor = extractor if extractor is not None else build_extractor()
 
@@ -44,11 +45,7 @@ def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1
     )
     app.state.sessions = sessions
     app.state.extractor = condition_extractor
-    app.state.capabilities = Capabilities(
-        supportedAreas=[], supportedTransports=[], supportedProfileFields=[],
-        supportsUnknownAccessibilityInclusion=False,
-        supportsCourseAdjustment=False, supportsWeather=False,
-    )
+    app.state.capabilities = build_profile_capabilities(profile_support)
     install_error_handlers(app)
     app.include_router(router)
     app.include_router(profile_router)

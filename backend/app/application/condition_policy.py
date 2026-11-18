@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from app.api.profile_models import Profile
 from app.constraints.profile import validate_profile
 from app.application.extraction import Analysis, blank_profile
+from app.constraints.defaults import apply_walk_default
 
 
 TIMEOUT_MESSAGE = '응답이 늦어 일부 조건을 확인하지 못했어요. 조건 카드에서 확인해 주세요.'
@@ -153,6 +154,7 @@ def replace_card(current, profile: Profile, capabilities):
     hints = (deepcopy(current.companion_hints)
              if current.profile is not None and values['companions'] == current.profile['companions']
              else deepcopy(values['companions']['value'] or {}))
+    values = apply_walk_default(values, capabilities, pending)
     values, warnings = normalize(values, hints)
     typed = Profile.model_validate(values)
     validate_profile(typed, values, capabilities)

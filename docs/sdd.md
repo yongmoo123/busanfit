@@ -225,6 +225,8 @@ Software Design Document (SDD)
 
 ## 7.3 Prompt 설계
 
+FR-005·006 보완: config/defaults.json을 서버 기본 체류시간 함수와 카드 안내가 공유한다. application/profile_support.py는 실제 후보 검색 연결·필드 검증 완료를 받은 뒤 지원 범위를 만드는 구성 경계이며 기본 앱은 비활성이다. #22의 검색·항목별 판정과 #23 스케줄러를 새로 구현하지 않았다. [이슈 #21 구현·후속 연결 기록](ISSUE21_DEFAULTS_IMPLEMENTATION.md).
+
 이슈 #20 구현: 추출 Provider는 취소 가능한 Gemini generateContent REST 어댑터이며 JSON 스키마·업무 의미를 검증한다. 실패 시 각 10초·1회 재시도 후 ChatRuleParser로 대체하고 COMP-02가 정책·revision을 처리한다. 기준 한국 날짜를 프롬프트에 제공하며 평가 시에는 평가셋 referenceNow를 고정한다. DEC-022의 영유아 질문 표시 이력·부분 동행은 메모리 세션에만 저장한다. 프론트는 실제 chat/profile API를 순차 호출한다. 일반 capabilities 활성화는 #21·#22의 기존 합의를 유지한다. [실행·검증 기록](ISSUE20_CHAT_IMPLEMENTATION.md).
 
 - System Prompt 목적: 용도별 3종으로 분리한다. ① 추출: "부산 놀거리 코스 서비스의 조건 분석기" 역할로, 지정 JSON 스키마의 필드만 채우고 언급 없는 필드는 null, 장소 추천 금지, "꼭·절대·못" 표현은 strength=HARD. ② 수정 해석: 코스 요약과 메시지를 받아 ChangeOp(REMOVE·REPLACE·EXTEND_STAY·INDOOR·INCLUDE_UNKNOWN) 하나로만 응답. ③ 설명: 제공된 장소 필드만 근거로 1~2문장 작성, 새 장소·가격·시간 언급 금지.
