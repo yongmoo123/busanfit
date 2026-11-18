@@ -239,7 +239,7 @@ FR-005·006 보완: config/defaults.json을 서버 기본 체류시간 함수와
 
 - Top-k 또는 Retrieval 기준: 하드 필터(권역, 영업시간, 접근성, 예산, 제외 카테고리, 날씨) 통과 후 소프트 점수 상위 20개를 스케줄러에 투입한다. 검색 반경은 도보 권역 중심 기준 1.5km(설정값, 데이터 확인 후 조정, DEC-001), 대중교통 2km, 자차 5km이며, 설명 생성 LLM에는 최종 코스 장소(3~6개)만 전달한다.
 
-- 이동제약 판정(DEC-015·016): 하드 필터의 접근성은 접근성 등급(grade)이 아니라 사용자 이동제약에 맞는 **항목별 값**으로 판정한다. WHEELCHAIR는 `wheelchair = true`, STROLLER는 `stroller = true`, INJURY의 계단 회피는 `wheelchair = true`를 대리 지표로 사용한다. 값이 null이면 기본 후보에서 제외하고 `excludedUnknown`으로 집계해 포함 재생성 제안(FR-013) 대상으로 두며, false면 제외한다. 등급은 표시용 요약이다(정보 없음 UNKNOWN, 휠체어·유모차 모두 false UNSUITABLE, 하나라도 true VERIFIED).
+- 이동제약 판정(DEC-015·016): 하드 필터의 접근성은 접근성 등급(grade)이 아니라 사용자 이동제약에 맞는 **항목별 값**으로 판정한다. WHEELCHAIR는 `wheelchair = true`, STROLLER는 `stroller = true`, INJURY의 계단 회피는 `wheelchair = true`를 대리 지표로 사용한다. 값이 null이면 기본 후보에서 제외하고 `excludedUnknown`으로 집계해 포함 재생성 제안(FR-013) 대상으로 두며, false면 제외한다. 등급은 표시용 요약이며 휠체어·유모차 두 항목만 본다(둘 중 하나라도 true면 VERIFIED, true 없이 false가 있으면 UNSUITABLE, 둘 다 null이면 UNKNOWN, DEC-026).
 
 - 부상(INJURY) 규칙(DEC-016): 보행 속도를 낮추고(초기값 4→3km/h), 장소 사이 구간당 도보가 초기값 10분을 넘으면 그 구간을 쓰지 않는다(HARD). 수치는 설정값이며 데이터 확인 후 조정한다. 이동 경로의 계단·경사는 데이터가 없어 확인하지 못하므로 `routeAccessibility: UNVERIFIED`와 경고로 알린다. 후보가 부족해도 계단 조건을 자동으로 빼지 않고 사용자에게 해제를 제안한다.
 
