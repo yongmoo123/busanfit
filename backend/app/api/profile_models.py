@@ -13,7 +13,10 @@ def rfc3339_string(value):
         r'\d{4}-\d{2}-\d{2}[Tt]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:[Zz]|[+-]\d{2}:\d{2})', value
     ):
         raise ValueError('offset datetime string required')
-    return value
+    # BeforeValidator runs in Python mode even for model_validate_json(strict=True).
+    # Convert only the already-validated RFC3339 string, so strict AI output can
+    # share this model without accepting epoch numbers or naive timestamps.
+    return datetime.fromisoformat(value.replace('Z', '+00:00').replace('z', '+00:00'))
 
 
 Timestamp = Annotated[AwareDatetime, BeforeValidator(rfc3339_string)]

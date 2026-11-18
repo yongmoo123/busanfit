@@ -5,10 +5,10 @@
 
 현재 구현: POST /api/sessions, DELETE /api/sessions/{sessionId}(DEC-009, 본문 없는 204, 없는 세션도 204), 메모리 세션 저장소, 30분 비활동 만료·주기적 정리·원자적 revision 갱신·요청 제한 및 공통 오류 응답. 입력·예외 원문을 오류 응답에 반영하지 않습니다.
 PUT /api/sessions/{sessionId}/profile도 구현했습니다. 전체 교체·필수 필드·엄격한 타입·null/UNSET·USER/DEFAULT 출처·지역/시간 HARD·한국 시각 날짜 범위·중복 목록·지원 범위를 검증하고 성공 시 revision과 TTL을 갱신합니다. 이력은 유지하며 실패 시 프로필·이력·revision·TTL은 변경하지 않습니다.
-chat/course/place API·DB·LLM·CORS 설정은 아직 구현하지 않았습니다. 409·410·429는 조건 카드 HTTP 경로에 연결했습니다. 활성 조건은 현재 빈 capabilities에 따라 거절합니다. 기능이 없는데 READY/SUCCESS를 반환하는 대체 코드를 넣지 않습니다.
+POST /api/chat은 AIService → Gemini 또는 규칙 파서 → 부분 병합·되묻기·DEC-019~022 정책으로 연결했습니다. POST /api/courses도 스케줄러·검증기와 연결했으며 후보 검색·이동시간·Repository를 주입해야 합니다. 일반 서버는 가짜 구현을 자동 사용하지 않습니다. GET /api/places/{placeId}는 Repository 주입으로 연결하며, 설명 생성기를 주입하면 최종 검증 뒤 추천 이유를 붙입니다. 실제 DB·CORS는 미연결입니다. [#25 실행·검증](../docs/ISSUE25_EXPLANATIONS_IMPLEMENTATION.md). 409·410·429는 외부 호출 전 검사하고 완료 직전 revision·만료를 다시 검사합니다. 일반 서버의 활성 조건은 실제 연결 검증 전 빈 capabilities에 따라 거절합니다. [#23 실행·검증](../docs/ISSUE23_COURSES_IMPLEMENTATION.md).
 테스트 전용 경로는 테스트 코드에서만 등록합니다. 운영 앱에는 없습니다.
 
-작업 E 골격: ai/service.py의 AIService·Provider, fake.py의 가짜 Provider, constraints/parser.py의 규칙 파서, domain/extraction.py의 부분 추출 결과를 추가했습니다. 독립 모듈이며 기존 HTTP·세션·capabilities에는 연결하지 않았습니다. 실제 모델 호출 없이 재시도·타임아웃·취소·스키마 검증·보수적 키워드 추출을 검사합니다. 지원 문법·미완료 정책은 각 영역 README를 참고합니다. FR-002 전체나 추출 정확도 목표 완료가 아닙니다.
+ai/service.py의 AIService·Provider와 constraints의 규칙 파서를 HTTP·세션에 연결했습니다. Gemini REST 어댑터는 backend/.env의 키와 모델 이름을 설정한 경우에 사용하며, 키가 없으면 규칙 대체로 진행합니다. 실제 모델 정확도 측정은 아직 실행하지 않았습니다. 실행 방법과 가상 데모의 범위는 [이슈 #20 기록](../docs/ISSUE20_CHAT_IMPLEMENTATION.md)을 참고하세요.
 
 ## 첫 구현 작업 — 김영무
 관련 FR-001·002·006, NFR-003·008.
@@ -21,3 +21,7 @@ chat/course/place API·DB·LLM·CORS 설정은 아직 구현하지 않았습니�
 개발 실행은 `--no-access-log`를 사용합니다. 향후 프록시·배포 환경도 세션 토큰 URL과 건강 원문이 기록되지 않는지 별도로 검증합니다.
 
 구현 참고: [FastAPI 앱 시작](https://fastapi.tiangolo.com/tutorial/first-steps/), [공통 오류 처리](https://fastapi.tiangolo.com/tutorial/handling-errors/).
+
+FR-014 ①: 성공 코스 응답의 suggestions는 실제 사용된 DEFAULT 프로필 항목에서 생성합니다. 기존 카드·capabilities에 맞는 EDIT_PROFILE만 최대 3개이며 자동 저장·하드 완화·체류시간 제안은 없습니다. [#26 실행·검증](../docs/ISSUE26_SUGGESTIONS_IMPLEMENTATION.md).
+
+FR-018 동행 점수는 courses/companion_scoring.py의 미승인 제안 모듈로 구현했습니다. 일반 CourseService·default_score·capabilities는 바꾸지 않았고 app.companion_demo에서만 명시적으로 주입합니다. [#27 제안·검증·후속](../docs/ISSUE27_COMPANION_SCORING_IMPLEMENTATION.md).

@@ -15,6 +15,7 @@ class CompanionHints:
     type: str | None = None
     count: int | None = None
     has_infant: bool | None = None
+    has_child: bool | None = None
 
 
 @dataclass(frozen=True, repr=False)

@@ -22,6 +22,8 @@ def validate_profile(profile: Profile, previous: dict | None, capabilities: Capa
             raise ProfileError('INVALID_PROFILE', name, 'null과 UNSET은 함께 지정해야 합니다.')
         if name in ('area', 'timeWindow') and condition['strength'] != 'HARD':
             raise ProfileError('INVALID_PROFILE', name, '지역과 시간은 HARD여야 합니다.')
+        if name == 'mobility' and value is not None and condition['strength'] != 'HARD':
+            raise ProfileError('INVALID_PROFILE', name, '이동제약은 HARD여야 합니다.')
         if isinstance(value, list) and len(value) != len(set(value)):
             raise ProfileError('INVALID_PROFILE', name, '중복 항목을 제거해 주세요.')
         # Existing server defaults may be carried forward, but not invented by a card.
