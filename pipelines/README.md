@@ -53,7 +53,7 @@ $env:BUSANFIT_DB_PATH = "data/haeundae_sample.sqlite3"     # PowerShell (backend
 | 해운대 목록 | `areaBasedList2` | `lDongRegnCd=26`, `lDongSignguCd=350`, `arrange=A`, `numOfRows=1000` |
 | 공통정보 | `detailCommon2` | `contentId` (개요·주소·좌표) |
 | 소개정보 | `detailIntro2` | `contentId`, `contentTypeId` (이용시간·쉬는날·이용요금) |
-| 무장애 (구조 확인만) | `detailWithTour2` | `contentId` |
+| 무장애 (원본 수집, 판정 전) | `detailWithTour2` | `contentId` (아래 "무장애 원본 수집" 참고) |
 
 - 공통: `serviceKey`, `MobileOS=ETC`, `MobileApp=BusanFit`, `_type=json`.
 - 지역 필터 `areaCode`·`sigunguCode`는 Swagger에 "미사용항목(삭제예정-법정동 코드 대체)"으로 표시되어 법정동 코드를 씁니다. 부산 `26`, 해운대구 `350`은 `ldongCode2` 응답에서 확인했습니다(추측 값 아님).
@@ -154,7 +154,55 @@ $env:BUSANFIT_DB_PATH = "data/haeundae_sample.sqlite3"     # PowerShell (backend
 - 정보 없음 → `UNKNOWN`, 휠체어·유모차 **모두 false** → `UNSUITABLE`, **둘 중 하나라도 true** → `VERIFIED`.
 - **휠체어·유모차 중 하나가 false이고 나머지가 null인 경우: 문서에 없음** (DEC-015에 규칙 없음, PM 결정 필요).
 - 무장애 1건 호출(`detailWithTour2`, contentId 988449 = 포털 Swagger 예시값)로 본 응답 구조: `wheelchair`, `exit`, `elevator`, `restroom`, `parking`, `route`, `stroller` 등 contentid 외 28개 필드가 **모두 자유 문장(빈 문자열 = 정보 없음)**입니다. 예: `wheelchair: "대여가능(수동휠체어 2대)"`(휠체어 **대여** 여부), `exit: "주출입구는 경사로가 있어 휠체어 접근 가능함"`. 따라서 DEC-015의 true/false/null로 바꾸려면 문장 판정 규칙이 필요하고, 휠체어 접근 판단은 `wheelchair` 하나가 아니라 `exit`·`route`·`elevator` 등을 함께 봐야 합니다. 무장애 연결과 등급 산출은 11/16 전후 별도 PR에서 합니다.
-- 두 서비스가 같은 contentid를 쓰는지: **문서에 없음.** 이번 1건 호출로는 판단할 수 없습니다(예시 988449는 해운대 목록에 없음). 연결 PR에서 해운대 contentid로 `detailWithTour2`를 호출해 확인할 예정입니다.
+- 두 서비스가 같은 contentid를 쓰는지: 포털 문서에는 없고, 2026-11-19 해운대 수집으로 **확인**했습니다(아래 "무장애 원본 수집").
+
+## 무장애 원본 수집 (FR-008, 2026-11-19)
+
+`accessibility_collect.py`는 해운대 대상 275곳에 `detailWithTour2`를 한 번씩 호출해 원본을 저장하고, 응답 문장을 **판정 없이** 정리합니다. DB의 `accessibility`(wheelchair·stroller·elevator·accessible_toilet)로 바꾸는 판정은 DEC-026 표현 목록 확정 뒤 별도 작업입니다.
+
+```text
+# 처음 5곳만 (contentid 짝 확인)
+.venv/Scripts/python.exe -m pipelines.accessibility_collect fetch --limit 5 --max-calls 5
+# 나머지 (이어받기: data/raw/tourapi/accessibility/<contentid>.json 이 있으면 호출하지 않음)
+.venv/Scripts/python.exe -m pipelines.accessibility_collect fetch --max-calls 300
+# 문장 원문·필드별 빈도표 (네트워크 없음) → data/processed/accessibility_phrases.json
+.venv/Scripts/python.exe -m pipelines.accessibility_collect phrases
+```
+
+- 대상은 국문 fetch와 같은 규칙(`areaBasedList2` 원본 + 대상 유형 12·14·28·38·39)과 같은 순서입니다.
+- 호출 간격 0.5초(`--interval`). 응답이 HTTP 200·`resultCode` 0000이 아니거나 전송 오류가 나면 **그 자리에서 멈추고 재시도하지 않습니다**(한도 초과·인증 오류 포함). 정상 응답은 항목이 비어 있어도 저장합니다(빈 응답 = 정보 없음, 다시 호출하지 않음).
+- 호출 기록은 `data/raw/tourapi/accessibility/fetch_log.jsonl` (국문 `fetch_log.jsonl`과 분리해 국문 `retrieved_at`에 섞이지 않게 함).
+- 일일 호출 한도: 포털 표 기준 상세기능별 1000회(사용자 확인). 기능 간 합산 여부는 **문서에 없음**.
+
+### 결과
+
+| 항목 | 값 |
+|---|---|
+| 호출 | **275번** (5 + 270), 성공 275, 실패 0, 약 181초 |
+| 응답 항목 있음 | **53 / 275곳 (19.3%)** — 222곳은 정상 응답(0000)이지만 `items`가 빈 값 |
+| 유형별 응답 있음 | 관광지 27/41, 문화시설 9/19, 레포츠 4/12, 쇼핑 4/117, 음식점 9/86 |
+| contentid 짝 | 응답 `contentid` = 요청 `contentId` = DB `source_place_id` **53/53**. 응답 문장의 지명(죽도공원·동백공원·청사포·벡스코·좌동재래시장 등)도 국문 장소명과 맞음 → 두 서비스가 같은 contentid를 씀 |
+| 처음 보는 필드 | 0 (28개 필드 모두 check 응답 988449와 같음) |
+
+**빈 값 비율** (응답 있는 53곳 기준. 275곳 기준이면 모든 필드가 82.5% 이상 비어 있음)
+
+| 필드 | 빈 값 | | 필드 | 빈 값 |
+|---|---|---|---|---|
+| `exit` | 9.4% | | `wheelchair` ⚠ | 79.2% |
+| `route` | 11.3% | | `handicapetc` | 79.2% |
+| `parking` | 28.3% | | `lactationroom` | 83.0% |
+| `restroom` | 43.4% | | `publictransport` | 84.9% |
+| `elevator` | 50.9% | | `stroller` ⚠ | 86.8% |
+| 나머지 시각·청각·영유아 필드 | 81%~100% (`ticketoffice`·`promotion`·`room`·`bigprint`·`guidesystem`·`signguide`·`videoguide`·`hearingroom`·`hearinghandicapetc`는 53곳 모두 빈 값) | | | |
+
+⚠ `wheelchair`·`stroller`: 값 18개가 모두 "대여가능(…)" 또는 "안내소에 N대" 같은 **대여 정보**입니다. 접근 가능 판정에 쓰지 않도록 `accessibility_phrases.json`에 `rental_field_not_for_judgement: true`로 표시만 했습니다.
+
+### `accessibility_phrases.json` 구성 (data/processed/, 커밋하지 않음)
+
+- `places`: 장소별 contentid·장소명·유형·DB 존재·응답 유무·contentid 일치, 비어 있지 않은 필드의 **원문 그대로**.
+- `type_frequency_by_field`: 필드별 **문장 유형** 빈도. 유형은 뜻을 판정하지 않는 텍스트 정규화로만 묶음 — `<br/>`→공백, 괄호 속 세부(대수·층·위치·문 종류) 제거, 꼬리말 `_무장애 편의시설`·`_시각장애인 편의시설` 제거, 앞 `*`·끝 `.` 제거, 공백 차이 무시. 유형마다 원문 예 3개까지.
+- `frequency_by_field`: 필드별 원문(공백만 정리) 빈도. `top_types`: 전체 상위 30개 유형.
+- 관찰: "없음"으로 적힌 부정 문장은 거의 없습니다(`handicapetc`의 "전동휠체어 탑승 불가"·"화장실은 공간이 좁아 사용이 어려움" 1곳, `publictransport`의 "저상버스 없음" 1곳). 빈 값은 "없음"이 아니라 **정보 없음**으로 다뤄야 합니다.
 
 ### 출처·이용조건
 
