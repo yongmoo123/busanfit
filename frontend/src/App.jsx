@@ -6,6 +6,7 @@ import { createEmptyProfile } from './profile.js'
 import { budgetLabel } from './profileDefaults.js'
 import ProfileEditor from './ProfileEditor.jsx'
 import CourseTimeline from './CourseTimeline.jsx'
+import { createCourse } from './courseApi.js'
 import './App.css'
 
 const MIN_SIDEBAR_WIDTH = 220
@@ -220,6 +221,8 @@ function App() {
   const [sessionAttempt, setSessionAttempt] = useState(0)
   const sessionRequestRef = useRef(null)
   const profileSaveRef = useRef(false)
+  const courseRequestRef = useRef(null)
+  const [isCreatingCourse, setIsCreatingCourse] = useState(false)
 
   useEffect(() => {
     if (isQaEditor) return undefined
@@ -251,6 +254,7 @@ function App() {
 
   function retrySession() {
     if (profileSaveRef.current) return
+    courseRequestRef.current?.abort()
     if (session?.sessionId) deleteSession(session.sessionId).catch(() => {})
     sessionRequestRef.current = null
     setSession(null)
@@ -283,6 +287,7 @@ function App() {
   useEffect(() => {
     return () => {
       chatAbortRef.current?.abort()
+      courseRequestRef.current?.abort()
     }
   }, [])
 
@@ -363,6 +368,7 @@ function App() {
         return {
           ...current,
           savedProfile: result.profile,
+          profileStatus: result.status,
           profileRevision: result.profileRevision,
           expiresAt: result.sessionExpiresAt,
         }
@@ -392,17 +398,38 @@ function App() {
 
   function renderProfileEditor() {
     return (
-      <ProfileEditor
-        key={editor.isMock ? 'mock' : 'live'}
-        initialProfile={editor.isMock ? readyMock.profile : session?.savedProfile ?? createEmptyProfile()}
-        isMock={editor.isMock}
-        capabilities={editor.isMock ? null : session?.capabilities}
-        canSave={editor.isMock || (Boolean(session) && !isSending && !sessionError)}
-        sessionError={editor.isMock ? '' : sessionError}
-        onSave={handleSaveProfile}
-        onRestart={retrySession}
-        onClose={() => setEditor(null)}
-      />
+      <>
+        <ProfileEditor
+          key={editor.isMock ? 'mock' : 'live'}
+          initialProfile={
+            editor.isMock
+              ? readyMock.profile
+              : session?.savedProfile ?? createEmptyProfile()
+          }
+          isMock={editor.isMock}
+          capabilities={editor.isMock ? null : session?.capabilities}
+          canSave={
+            editor.isMock || (Boolean(session) && !isSending && !isCreatingCourse && !sessionError)
+          }
+          sessionError={editor.isMock ? '' : sessionError}
+          onSave={handleSaveProfile}
+          onRestart={retrySession}
+          onClose={() => setEditor(null)}
+        />
+
+        {!editor.isMock && session?.profileStatus === 'READY' && (
+          <div className="profile-actions">
+            <button
+              type="button"
+              className="primary-button"
+              onClick={handleCreateCourse}
+              disabled={isCreatingCourse || isSending || Boolean(sessionError)}
+            >
+              {isCreatingCourse ? '코스 만드는 중…' : '저장한 조건으로 코스 만들기'}
+            </button>
+          </div>
+        )}
+      </>
     )
   }
 
@@ -422,7 +449,7 @@ function App() {
   }
 
   async function sendMessage(text) {
-    if (!session || sessionError || isSending || profileSaveRef.current || editor) return
+    if (!session || sessionError || isSending || profileSaveRef.current || courseRequestRef.current || editor) return
     profileSaveRef.current = true
     const controller = new AbortController()
     chatAbortRef.current = controller
@@ -441,8 +468,13 @@ function App() {
 
     try {
       const response = await sendChat(session.sessionId, text, session.profileRevision, controller.signal)
-      setSession((current) => ({ ...current, savedProfile: response.profile,
-        profileRevision: response.profileRevision, expiresAt: response.sessionExpiresAt }))
+      setSession((current) => ({
+        ...current,
+        savedProfile: response.profile,
+        profileStatus: response.status,
+        profileRevision: response.profileRevision,
+        expiresAt: response.sessionExpiresAt,
+      }))
       const questions = response.status === 'NEEDS_INPUT'
         ? (response.questions ?? []).slice(0, 2)
         : []
@@ -480,6 +512,64 @@ function App() {
     }
   }
 
+  async function handleCreateCourse() {
+    if (
+      session?.profileStatus !== 'READY' ||
+      sessionError ||
+      profileSaveRef.current ||
+      courseRequestRef.current
+    ) {
+      return
+    }
+
+    const controller = new AbortController()
+    courseRequestRef.current = controller
+    setIsCreatingCourse(true)
+
+    try {
+      const response = await createCourse(
+        session.sessionId,
+        session.profileRevision,
+        controller.signal,
+      )
+
+      if (controller.signal.aborted) return
+
+      const isDemo =
+        import.meta.env.DEV &&
+        new URLSearchParams(window.location.search).get('qa') === 'course-api'
+
+      setMessages((previous) => [
+        ...previous,
+        {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: response.status === 'INSUFFICIENT_PLACES'
+            ? '저장한 조건으로 방문할 수 있는 장소가 부족해요.'
+            : '저장한 조건으로 코스를 만들었어요.',
+          courseResponse: response,
+          isMock: isDemo,
+        },
+      ])
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        setMessages((previous) => [
+          ...previous,
+          {
+            id: crypto.randomUUID(),
+            role: 'assistant',
+            content: error.status
+              ? error.message
+              : '서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.',
+          },
+        ])
+      }
+    } finally {
+      courseRequestRef.current = null
+      setIsCreatingCourse(false)
+    }
+  }
+
   function handleRecommend() {
     setMessages((prev) => [
       ...prev,
@@ -510,7 +600,7 @@ function App() {
         aria-label="여행 조건 입력"
         rows={1}
         maxLength={1000}
-        disabled={isSending || !session || Boolean(sessionError) || Boolean(editor)}
+        disabled={isSending || isCreatingCourse || !session || Boolean(sessionError) || Boolean(editor)}
       />
       <div className="composer-bottom">
         <span>✦ BusanFit AI</span>
@@ -518,7 +608,7 @@ function App() {
           type="submit"
           className="send-button"
           aria-label="메시지 전송"
-          disabled={!input.trim() || isSending || !session || Boolean(sessionError) || Boolean(editor)}
+          disabled={!input.trim() || isSending || isCreatingCourse || !session || Boolean(sessionError) || Boolean(editor)}
         >
           ↑
         </button>
@@ -623,13 +713,17 @@ function App() {
                         )
                       )}
 
-                      {message.id === messages.findLast((item) => item.profile)?.id && message.warnings?.some((w) => w.code === 'UNSUPPORTED_TRANSPORT') &&
-                        <button type="button" disabled={isSending || Boolean(editor)} onClick={() => sendMessage('도보로 이동할게요')}>도보로 이동할게요</button>}
+                      {message.id === messages.findLast((item) => item.profile)?.id && message.warnings?.some((w) => w.code === 'UNSUPPORTED_TRANSPORT') && (
+                        <button type="button" disabled={isSending || isCreatingCourse || Boolean(editor)} onClick={() => sendMessage('도보로 이동할게요')}>도보로 이동할게요</button>
+                      )}
 
                       {editor?.target === message.id && !message.profile && renderProfileEditor()}
 
-                      {message.showCoursePlaceholder && (
-                        <CourseTimeline />
+                      {(message.showCoursePlaceholder || message.courseResponse) && (
+                        <CourseTimeline
+                          courseResponse={message.courseResponse}
+                          isMock={message.isMock}
+                        />
                       )}
                     </div>
                   </div>
