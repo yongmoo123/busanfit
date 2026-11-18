@@ -363,3 +363,7 @@ Software Design Document (SDD)
 | AI-REQ-05 | UC-003 | COMP-07 | CourseValidator | API-004 | SD-01 | TC-028, AI-TC-05 | Draft |
 
 *※ 초기 설계 단계에서는 미정 요소를 비워둘 수 있으며, 구현·테스트가 진행되면서 API/Class/Test Case 매핑을 보완합니다.*
+
+## 구현 보완 기록 — FR-002·006·018 / DEC-019~021 (2026-11-11)
+
+COMP-02/03의 application/condition_policy.py는 부분 추출을 기존 프로필과 병합하고 미확인 항목을 세션 내부 pending_fields에 유지한다. 외부 응답 필드는 늘리지 않는다. 질문은 최대 2개이며 코스 진입은 SessionStore.begin_course의 최신 revision·READY 검사를 거친다. 실제 코스 엔진은 아직 미연결이다. AIService·규칙 파서·유모차 정규화는 PR #17, 계약·HTTP 연결은 PR #13으로 구분한다. 구현 상세와 단독/통합 검증, 활성화 계획은 [구현 기록](ISSUE6_8_IMPLEMENTATION.md)을 참조한다. PM의 DEC-019~021은 확정이며 결정 기록 PR #18·SDD 정책 상세 PR #40의 병합 상태와 구분한다.

@@ -1,7 +1,7 @@
 # 프론트엔드 — 배진호
 
 담당: 채팅·조건 카드·지도·타임라인·모바일. 관련 FR-001·004~006·011·012·018.
-React + Vite 기반 SPA 프로젝트를 생성했습니다. SDD ADR-001에 따라 React를 사용하며, JavaScript와 ESLint를 적용했습니다. 
+React + Vite 기반 SPA 프로젝트를 생성했습니다. SDD ADR-001에 따라 React를 사용하며, JavaScript와 ESLint를 적용했습니다.
 
 입력 계약: ../contracts/openapi.json 및 examples. 예시는 전부 가상이며 UI에 가상 표시를 유지합니다.
 첫 작업: 채팅/조건 카드/결과 3영역 → READY·NEEDS_INPUT·후보 부족·오류 분기 → 실제 API 연결.
