@@ -7,9 +7,9 @@ FR-002·003·004, NFR-002·005·006, AI-REQ-02·03. HTTP chat·세션·규칙 �
 
 - Purpose.EXTRACT: 조건 추출, 사용자 원문 허용.
 - Purpose.MODIFY: 수정 해석, 사용자 원문과 범주화된 CourseContext 허용.
-- Purpose.EXPLAIN: 사용자 원문 인자를 거절하고 CourseContext만 허용. 현재 컨텍스트는 장소 ID와 이동제약 범주만 받습니다. 실제 장소 사실을 담는 설명 컨텍스트와 출력 모델은 후속 구현 대상입니다.
+- Purpose.EXPLAIN: 사용자 원문 인자를 거절하고 CourseContext만 허용. #25에서 최종 장소 최대 6개의 이름·카테고리·200자 개요·허용 사실 키와 이동제약 범주를 연결했습니다. Gemini에는 구조화 JSON을 전달하고 모델은 사실 키 1~2개만 선택하며 시스템이 문장·숫자를 조립합니다. 임의 생성 문장을 채택하지 않습니다.
 
-CourseContext에는 자유 형식의 건강 요약·대화 이력을 받는 필드가 없습니다. 호출자는 검증된 DB 장소 ID와 WHEELCHAIR/STROLLER/INJURY 범주만 전달해야 합니다(DEC-006). 임의 문자열인 장소 ID 내부의 민감 내용을 자동 탐지·정제하는 기능은 아닙니다. request/context/result 기본 repr에 원문을 표시하지 않고 이 계층은 로그를 출력하지 않습니다. 호출부·배포 로그는 별도 검증해야 합니다.
+CourseContext에는 자유 형식 건강 요약·대화 이력 필드가 없습니다. 호출자는 검증된 장소 사실과 WHEELCHAIR/STROLLER/INJURY 범주만 전달해야 합니다(DEC-006). ID·외부 장소 원문 내부의 민감 내용을 자동 탐지·정제하지는 않습니다. request/context/result repr에는 원문을 표시하지 않으며 로그는 목적·횟수·실패 분류·경과 시간만 기록합니다. 호출부·배포 로그는 별도 검증해야 합니다.
 
 ## 실패 처리
 

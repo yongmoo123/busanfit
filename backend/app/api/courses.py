@@ -1,5 +1,6 @@
 """POST /api/courses; serialized output and session recheck before renewing TTL."""
 from uuid import uuid4
+from time import monotonic
 
 from fastapi import APIRouter, Request, Response
 from starlette.concurrency import run_in_threadpool
@@ -21,9 +22,17 @@ async def generate_course(body: CourseRequest, request: Request, response: Respo
     if service is None:
         return error_response(500, 'INTERNAL_ERROR', '코스 생성 연결이 준비되지 않았어요.', True)
     try:
+        started = monotonic()
         profile = Profile.model_validate(current.profile)
         result = await run_in_threadpool(service.generate, profile, revision, request.app.state.capabilities)
         store.check_current(sid, revision)
+        explainer = request.app.state.explanation_generator
+        if result.course is not None and explainer is not None:
+            explained = await explainer.explain(result.course, tuple(profile.mobility.value or ()),
+                remaining_seconds=max(0, 14 - (monotonic() - started)))
+            result.course = explained.course
+            result.warnings.extend(explained.warnings)
+            store.check_current(sid, revision)
         payload = dict(course=result.course, suggestions=[], warnings=result.warnings,
                        excludedUnknown=result.excluded_unknown, sessionExpiresAt=current.expires_at,
                        requestId=uuid4())

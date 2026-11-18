@@ -28,7 +28,8 @@ def minute_is_open(place, point):
     return False
 
 
-def audit_response(body, profile, revision, repository, travel, distances, *, radius_meters=1500):
+def audit_response(body, profile, revision, repository, travel, distances, *, radius_meters=1500,
+                   allowed_reason_methods=('TEMPLATE',)):
     need(body['status'] == 'SUCCESS', 'expected_success')
     need(profile['transport']['value'] in (None, 'WALK'), 'unsupported_transport_profile')
     need(profile['budget']['value'] is None, 'unsupported_budget_profile')
@@ -82,7 +83,7 @@ def audit_response(body, profile, revision, repository, travel, distances, *, ra
         if preference['strength'] == 'HARD' and preference['value'] in ('INDOOR', 'OUTDOOR'):
             need(record.indoor is (preference['value'] == 'INDOOR'), 'hard_indoor')
         need(item['place']['price'] == unknown_price, 'unknown_place_price')
-        need(item['reasonMethod'] == 'TEMPLATE' and item['reason'] and not item['isAnchor'], 'template_scope')
+        need(item['reasonMethod'] in allowed_reason_methods and item['reason'] and not item['isAnchor'], 'template_scope')
         stay_total += item['stayMinutes']
     for index, leg in enumerate(legs):
         origin, destination = items[index], items[index + 1]

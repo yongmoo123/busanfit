@@ -1,10 +1,12 @@
 """Cancellable Gemini REST adapter; no payloads or provider errors are logged."""
 import os
 import re
+import json
+from dataclasses import asdict
 
 import httpx
 
-from app.ai.service import AIRequest
+from app.ai.service import AIRequest, Purpose
 
 
 class GeminiProvider:
@@ -20,6 +22,8 @@ class GeminiProvider:
             raise TimeoutError('provider timeout') from None
 
     async def _generate(self, request: AIRequest) -> str:
+        content = (json.dumps(asdict(request.context), ensure_ascii=False)
+                   if request.purpose == Purpose.EXPLAIN else request.user_message)
         # AIService owns the total per-attempt deadline and the single retry.
         async with httpx.AsyncClient(transport=self._transport, timeout=10,
                                      follow_redirects=False, trust_env=False) as client:
@@ -28,9 +32,10 @@ class GeminiProvider:
                 headers={'x-goog-api-key': self._api_key},
                 json={
                     'systemInstruction': {'parts': [{'text': request.system_prompt}]},
-                    'contents': [{'role': 'user', 'parts': [{'text': request.user_message}]}],
+                    'contents': [{'role': 'user', 'parts': [{'text': content}]}],
                     'generationConfig': {'responseMimeType': 'application/json',
-                                         'responseJsonSchema': request.output_schema},
+                                         'responseJsonSchema': request.output_schema,
+                                         **({'temperature': 0.2} if request.purpose == Purpose.EXPLAIN else {})},
                 },
             )
             if response.status_code != 200:

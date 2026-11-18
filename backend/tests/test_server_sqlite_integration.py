@@ -8,12 +8,15 @@ from pathlib import Path
 import runpy
 import pytest
 from fastapi.testclient import TestClient
+from app.ai.service import AIService
 from app.application.course_service import CourseService
 from app.application.profile_support import INITIAL_FIELDS, ProfileSupport
 from app.application.sqlite_adapter import ConnectionPerCallRepository
 from app.courses.fakes import FakeRetriever, FakeTravel, synthetic_place, synthetic_source
 from app.data.db import connect, create_database
 from app.data.repository import RepositoryError
+from app.explanations.fakes import SyntheticExplanationProvider
+from app.explanations.generator import ExplanationGenerator
 from app.main import create_app
 from test_courses import ready, CONTRACT
 from test_place_repository_sqlite import insert_records
@@ -41,11 +44,12 @@ def app_for(stored):
     travel = FakeTravel()
     service = CourseService(FakeRetriever(places), travel, repo)
     return create_app(course_service=service,
+        explanation_generator=ExplanationGenerator(AIService(SyntheticExplanationProvider()), repo),
         profile_support=ProfileSupport(True, frozenset(INITIAL_FIELDS), True)), travel
 
 
 @pytest.mark.parametrize('mobility', [None, ['WHEELCHAIR'], ['STROLLER'], ['INJURY']])
-def test_sqlite_course_and_delete_end_to_end(stored, mobility):
+def test_sqlite_course_explanation_detail_and_delete_end_to_end(stored, mobility):
     app, travel = app_for(stored)
     with TestClient(app, raise_server_exceptions=False) as client:
         sid = client.post('/api/sessions', json={}).json()['sessionId']
@@ -56,9 +60,15 @@ def test_sqlite_course_and_delete_end_to_end(stored, mobility):
         body = generated.json()
         CONTRACT['check'](body, CONTRACT['schemas']['CourseResponse'])
         result = audit(body, saved.json()['profile'], 1, stored[2], travel,
-            {p.id: 100 for p in stored[1]})
+            {p.id: 100 for p in stored[1]}, allowed_reason_methods=('LLM', 'TEMPLATE'))
         assert result['hardViolations'] == result['missingPlaceIds'] == 0
-        assert all(item['reasonMethod'] == 'TEMPLATE' for item in body['course']['items'])
+        assert all(item['reasonMethod'] == 'LLM' for item in body['course']['items'])
+        for item in body['course']['items']:
+            detail = client.get('/api/places/' + item['place']['id'])
+            assert detail.status_code == 200
+            CONTRACT['check'](detail.json(), CONTRACT['schemas']['PlaceResponse'])
+            assert detail.json()['place'] == item['place']
+            assert [s['id'] for s in detail.json()['sources']] == ['1', '2']
         response = client.delete('/api/sessions/' + sid)
         assert response.status_code == 204 and response.content == b''
         assert client.delete('/api/sessions/' + sid).status_code == 204
@@ -98,6 +108,8 @@ def test_broken_database_is_http_500_not_missing_place_or_insufficient(stored):
         conn.close()
     app, _ = app_for(stored)
     with TestClient(app, raise_server_exceptions=False) as client:
+        detail = client.get('/api/places/' + stored[1][0].id)
+        assert detail.status_code == 500 and detail.json()['error']['code'] == 'INTERNAL_ERROR'
         sid = client.post('/api/sessions', json={}).json()['sessionId']
         assert client.put('/api/sessions/' + sid + '/profile', json={'profile': ready(), 'expectedProfileRevision': 0}).status_code == 200
         result = client.post('/api/courses', json={'sessionId': sid, 'profileRevision': 1})
