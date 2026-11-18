@@ -229,31 +229,35 @@ $env:BUSANFIT_DB_PATH = "data/haeundae_sample.sqlite3"     # PowerShell (backend
 ```
 
 - 규칙은 `pipelines/accessibility_rules.json`에만 있고 `accessibility_judge.py`는 그 파일을 읽어 적용만 합니다. 원본은 `data/raw/tourapi/accessibility/`만 읽고 API를 호출하지 않습니다.
-- 규칙 (원문 부분 문자열 일치. 필드 값은 `<br/>`·`.`·`*`·`,`·줄바꿈으로 절을 나눠 봄)
-  1. **R1** `exit`·`route`에 "턱이 없", "단차가 없", "경사로", "휠체어 접근 가능", "휠체어가 통과 가능" 중 하나 → wheelchair=true, stroller=true. 근거: 무장애 여행 정보의 경사로·턱 없음은 휠체어 접근용 편의시설로 보고, 휠체어가 지나갈 수 있으면 유모차도 지나갈 수 있다고 봄.
+- 규칙 (원문 부분 문자열 일치. 필드 값은 `<br/>`·`.`·`*`·줄바꿈으로 문장 조각을 나눠 봄. 쉼표로는 나누지 않음 — "휠체어, 전동 스쿠터 진입 쉬움"이 한 조각이어야 R1b가 맞음)
+  1. **R1** `exit`·`route`에 "턱이 없", "단차가 없", "경사로", "휠체어 접근 가능", "휠체어가 통과 가능", "턱 없", "문턱없", "문턱 없", "휠체어 통과 가능", "휠체어 접근 및 이동 가능" 중 하나 → wheelchair=true, stroller=true. 근거: 무장애 여행 정보의 경사로·턱 없음은 휠체어 접근용 편의시설로 보고, 휠체어가 지나갈 수 있으면 유모차도 지나갈 수 있다고 봄.
+     - **R1b** `exit`·`route`의 같은 조각에 "휠체어"와 "진입 쉬움" 또는 "이용 가능"이 함께 → wheelchair=true, stroller=true (부정어가 같은 조각에 있으면 제외).
+     - 문 종류만 있는 조각("자동문", "여닫이문", "문의 형태 : 여닫이문", "출입통로 형태 : 상시 개방형" 등)은 판정하지 않고 보고서 `door_only`에 남김.
   2. **R2** `elevator`에 "엘리베이터 있" 또는 "엘리베이터가 있" → elevator=true.
   3. **R3** `restroom`에 "장애인"과 "화장실"이 함께 → accessible_toilet=true.
-  4. **R4** 어느 필드든(대여 필드 제외) 한 절에 부정어("없음"·"불가"·"어려움")와 항목 키워드(휠체어 / 유모차 / 엘리베이터·승강기 / 화장실)가 함께 → 그 항목 false 후보. 같은 항목에 true 근거도 있으면 **null + 충돌**로 raw에 기록. "턱 없음"·"단차 없음" 같은 장벽 없음 표현은 부정어로 보지 않음. 긍정 표현이 부정어와 같은 절에 있으면(예: "경사로 없음") true로 세지 않고 `negated_positive`로 기록만 함.
-     - **R4-manual** `handicapetc`의 "전동휠체어 … 불가" 절은 자동 판정하지 않고 원문·장소명을 raw와 보고서에 남김.
+  4. **R4** 어느 필드든(대여 필드 제외) 한 조각에 부정어("없음"·"불가"·"어려움")와 항목 키워드(휠체어 / 유모차 / 엘리베이터·승강기 / 화장실)가 함께 → 그 항목 false 후보. 같은 항목에 true 근거도 있으면 **null + 충돌**로 raw에 기록. "턱 없음"·"단차 없음" 같은 장벽 없음 표현은 부정어로 보지 않음. 긍정 표현이 부정어와 같은 조각에 있으면(예: "경사로 없음") true로 세지 않고 `negated_positive`로 기록만 함.
+     - **R4-manual** `handicapetc`의 "전동휠체어 … 불가" 조각은 자동 판정하지 않고 원문·장소명을 raw와 보고서에 남김.
   5. TourAPI `wheelchair`·`stroller` 필드(대여 정보)는 판정에 쓰지 않음(원문은 raw에 남김).
   6. 응답이 비었거나 어떤 규칙에도 안 맞으면 **null(정보 없음)**. false로 채우지 않음.
   7. grade는 계산하지 않음: 모든 행 `UNKNOWN`, raw에 `"grade_note": "미산정(#58 등급 규칙 정리 전)"`.
+  8. **장소별 예외 `overrides`**: 규칙 파일에 장소·항목·값·근거 원문(`evidence`)을 적음. 근거 원문이 해당 필드에 그대로 있을 때만 적용하고, 없으면 적용하지 않고 보고서 `override_missing`에 남김. 적용 내역은 raw `overrides`에 기록.
+     - 해운대 블루라인파크(2672393): wheelchair=false. 근거 `handicapetc` "* 전동휠체어 탑승 불가* 수동휠체어는 도움을 받아 휠체어를 접어서 탑승가능". stroller·accessible_toilet은 자동 판정 그대로.
 - `load`
   - 처음 실행 때 DB를 `data/haeundae_sample.pre_access.sqlite3`로 복사(이미 있으면 덮어쓰지 않음).
   - `data_sources`에 `tourapi-barrierfree`가 없으면 추가, 있으면 그대로. provider·dataset_name·url은 `accessibility_collect.py`와 같고, `license`(공공누리 유형 확인 전)·`base_date`(문서에 없음)는 NULL, `retrieved_at`은 `accessibility/fetch_log.jsonl`의 정상 응답 중 파일이 있는 것의 가장 늦은 시각.
-  - 이 출처의 accessibility 행을 지우고 다시 넣음(한 트랜잭션). 응답이 있는 장소만 행을 만들고, 빈 응답 장소는 행 없음(= API에서 UNKNOWN). raw는 원문 필드·근거 절·충돌·수동 확인 절이며 시각을 넣지 않아 두 번 실행해도 같은 DB.
+  - 이 출처의 accessibility 행을 지우고 다시 넣음(한 트랜잭션). 응답이 있는 장소만 행을 만들고, 빈 응답 장소는 행 없음(= API에서 UNKNOWN). raw는 원문 필드·근거 조각·충돌·수동 확인 조각·문 종류 조각·override 내역이며 시각을 넣지 않아 두 번 실행해도 같은 DB.
 
 ### 결과 (2026-11-19, 해운대 275곳, 응답 있음 53곳)
 
 | 항목 | true | false | null | 충돌 |
 |---|---|---|---|---|
-| wheelchair | 46 | 0 | 229 | 0 |
-| stroller | 46 | 0 | 229 | 0 |
+| wheelchair | 47 | 1 | 227 | 0 |
+| stroller | 48 | 0 | 227 | 0 |
 | elevator | 26 | 0 | 249 | 0 |
 | accessible_toilet | 30 | 1 | 244 | 0 |
 
-- 규칙별 장소 수: R1 46, R2 26, R3 30, R4 1, R4-manual 1. R1 표현별: "턱이 없" 29, "단차가 없" 6, "경사로" 17, "휠체어 접근 가능" 40, "휠체어가 통과 가능" 2 (한 장소가 여러 표현에 맞을 수 있음).
-- 유형별 wheelchair true: 관광지 24, 문화시설 8, 레포츠 3, 쇼핑 4, 음식점 7.
+- 규칙별 장소 수: R1 47, R1b 4, R2 26, R3 30, R4 1, R4-manual 1, override 1. R1 표현별: "턱이 없" 29, "단차가 없" 6, "경사로" 17, "휠체어 접근 가능" 40, "휠체어가 통과 가능" 2, "턱 없" 2, "문턱없" 1, "문턱 없" 0, "휠체어 통과 가능" 1, "휠체어 접근 및 이동 가능" 1 (한 장소가 여러 표현에 맞을 수 있음).
+- 유형별 wheelchair true: 관광지 24, 문화시설 8, 레포츠 3, 쇼핑 4, 음식점 8.
 - 해운대해수욕장(35.159084, 129.160279) 반경 1500m 안이고 `open_hours`가 NULL이 아닌 77곳 중 wheelchair true 11, stroller true 11.
-- accessible_toilet false 1곳은 해운대 블루라인파크 `handicapetc`의 "화장실은 공간이 좁아 사용이 어려움"(R4). 같은 원문의 "전동휠체어 탑승 불가"·"간이 경사로(전동휠체어 불가)"는 R4-manual(판정 안 함).
-- 규칙에 안 맞은 문장(목록 확정 때 검토): "휠체어, 전동 스쿠터 (사용자) 진입 쉬움"류 3곳, "문턱없이 평지로 연결되어 휠체어 통과 가능함", "(휠체어 접근 및 이동 가능)", "이동경로가 넓어 휠체어 … 이용 가능내부 턱 없음", 출입문 형태만("여닫이문", "자동문"), 엘리베이터 이용 동선 설명 1곳. 전체 원문은 `report` 출력의 `unmatched_in_positive_rule_fields`.
+- wheelchair false 1곳은 블루라인파크 override. accessible_toilet false 1곳은 같은 장소 `handicapetc`의 "화장실은 공간이 좁아 사용이 어려움"(R4).
+- 여전히 규칙에 안 맞는 exit·route 문장: 누리마루 APEC하우스 `exit` "동백공원 장애인 전용주차장에서 출발해 산책로 아래쪽 도로를 따라온 탐방객은 1층 엘리베이터를 이용해 3층 전시 공간으로 진입" 1건. 문 종류만 있는 조각 5건은 `door_only`.

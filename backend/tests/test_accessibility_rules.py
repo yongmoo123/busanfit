@@ -24,7 +24,8 @@ def test_rules_file_is_marked_as_proposal():
 # ---------------------------------------------------------------- 규칙 1
 
 @pytest.mark.parametrize("phrase", ["턱이 없", "단차가 없", "경사로", "휠체어 접근 가능",
-                                    "휠체어가 통과 가능"])
+                                    "휠체어가 통과 가능", "턱 없", "문턱없", "문턱 없",
+                                    "휠체어 통과 가능", "휠체어 접근 및 이동 가능"])
 @pytest.mark.parametrize("field", ["exit", "route"])
 def test_rule1_each_phrase_sets_wheelchair_and_stroller(phrase, field):
     result = aj.judge({field: f"[가상] 주출입구는 {phrase}함"}, RULES)
@@ -34,6 +35,70 @@ def test_rule1_each_phrase_sets_wheelchair_and_stroller(phrase, field):
 
 def test_rule1_only_in_exit_and_route():
     assert values({"parking": "경사로 있음", "elevator": "휠체어 접근 가능"}) == NONE4
+
+
+def test_rule1_new_phrases_on_real_sentence_shapes():
+    assert values({"route": "[가상] 문턱없이 평지로 연결되어 휠체어 통과 가능함."})["wheelchair"] is True
+    assert values({"exit": "[가상] 보행로 \n  (휠체어 접근 및 이동 가능)"})["stroller"] is True
+
+
+@pytest.mark.parametrize("text", ["출입통로가 넓어 휠체어, 전동 스쿠터 진입 쉬움.",
+                                  "문의 형태 : 여닫이문<br/>출입통로가 넓어 휠체어, 전동 스쿠터 사용자 진입 쉬움.",
+                                  "[가상] 데크 구간 휠체어 이용 가능"])
+def test_rule1b_wheelchair_with_easy_entry_or_usable(text):
+    result = aj.judge({"exit": text}, RULES)
+    assert result["values"] == {**NONE4, "wheelchair": True, "stroller": True}
+    assert result["positive"]["wheelchair"][0]["rule"] == "R1b"
+
+
+def test_rule1b_needs_wheelchair_in_same_clause():
+    # 쉼표로는 나누지 않지만 마침표로는 나눈다: "휠체어"와 "이용 가능"이 다른 조각
+    assert values({"exit": "휠체어 출입구. 엘리베이터 이용 가능"}) == NONE4
+    assert values({"exit": "전동 스쿠터 진입 쉬움"}) == NONE4
+    assert values({"parking": "휠체어 이용 가능"}) == NONE4
+
+
+def test_rule1b_excluded_when_negation_in_same_clause():
+    result = aj.judge({"exit": "휠체어 이용 가능한 출입구 없음"}, RULES)
+    assert result["values"]["wheelchair"] is not True
+    assert result["negated_positive"][0]["rule"] == "R1b"
+
+
+@pytest.mark.parametrize("text", ["자동문", "여닫이문", "문의 형태 : 여닫이문", "출입통로 형태 : 상시 개방형."])
+def test_door_type_only_is_not_judged(text):
+    result = aj.judge({"exit": text}, RULES)
+    assert result["values"] == NONE4
+    assert result["unmatched"] == []
+    assert len(result["door_only"]) == 1
+
+
+# ---------------------------------------------------------------- overrides
+
+BLUELINE = {"contentid": "2672393",
+            "exit": "주출입구는 턱이 없어 휠체어 접근 가능함",
+            "handicapetc": "* 전동휠체어 탑승 불가* 수동휠체어는 도움을 받아 휠체어를 접어서 탑승가능"
+                           "* 화장실은 공간이 좁아 사용이 어려움"}
+
+
+def test_override_sets_only_listed_item_with_evidence():
+    ov = RULES["overrides"][0]
+    assert ov["name"] == "해운대 블루라인파크" and ov["set"] == {"wheelchair": False}
+    assert ov["evidence"]  # 근거 원문이 규칙 파일에 있어야 함
+    result = aj.judge(BLUELINE, RULES)
+    assert result["values"] == {"wheelchair": False, "stroller": True, "elevator": None,
+                                "accessible_toilet": False}
+    assert result["overrides"] == [{"item": "wheelchair", "from": True, "to": False,
+                                    "field": "handicapetc", "evidence": ov["evidence"]}]
+    assert json.loads(aj.raw_json(result, RULES))["overrides"] == result["overrides"]
+
+
+def test_override_not_applied_without_evidence_or_other_place():
+    changed = {**BLUELINE, "handicapetc": "[가상] 다른 문장"}
+    result = aj.judge(changed, RULES)
+    assert result["values"]["wheelchair"] is True
+    assert result["overrides"] == [] and result["override_missing"][0]["content_id"] == "2672393"
+    other = {**BLUELINE, "contentid": "900001"}
+    assert aj.judge(other, RULES)["values"]["wheelchair"] is True
 
 
 # ---------------------------------------------------------------- 규칙 2·3
@@ -64,8 +129,10 @@ def test_rule4_negation_gives_false_for_that_item_only():
 
 def test_rule4_barrier_absence_is_not_negation():
     # "턱 없음"은 장벽이 없다는 뜻이라 부정어로 보지 않는다
-    assert values({"route": "휠체어 이용 가능<br/>내부 턱 없음."}) == NONE4
-    assert values({"exit": "턱이 없어 휠체어 접근 가능. 내부 턱 없음"})["wheelchair"] is True
+    result = aj.judge({"handicapetc": "휠체어 사용자 편리 내부 턱 없음. 단차 없음"}, RULES)
+    assert result["values"] == NONE4 and result["negative"]["wheelchair"] == []
+    result = aj.judge({"exit": "턱이 없어 휠체어 접근 가능. 휠체어 내부 턱 없음"}, RULES)
+    assert result["values"]["wheelchair"] is True and result["conflicts"] == []
 
 
 def test_rule4_negation_without_item_keyword_is_ignored():
@@ -113,9 +180,10 @@ def test_rule6_empty_response_is_null_not_false():
 
 
 def test_rule6_unmatched_sentence_is_null_and_listed():
-    result = aj.judge({"exit": "여닫이문"}, RULES)
+    text = "[가상] 1층 엘리베이터를 이용해 3층으로 진입"
+    result = aj.judge({"exit": text}, RULES)
     assert result["values"] == NONE4
-    assert result["unmatched"] == [{"field": "exit", "original": "여닫이문"}]
+    assert result["unmatched"] == [{"field": "exit", "original": text}]
 
 
 def test_judge_reads_rules_from_data():

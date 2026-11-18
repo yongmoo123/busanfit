@@ -57,17 +57,58 @@ def clauses(text: str, rules: dict) -> list[str]:
     return [c for c in (normalize(p) for p in parts) if c]
 
 
+def match_positive(rule: dict, clause: str) -> list[str]:
+    """Phrases of ``rule`` found in ``clause``: every ``all`` phrase and at least one ``any``."""
+    required = rule.get("all", [])
+    if not all(p in clause for p in required):
+        return []
+    options = rule.get("any")
+    if options is None:
+        return list(required)
+    found = [p for p in options if p in clause]
+    return [*required, *found] if found else []
+
+
+def is_door_only(field: str, clause: str, rules: dict) -> bool:
+    door = rules["door_only"]
+    if field not in door["fields"]:
+        return False
+    text = clause
+    for prefix in door["prefixes"]:
+        if text.startswith(prefix):
+            text = text[len(prefix):]
+    return text.strip(" .") in door["values"]
+
+
+def apply_overrides(content_id: str | None, fields: dict, values: dict, rules: dict) -> tuple:
+    """Place-specific overrides from the rules file. Applied only if the evidence is in the original."""
+    applied, missing = [], []
+    for ov in rules.get("overrides", []):
+        if content_id is None or ov["content_id"] != content_id:
+            continue
+        if ov["evidence"] not in fields.get(ov["field"], ""):
+            missing.append({"content_id": ov["content_id"], "name": ov["name"], "field": ov["field"],
+                            "evidence": ov["evidence"]})
+            continue
+        for it, value in ov["set"].items():
+            applied.append({"item": it, "from": values[it], "to": value, "field": ov["field"],
+                            "evidence": ov["evidence"]})
+            values[it] = value
+    return applied, missing
+
+
 def judge(item: dict | None, rules: dict) -> dict:
     """One detailWithTour2 item (or None for an empty response) → item values and evidence.
 
     Values are True / False / None. None = no information or conflict (never filled with False).
+    Place overrides (rules["overrides"]) are matched by the item's ``contentid``.
     """
     ignored = set(rules["ignored_fields"]["fields"])
     neg = rules["negative"]
     manual = rules["manual_review"]
     pos_hits: dict[str, list] = {k: [] for k in ITEMS}
     neg_hits: dict[str, list] = {k: [] for k in ITEMS}
-    negated_positive, manual_review, unmatched = [], [], []
+    negated_positive, manual_review, unmatched, door_only = [], [], [], []
     fields: dict[str, str] = {}
 
     for field, value in (item or {}).items():
@@ -77,7 +118,12 @@ def judge(item: dict | None, rules: dict) -> dict:
         if field in ignored:
             continue
         field_hit = False
+        judged_clause = False
         for clause in clauses(value, rules):
+            if is_door_only(field, clause, rules):
+                door_only.append({"field": field, "clause": clause})
+                continue
+            judged_clause = True
             cleaned = clause
             for phrase in neg["barrier_absence_phrases"]:
                 cleaned = cleaned.replace(phrase, "")
@@ -85,10 +131,7 @@ def judge(item: dict | None, rules: dict) -> dict:
             for rule in rules["positive"]:
                 if field not in rule["fields"]:
                     continue
-                if "any" in rule:
-                    found = [p for p in rule["any"] if p in clause]
-                else:
-                    found = rule["all"] if all(p in clause for p in rule["all"]) else []
+                found = match_positive(rule, clause)
                 if not found:
                     continue
                 field_hit = True
@@ -111,7 +154,7 @@ def judge(item: dict | None, rules: dict) -> dict:
                     neg_hits[it].append({"rule": neg["id"], "field": field, "clause": clause,
                                          "negation": negated})
                     field_hit = True
-        if not field_hit:
+        if not field_hit and judged_clause:
             unmatched.append({"field": field, "original": value})
 
     values, conflicts = {}, []
@@ -125,9 +168,12 @@ def judge(item: dict | None, rules: dict) -> dict:
             values[it] = False
         else:
             values[it] = None
+    content_id = None if item is None or item.get("contentid") is None else str(item["contentid"])
+    overrides, override_missing = apply_overrides(content_id, fields, values, rules)
     return {"has_response": item is not None, "values": values, "conflicts": conflicts,
             "positive": pos_hits, "negative": neg_hits, "negated_positive": negated_positive,
-            "manual_review": manual_review, "unmatched": unmatched, "fields": fields}
+            "manual_review": manual_review, "unmatched": unmatched, "door_only": door_only,
+            "overrides": overrides, "override_missing": override_missing, "fields": fields}
 
 
 def raw_json(result: dict, rules: dict) -> str:
@@ -144,6 +190,8 @@ def raw_json(result: dict, rules: dict) -> str:
         "conflicts": [c["item"] for c in result["conflicts"]],
         "negated_positive": [n["clause"] for n in result["negated_positive"]],
         "manual_review": [m["clause"] for m in result["manual_review"]],
+        "door_only": [d["clause"] for d in result["door_only"]],
+        "overrides": result["overrides"],
     }
     return json.dumps(payload, ensure_ascii=False, sort_keys=True)
 
@@ -329,6 +377,11 @@ def build_report(results: list[dict], rules: dict, db_path: Path | None) -> dict
                           for r in results for m in r["manual_review"]],
         "conflicts": [{"content_id": r["content_id"], "title": r["title"], **c}
                       for r in results for c in r["conflicts"]],
+        "door_only": [{"content_id": r["content_id"], "title": r["title"], **d}
+                      for r in results for d in r["door_only"]],
+        "overrides": [{"content_id": r["content_id"], "title": r["title"], **o}
+                      for r in results for o in r["overrides"]],
+        "override_missing": [m for r in results for m in r["override_missing"]],
     }
 
 
