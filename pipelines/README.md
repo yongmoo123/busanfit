@@ -158,7 +158,7 @@ $env:BUSANFIT_DB_PATH = "data/haeundae_sample.sqlite3"     # PowerShell (backend
 
 ## 무장애 원본 수집 (FR-008, 2026-11-19)
 
-`accessibility_collect.py`는 해운대 대상 275곳에 `detailWithTour2`를 한 번씩 호출해 원본을 저장하고, 응답 문장을 **판정 없이** 정리합니다. DB의 `accessibility`(wheelchair·stroller·elevator·accessible_toilet)로 바꾸는 판정은 DEC-026 표현 목록 확정 뒤 별도 작업입니다.
+`accessibility_collect.py`는 해운대 대상 275곳에 `detailWithTour2`를 한 번씩 호출해 원본을 저장하고, 응답 문장을 **판정 없이** 정리합니다. DB의 `accessibility`(wheelchair·stroller·elevator·accessible_toilet)로 바꾸는 판정은 아래 "무장애 판정과 적재"(DEC-026 초안)를 봅니다.
 
 ```text
 # 처음 5곳만 (contentid 짝 확인)
@@ -208,9 +208,52 @@ $env:BUSANFIT_DB_PATH = "data/haeundae_sample.sqlite3"     # PowerShell (backend
 
 | 항목 | 값 |
 |---|---|
-| `data_sources.code` | `tourapi-kor` (무장애 `tourapi-barrierfree`는 연결 PR에서 추가) |
+| `data_sources.code` | `tourapi-kor` (무장애 `tourapi-barrierfree`는 `accessibility_judge load`가 없을 때만 추가 — 아래 "무장애 판정과 적재") |
 | 제공기관·데이터 | 한국관광공사, 국문 관광정보 서비스_GW (KorService2) |
 | URL | <https://www.data.go.kr/data/15101578/openapi.do> |
 | 조회 시각 (`retrieved_at`) | 마지막 수집 호출 시각 (`data/raw/tourapi/fetch_log.jsonl`) |
 | 기준일 (`base_date`) | 문서에 없음 → NULL |
 | **이용허락범위 (공공누리 유형)** | **확인 필요** — 담당자가 직접 확인. 위치: 위 두 포털 페이지의 "이용허락범위" 항목, 그리고 장소별 응답 필드 `cpyrhtDivCd`(Swagger 설명 "저작권 유형"). 확인 전까지 `data_sources.license`는 NULL |
+
+## 무장애 판정과 적재 (FR-008, DEC-026 초안)
+
+> **상태: 제안, 세민 확인 대기.** 표현 목록은 DEC-026 확정 전 초안입니다. 확정되면 `accessibility_rules.json`만 고치고 `load`를 다시 실행합니다.
+>
+> **grade는 #58 정리 전까지 UNKNOWN, 이동제약 판정은 항목값으로만 함(DEC-015).**
+
+```text
+# 판정 결과를 data/haeundae_sample.sqlite3의 accessibility에 적재 (멱등)
+.venv/Scripts/python.exe -m pipelines.accessibility_judge load
+# 집계 보고서 (네트워크 없음) → data/processed/accessibility_judgement.json
+.venv/Scripts/python.exe -m pipelines.accessibility_judge report
+```
+
+- 규칙은 `pipelines/accessibility_rules.json`에만 있고 `accessibility_judge.py`는 그 파일을 읽어 적용만 합니다. 원본은 `data/raw/tourapi/accessibility/`만 읽고 API를 호출하지 않습니다.
+- 규칙 (원문 부분 문자열 일치. 필드 값은 `<br/>`·`.`·`*`·`,`·줄바꿈으로 절을 나눠 봄)
+  1. **R1** `exit`·`route`에 "턱이 없", "단차가 없", "경사로", "휠체어 접근 가능", "휠체어가 통과 가능" 중 하나 → wheelchair=true, stroller=true. 근거: 무장애 여행 정보의 경사로·턱 없음은 휠체어 접근용 편의시설로 보고, 휠체어가 지나갈 수 있으면 유모차도 지나갈 수 있다고 봄.
+  2. **R2** `elevator`에 "엘리베이터 있" 또는 "엘리베이터가 있" → elevator=true.
+  3. **R3** `restroom`에 "장애인"과 "화장실"이 함께 → accessible_toilet=true.
+  4. **R4** 어느 필드든(대여 필드 제외) 한 절에 부정어("없음"·"불가"·"어려움")와 항목 키워드(휠체어 / 유모차 / 엘리베이터·승강기 / 화장실)가 함께 → 그 항목 false 후보. 같은 항목에 true 근거도 있으면 **null + 충돌**로 raw에 기록. "턱 없음"·"단차 없음" 같은 장벽 없음 표현은 부정어로 보지 않음. 긍정 표현이 부정어와 같은 절에 있으면(예: "경사로 없음") true로 세지 않고 `negated_positive`로 기록만 함.
+     - **R4-manual** `handicapetc`의 "전동휠체어 … 불가" 절은 자동 판정하지 않고 원문·장소명을 raw와 보고서에 남김.
+  5. TourAPI `wheelchair`·`stroller` 필드(대여 정보)는 판정에 쓰지 않음(원문은 raw에 남김).
+  6. 응답이 비었거나 어떤 규칙에도 안 맞으면 **null(정보 없음)**. false로 채우지 않음.
+  7. grade는 계산하지 않음: 모든 행 `UNKNOWN`, raw에 `"grade_note": "미산정(#58 등급 규칙 정리 전)"`.
+- `load`
+  - 처음 실행 때 DB를 `data/haeundae_sample.pre_access.sqlite3`로 복사(이미 있으면 덮어쓰지 않음).
+  - `data_sources`에 `tourapi-barrierfree`가 없으면 추가, 있으면 그대로. provider·dataset_name·url은 `accessibility_collect.py`와 같고, `license`(공공누리 유형 확인 전)·`base_date`(문서에 없음)는 NULL, `retrieved_at`은 `accessibility/fetch_log.jsonl`의 정상 응답 중 파일이 있는 것의 가장 늦은 시각.
+  - 이 출처의 accessibility 행을 지우고 다시 넣음(한 트랜잭션). 응답이 있는 장소만 행을 만들고, 빈 응답 장소는 행 없음(= API에서 UNKNOWN). raw는 원문 필드·근거 절·충돌·수동 확인 절이며 시각을 넣지 않아 두 번 실행해도 같은 DB.
+
+### 결과 (2026-11-19, 해운대 275곳, 응답 있음 53곳)
+
+| 항목 | true | false | null | 충돌 |
+|---|---|---|---|---|
+| wheelchair | 46 | 0 | 229 | 0 |
+| stroller | 46 | 0 | 229 | 0 |
+| elevator | 26 | 0 | 249 | 0 |
+| accessible_toilet | 30 | 1 | 244 | 0 |
+
+- 규칙별 장소 수: R1 46, R2 26, R3 30, R4 1, R4-manual 1. R1 표현별: "턱이 없" 29, "단차가 없" 6, "경사로" 17, "휠체어 접근 가능" 40, "휠체어가 통과 가능" 2 (한 장소가 여러 표현에 맞을 수 있음).
+- 유형별 wheelchair true: 관광지 24, 문화시설 8, 레포츠 3, 쇼핑 4, 음식점 7.
+- 해운대해수욕장(35.159084, 129.160279) 반경 1500m 안이고 `open_hours`가 NULL이 아닌 77곳 중 wheelchair true 11, stroller true 11.
+- accessible_toilet false 1곳은 해운대 블루라인파크 `handicapetc`의 "화장실은 공간이 좁아 사용이 어려움"(R4). 같은 원문의 "전동휠체어 탑승 불가"·"간이 경사로(전동휠체어 불가)"는 R4-manual(판정 안 함).
+- 규칙에 안 맞은 문장(목록 확정 때 검토): "휠체어, 전동 스쿠터 (사용자) 진입 쉬움"류 3곳, "문턱없이 평지로 연결되어 휠체어 통과 가능함", "(휠체어 접근 및 이동 가능)", "이동경로가 넓어 휠체어 … 이용 가능내부 턱 없음", 출입문 형태만("여닫이문", "자동문"), 엘리베이터 이용 동선 설명 1곳. 전체 원문은 `report` 출력의 `unmatched_in_positive_rule_fields`.
