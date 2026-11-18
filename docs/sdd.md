@@ -220,7 +220,7 @@ Software Design Document (SDD)
 
 | **AI 요소** | **모델/서비스** | **역할** | **입력/출력** | **교체 가능성/추상화** | **관련 요구사항** |
 |----|----|----|----|----|----|
-| LLM (추출) | 개발: Gemini Flash 계열(무료 티어) / 시연: Claude Haiku 5.5 또는 GPT-5 mini | 제약 프로필 추출, 하드/소프트 태깅 | 대화 이력 Text → JSON(ConstraintProfile) | AIService.complete(), Provider 설정으로 교체 | FR-002, FR-003, AI-REQ-04, AI-REQ-06 |
+| LLM (추출) | 개발·시연·평가: Gemini Flash 계열(무료 티어, 가상 입력만) / 향후 배포: Claude Haiku 5.5 또는 GPT-5 mini (DEC-030) | 제약 프로필 추출, 하드/소프트 태깅 | 대화 이력 Text → JSON(ConstraintProfile) | AIService.complete(), Provider 설정으로 교체 | FR-002, FR-003, AI-REQ-04, AI-REQ-06 |
 | LLM (수정 해석) | 동일 | 수정 요청 → 변경 연산 | 메시지 + 코스 요약(건강 정보는 범주값만, DEC-006) → JSON(ChangeOp) | 동일 | FR-015, AI-REQ-07 |
 | LLM (설명) | 동일 | 장소별 추천 이유 1~2문장 | 장소 정보 Context → Text | 동일, 실패 시 템플릿 대체 | FR-012, AI-REQ-01 |
 | VLM | 구현 범위 제외 (향후 동일 제공자의 멀티모달 모델) | 사진 분위기 분석 → 유사 장소 검색 | Image + Text → JSON(분위기 태그) | AIService에 completeWithImage() 추가로 확장 | 향후 확장 |
