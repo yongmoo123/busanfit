@@ -1,8 +1,7 @@
 
 import { useEffect, useRef, useState } from 'react'
-import needsInputMock from './mocks/02-chat.needs-input.response.json'
 import readyMock from './mocks/02-chat.ready.response.json'
-import { createSession, saveProfile } from './sessionApi.js'
+import { createSession, saveProfile, sendChatMessage } from './sessionApi.js'
 import { createEmptyProfile } from './profile.js'
 import ProfileEditor from './ProfileEditor.jsx'
 import CourseTimeline from './CourseTimeline.jsx'
@@ -29,16 +28,6 @@ function getInitialSidebarWidth() {
   }
 
   return DEFAULT_SIDEBAR_WIDTH
-}
-
-function createMockResponse(message) {
-  const text = message.trim()
-  const hasArea = /해운대|서면|광안리|남포/.test(text)
-  const hasTime = /시간|오전|오후|하루|반나절|\d+시/.test(text)
-
-  return structuredClone(
-    hasArea && hasTime ? readyMock : needsInputMock,
-  )
 }
 
 function formatDateTime(value) {
@@ -257,6 +246,9 @@ function App() {
   }, [isQaEditor, sessionAttempt])
 
   function retrySession() {
+    chatRequestRef.current?.abort()
+    chatRequestRef.current = null
+    setIsSending(false)
     sessionRequestRef.current = null
     setSession(null)
     setSessionError('')
@@ -271,7 +263,7 @@ function App() {
   const [isResizing, setIsResizing] = useState(false)
 
   const messagesEndRef = useRef(null)
-  const sendTimerRef = useRef(null)
+  const chatRequestRef = useRef(null)
   const resizingRef = useRef(false)
 
   const hasMessages = messages.length > 0
@@ -284,11 +276,7 @@ function App() {
   }, [messages, isSending])
 
   useEffect(() => {
-    return () => {
-      if (sendTimerRef.current) {
-        clearTimeout(sendTimerRef.current)
-      }
-    }
+    return () => chatRequestRef.current?.abort()
   }, [])
 
   useEffect(() => {
@@ -356,7 +344,7 @@ function App() {
       return { profile, status: questions.length ? 'NEEDS_INPUT' : 'READY', questions, warnings: [] }
     }
 
-    if (!session || profileSaveRef.current) {
+    if (!session || profileSaveRef.current || chatRequestRef.current) {
       throw new Error('서버 연결 또는 이전 저장이 끝날 때까지 기다려 주세요.')
     }
 
@@ -401,60 +389,99 @@ function App() {
   function handleNewChat() {
     if (profileSaveRef.current) return
 
-    if (sendTimerRef.current) {
-      clearTimeout(sendTimerRef.current)
-      sendTimerRef.current = null
-    }
-
+    retrySession()
     setEditor(null)
     setMessages([])
     setInput('')
-    setIsSending(false)
     setSidebarOpen(false)
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
 
     const text = input.trim()
-    if (!text || isSending) return
+    if (!text || chatRequestRef.current || profileSaveRef.current) return
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        role: 'user',
-        content: text,
-      },
-    ])
-
-    setInput('')
-    setIsSending(true)
-
-    sendTimerRef.current = setTimeout(() => {
-      const response = createMockResponse(text)
-      const questions = response.status === 'NEEDS_INPUT'
-        ? (response.questions ?? []).slice(0, 2)
-        : []
-
-      setMessages((prev) => [
-        ...prev,
+    if (!session) {
+      setMessages((previous) => [
+        ...previous,
         {
           id: crypto.randomUUID(),
           role: 'assistant',
-          content: [
-            response.reply,
-            ...questions.map((question) => question.message),
-          ].join('\n\n'),
-          status: response.status,
-          profile: response.profile,
-          isMock: true,
+          content: sessionError || '서버에 연결 중이에요. 잠시 후 다시 보내 주세요.',
+          canRestartSession: Boolean(sessionError),
         },
       ])
+      return
+    }
 
-      setIsSending(false)
-      sendTimerRef.current = null
-    }, 800)
+    const controller = new AbortController()
+    chatRequestRef.current = controller
+    setIsSending(true)
+    setInput('')
+    setMessages((previous) => [
+      ...previous,
+      { id: crypto.randomUUID(), role: 'user', content: text },
+    ])
+
+    try {
+      const result = await sendChatMessage(
+        session.sessionId,
+        text,
+        session.profileRevision,
+        controller.signal,
+      )
+
+      if (controller.signal.aborted) return
+
+      setSession((current) => {
+        if (current?.sessionId !== session.sessionId) return current
+
+        return {
+          ...current,
+          savedProfile: result.profile,
+          profileRevision: result.profileRevision,
+          expiresAt: result.sessionExpiresAt,
+        }
+      })
+
+      const details = [
+        ...(result.questions ?? []),
+        ...(result.warnings ?? []),
+      ].map((item) => item.message)
+
+      setMessages((previous) => [
+        ...previous,
+        {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: [result.reply, ...details].filter(Boolean).join('\n\n'),
+          status: result.status,
+          profile: result.profile,
+          canEditProfile: result.status === 'NEEDS_INPUT',
+        },
+      ])
+    } catch (error) {
+      if (controller.signal.aborted) return
+
+      setMessages((previous) => [
+        ...previous,
+        {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: error.status
+            ? error.message
+            : '서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.',
+          canEditProfile: error.status === 503,
+          canRestartSession: error.status === 410,
+        },
+      ])
+    } finally {
+      if (chatRequestRef.current === controller) {
+        chatRequestRef.current = null
+        setIsSending(false)
+      }
+    }
   }
 
   function handleRecommend() {
@@ -578,14 +605,32 @@ function App() {
                         <span className="message-caption">가상 응답</span>
                       )}
 
-                      {message.status === 'READY' && message.profile && (
-                        editor?.target === message.id ? renderProfileEditor() : (
-                          <ConditionCard
-                            profile={message.profile}
-                            onRecommend={handleRecommend}
-                            onEdit={() => openEditor(message.id)}
-                          />
-                        )
+                      {editor?.target === message.id ? (
+                        renderProfileEditor()
+                      ) : message.status === 'READY' && message.profile ? (
+                        <ConditionCard
+                          profile={message.profile}
+                          onRecommend={handleRecommend}
+                          onEdit={() => openEditor(message.id)}
+                        />
+                      ) : message.canEditProfile ? (
+                        <button
+                          type="button"
+                          className="profile-secondary"
+                          onClick={() => openEditor(message.id)}
+                        >
+                          조건 직접 입력
+                        </button>
+                      ) : null}
+
+                      {message.canRestartSession && (
+                        <button
+                          type="button"
+                          className="profile-secondary"
+                          onClick={retrySession}
+                        >
+                          새 세션 시작
+                        </button>
                       )}
 
                       {message.showCoursePlaceholder && (
