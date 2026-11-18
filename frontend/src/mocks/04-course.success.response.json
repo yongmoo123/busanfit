@@ -1,0 +1,164 @@
+{
+  "status": "SUCCESS",
+  "course": {
+    "id": "33333333-3333-4333-8333-333333333333",
+    "profileRevision": 1,
+    "createdAt": "2026-11-05T10:00:00+09:00",
+    "availableWindow": {
+      "startAt": "2026-11-06T13:00:00+09:00",
+      "endAt": "2026-11-06T17:00:00+09:00"
+    },
+    "startAt": "2026-11-06T13:00:00+09:00",
+    "endAt": "2026-11-06T15:10:00+09:00",
+    "items": [
+      {
+        "id": "item-01",
+        "order": 1,
+        "place": {
+          "id": "mock-place-001",
+          "name": "[가상] 실내 전시공간 A",
+          "category": "EXHIBITION",
+          "area": "HAEUNDAE",
+          "address": "부산광역시 해운대구 — 테스트용 가상 주소",
+          "coordinates": {
+            "latitude": 35.16,
+            "longitude": 129.16
+          },
+          "indoor": true,
+          "openHours": {
+            "status": "KNOWN",
+            "description": "테스트 설정: 10:00~18:00"
+          },
+          "price": {
+            "status": "UNKNOWN",
+            "amount": null,
+            "currency": "KRW",
+            "basis": "UNKNOWN"
+          },
+          "defaultStayMinutes": 60,
+          "accessibility": {
+            "grade": "UNKNOWN",
+            "wheelchair": null,
+            "stroller": null,
+            "elevator": null,
+            "accessibleToilet": null,
+            "evidence": []
+          },
+          "sourceIds": [
+            "mock-source-01"
+          ]
+        },
+        "startAt": "2026-11-06T13:00:00+09:00",
+        "endAt": "2026-11-06T14:00:00+09:00",
+        "stayMinutes": 60,
+        "reason": "실내 전시공간으로 실내 위주 선호에 부합합니다.",
+        "reasonMethod": "TEMPLATE",
+        "isAnchor": false
+      },
+      {
+        "id": "item-02",
+        "order": 2,
+        "place": {
+          "id": "mock-place-002",
+          "name": "[가상] 카페 B",
+          "category": "CAFE",
+          "area": "HAEUNDAE",
+          "address": "부산광역시 해운대구 — 테스트용 가상 주소",
+          "coordinates": {
+            "latitude": 35.162,
+            "longitude": 129.163
+          },
+          "indoor": true,
+          "openHours": {
+            "status": "KNOWN",
+            "description": "테스트 설정: 10:00~18:00"
+          },
+          "price": {
+            "status": "UNKNOWN",
+            "amount": null,
+            "currency": "KRW",
+            "basis": "UNKNOWN"
+          },
+          "defaultStayMinutes": 60,
+          "accessibility": {
+            "grade": "UNKNOWN",
+            "wheelchair": null,
+            "stroller": null,
+            "elevator": null,
+            "accessibleToilet": null,
+            "evidence": []
+          },
+          "sourceIds": [
+            "mock-source-01"
+          ]
+        },
+        "startAt": "2026-11-06T14:10:00+09:00",
+        "endAt": "2026-11-06T15:10:00+09:00",
+        "stayMinutes": 60,
+        "reason": "실내에서 쉬어갈 수 있는 카페입니다.",
+        "reasonMethod": "TEMPLATE",
+        "isAnchor": false
+      }
+    ],
+    "legs": [
+      {
+        "fromItemId": "item-01",
+        "toItemId": "item-02",
+        "mode": "WALK",
+        "minutes": 10,
+        "method": "DISTANCE_ESTIMATE",
+        "isEstimate": true
+      }
+    ],
+    "summary": {
+      "totalStayMinutes": 120,
+      "totalTravelMinutes": 10,
+      "totalWaitingMinutes": 0,
+      "totalMinutes": 130,
+      "estimatedCost": {
+        "status": "UNKNOWN",
+        "amount": null,
+        "currency": "KRW",
+        "basis": "UNKNOWN"
+      }
+    },
+    "validation": {
+      "status": "PASSED",
+      "checkedHardConstraints": [
+        "area",
+        "timeWindow",
+        "excludedCategories"
+      ],
+      "unverifiedFields": [
+        "price",
+        "routeAccessibility"
+      ],
+      "routeAccessibility": "UNVERIFIED"
+    },
+    "sources": [
+      {
+        "id": "mock-source-01",
+        "provider": "테스트용 가상 기관",
+        "datasetName": "API 연결용 가상 장소 데이터",
+        "url": "https://example.invalid/busanfit/mock-data",
+        "license": "MOCK_ONLY — 실제 공공데이터·이용허락의 증거가 아님",
+        "baseDate": "2026-11-01",
+        "retrievedAt": "2026-11-05T09:00:00+09:00"
+      }
+    ]
+  },
+  "suggestions": [],
+  "warnings": [
+    {
+      "code": "TRAVEL_TIME_ESTIMATED",
+      "message": "이동시간은 추정치이며, 실제 보행 경로와 경로 접근성은 확인되지 않았습니다.",
+      "placeIds": []
+    }
+  ],
+  "excludedUnknown": {
+    "count": 0,
+    "fields": []
+  },
+  "sessionExpiresAt": "2026-11-05T10:30:00+09:00",
+  "requestId": "22222222-2222-4222-8222-222222222222"
+}

@@ -1,0 +1,605 @@
+{
+  "syntheticOnly": true,
+  "proposalStatus": "PROPOSAL",
+  "pmApproved": false,
+  "normalPathActivated": false,
+  "ordinaryScorerUnchanged": true,
+  "realDbVerified": false,
+  "realLlmVerified": false,
+  "proposalVersion": "draft-2026-11-17",
+  "proposalSha256": "75bd8d4b8e108d10314e1e4be04cacc8c6f9e35bd9cd051d91ae21faee0c55dc",
+  "codeRevision": "fe7b2ac1133b7c4b2e50a8e2dda6e5ab7c78c753",
+  "workingTreeModified": false,
+  "runDate": "2026-11-17T12:20:36.510611+09:00",
+  "httpScenarios": 12,
+  "scenarios": [
+    {
+      "companionType": "COUPLE",
+      "changed": true,
+      "comparisons": [
+        {
+          "scorer": "BASELINE",
+          "selectedCategories": [
+            "OTHER",
+            "CAFE"
+          ],
+          "ranking": [
+            {
+              "placeId": "synthetic:p01",
+              "category": "OTHER",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p02",
+              "category": "CAFE",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p03",
+              "category": "EXHIBITION",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p04",
+              "category": "ATTRACTION",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p05",
+              "category": "PARK",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p06",
+              "category": "FOOD",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p07",
+              "category": "SHOPPING",
+              "score": 0
+            }
+          ],
+          "hardViolations": 0,
+          "missingPlaceIds": 0
+        },
+        {
+          "scorer": "PROPOSAL",
+          "selectedCategories": [
+            "CAFE",
+            "EXHIBITION"
+          ],
+          "ranking": [
+            {
+              "placeId": "synthetic:p02",
+              "category": "CAFE",
+              "score": 3.0
+            },
+            {
+              "placeId": "synthetic:p03",
+              "category": "EXHIBITION",
+              "score": 2.0
+            },
+            {
+              "placeId": "synthetic:p04",
+              "category": "ATTRACTION",
+              "score": 1.0
+            },
+            {
+              "placeId": "synthetic:p05",
+              "category": "PARK",
+              "score": 1.0
+            },
+            {
+              "placeId": "synthetic:p06",
+              "category": "FOOD",
+              "score": 1.0
+            },
+            {
+              "placeId": "synthetic:p01",
+              "category": "OTHER",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p07",
+              "category": "SHOPPING",
+              "score": 0.0
+            }
+          ],
+          "hardViolations": 0,
+          "missingPlaceIds": 0
+        }
+      ]
+    },
+    {
+      "companionType": "FAMILY",
+      "changed": true,
+      "comparisons": [
+        {
+          "scorer": "BASELINE",
+          "selectedCategories": [
+            "OTHER",
+            "CAFE"
+          ],
+          "ranking": [
+            {
+              "placeId": "synthetic:p01",
+              "category": "OTHER",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p02",
+              "category": "CAFE",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p03",
+              "category": "EXHIBITION",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p04",
+              "category": "ATTRACTION",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p05",
+              "category": "PARK",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p06",
+              "category": "FOOD",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p07",
+              "category": "SHOPPING",
+              "score": 0
+            }
+          ],
+          "hardViolations": 0,
+          "missingPlaceIds": 0
+        },
+        {
+          "scorer": "PROPOSAL",
+          "selectedCategories": [
+            "EXHIBITION",
+            "ATTRACTION"
+          ],
+          "ranking": [
+            {
+              "placeId": "synthetic:p03",
+              "category": "EXHIBITION",
+              "score": 3.0
+            },
+            {
+              "placeId": "synthetic:p04",
+              "category": "ATTRACTION",
+              "score": 3.0
+            },
+            {
+              "placeId": "synthetic:p05",
+              "category": "PARK",
+              "score": 3.0
+            },
+            {
+              "placeId": "synthetic:p01",
+              "category": "OTHER",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p02",
+              "category": "CAFE",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p06",
+              "category": "FOOD",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p07",
+              "category": "SHOPPING",
+              "score": 0.0
+            }
+          ],
+          "hardViolations": 0,
+          "missingPlaceIds": 0
+        }
+      ]
+    },
+    {
+      "companionType": "FRIENDS",
+      "changed": true,
+      "comparisons": [
+        {
+          "scorer": "BASELINE",
+          "selectedCategories": [
+            "OTHER",
+            "CAFE"
+          ],
+          "ranking": [
+            {
+              "placeId": "synthetic:p01",
+              "category": "OTHER",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p02",
+              "category": "CAFE",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p03",
+              "category": "EXHIBITION",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p04",
+              "category": "ATTRACTION",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p05",
+              "category": "PARK",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p06",
+              "category": "FOOD",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p07",
+              "category": "SHOPPING",
+              "score": 0
+            }
+          ],
+          "hardViolations": 0,
+          "missingPlaceIds": 0
+        },
+        {
+          "scorer": "PROPOSAL",
+          "selectedCategories": [
+            "ATTRACTION",
+            "PARK"
+          ],
+          "ranking": [
+            {
+              "placeId": "synthetic:p04",
+              "category": "ATTRACTION",
+              "score": 3.0
+            },
+            {
+              "placeId": "synthetic:p05",
+              "category": "PARK",
+              "score": 2.0
+            },
+            {
+              "placeId": "synthetic:p02",
+              "category": "CAFE",
+              "score": 1.0
+            },
+            {
+              "placeId": "synthetic:p07",
+              "category": "SHOPPING",
+              "score": 1.0
+            },
+            {
+              "placeId": "synthetic:p01",
+              "category": "OTHER",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p03",
+              "category": "EXHIBITION",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p06",
+              "category": "FOOD",
+              "score": 0.0
+            }
+          ],
+          "hardViolations": 0,
+          "missingPlaceIds": 0
+        }
+      ]
+    },
+    {
+      "companionType": "SOLO",
+      "changed": false,
+      "comparisons": [
+        {
+          "scorer": "BASELINE",
+          "selectedCategories": [
+            "OTHER",
+            "CAFE"
+          ],
+          "ranking": [
+            {
+              "placeId": "synthetic:p01",
+              "category": "OTHER",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p02",
+              "category": "CAFE",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p03",
+              "category": "EXHIBITION",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p04",
+              "category": "ATTRACTION",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p05",
+              "category": "PARK",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p06",
+              "category": "FOOD",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p07",
+              "category": "SHOPPING",
+              "score": 0
+            }
+          ],
+          "hardViolations": 0,
+          "missingPlaceIds": 0
+        },
+        {
+          "scorer": "PROPOSAL",
+          "selectedCategories": [
+            "OTHER",
+            "CAFE"
+          ],
+          "ranking": [
+            {
+              "placeId": "synthetic:p01",
+              "category": "OTHER",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p02",
+              "category": "CAFE",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p03",
+              "category": "EXHIBITION",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p04",
+              "category": "ATTRACTION",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p05",
+              "category": "PARK",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p06",
+              "category": "FOOD",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p07",
+              "category": "SHOPPING",
+              "score": 0.0
+            }
+          ],
+          "hardViolations": 0,
+          "missingPlaceIds": 0
+        }
+      ]
+    },
+    {
+      "companionType": "OTHER",
+      "changed": false,
+      "comparisons": [
+        {
+          "scorer": "BASELINE",
+          "selectedCategories": [
+            "OTHER",
+            "CAFE"
+          ],
+          "ranking": [
+            {
+              "placeId": "synthetic:p01",
+              "category": "OTHER",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p02",
+              "category": "CAFE",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p03",
+              "category": "EXHIBITION",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p04",
+              "category": "ATTRACTION",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p05",
+              "category": "PARK",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p06",
+              "category": "FOOD",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p07",
+              "category": "SHOPPING",
+              "score": 0
+            }
+          ],
+          "hardViolations": 0,
+          "missingPlaceIds": 0
+        },
+        {
+          "scorer": "PROPOSAL",
+          "selectedCategories": [
+            "OTHER",
+            "CAFE"
+          ],
+          "ranking": [
+            {
+              "placeId": "synthetic:p01",
+              "category": "OTHER",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p02",
+              "category": "CAFE",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p03",
+              "category": "EXHIBITION",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p04",
+              "category": "ATTRACTION",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p05",
+              "category": "PARK",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p06",
+              "category": "FOOD",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p07",
+              "category": "SHOPPING",
+              "score": 0.0
+            }
+          ],
+          "hardViolations": 0,
+          "missingPlaceIds": 0
+        }
+      ]
+    },
+    {
+      "companionType": "UNSET",
+      "changed": false,
+      "comparisons": [
+        {
+          "scorer": "BASELINE",
+          "selectedCategories": [
+            "OTHER",
+            "CAFE"
+          ],
+          "ranking": [
+            {
+              "placeId": "synthetic:p01",
+              "category": "OTHER",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p02",
+              "category": "CAFE",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p03",
+              "category": "EXHIBITION",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p04",
+              "category": "ATTRACTION",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p05",
+              "category": "PARK",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p06",
+              "category": "FOOD",
+              "score": 0
+            },
+            {
+              "placeId": "synthetic:p07",
+              "category": "SHOPPING",
+              "score": 0
+            }
+          ],
+          "hardViolations": 0,
+          "missingPlaceIds": 0
+        },
+        {
+          "scorer": "PROPOSAL",
+          "selectedCategories": [
+            "OTHER",
+            "CAFE"
+          ],
+          "ranking": [
+            {
+              "placeId": "synthetic:p01",
+              "category": "OTHER",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p02",
+              "category": "CAFE",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p03",
+              "category": "EXHIBITION",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p04",
+              "category": "ATTRACTION",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p05",
+              "category": "PARK",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p06",
+              "category": "FOOD",
+              "score": 0.0
+            },
+            {
+              "placeId": "synthetic:p07",
+              "category": "SHOPPING",
+              "score": 0.0
+            }
+          ],
+          "hardViolations": 0,
+          "missingPlaceIds": 0
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "stayMinutes": {
+    "CAFE": 60,
+    "FOOD": 70,
+    "EXHIBITION": 60,
+    "ATTRACTION": 60,
+    "PARK": 60,
+    "SHOPPING": 60,
+    "OTHER": 60
+  },
+  "injury": {
+    "normalWalkingKmh": 4,
+    "walkingKmh": 3,
+    "maxLegWalkingMinutes": 10
+  }
+}
