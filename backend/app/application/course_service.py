@@ -1,7 +1,9 @@
 """Retrieve -> canonical Repository facts -> schedule -> validate/repair -> wire."""
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from app.api.profile_models import Profile
+from app.api.course_models import Suggestion
+from app.application.suggestions import build_default_suggestions
 from app.constraints.defaults import apply_walk_default
 from app.constraints.profile import ProfileError, validate_profile
 from app.constraints.mobility import normalize_mobility
@@ -17,6 +19,7 @@ class CourseResult:
     warnings: list
     excluded_unknown: dict
     repair_attempts: int
+    suggestions: list[Suggestion] = field(default_factory=list)
 
 
 class CourseService:
@@ -114,4 +117,5 @@ class CourseService:
         else:
             unknown_ids -= {item.place.id for item in course.items}
         return CourseResult(course, warnings,
-            {'count': len(unknown_ids), 'fields': sorted(unknown_fields) if unknown_ids else []}, attempts)
+            {'count': len(unknown_ids), 'fields': sorted(unknown_fields) if unknown_ids else []}, attempts,
+            build_default_suggestions(profile, capabilities) if course is not None else [])

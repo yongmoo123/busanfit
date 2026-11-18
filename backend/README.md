@@ -21,3 +21,5 @@ ai/service.py의 AIService·Provider와 constraints의 규칙 파서를 HTTP·�
 개발 실행은 `--no-access-log`를 사용합니다. 향후 프록시·배포 환경도 세션 토큰 URL과 건강 원문이 기록되지 않는지 별도로 검증합니다.
 
 구현 참고: [FastAPI 앱 시작](https://fastapi.tiangolo.com/tutorial/first-steps/), [공통 오류 처리](https://fastapi.tiangolo.com/tutorial/handling-errors/).
+
+FR-014 ①: 성공 코스 응답의 suggestions는 실제 사용된 DEFAULT 프로필 항목에서 생성합니다. 기존 카드·capabilities에 맞는 EDIT_PROFILE만 최대 3개이며 자동 저장·하드 완화·체류시간 제안은 없습니다. [#26 실행·검증](../docs/ISSUE26_SUGGESTIONS_IMPLEMENTATION.md).
