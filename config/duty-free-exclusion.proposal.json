@@ -1,5 +1,5 @@
 {
-  "status": "제안(임시), 확인 대기 — 판별 기준은 PM 확인 전 (DEC-023 ④)",
+  "status": "DEC-023 ④ 판별 기준: 분류 코드 SH040300 (찬용 결정, 11/19)",
   "criterion": {
     "source": "TourAPI areaBasedList2 lclsSystm3",
     "codes": [

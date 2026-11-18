@@ -1,9 +1,9 @@
-"""사후면세점 제외 목록 만들기 (DEC-023 ④, FR-007). 제안(임시), 확인 대기.
+"""사후면세점 제외 목록 만들기 (DEC-023 ④, FR-007). DEC-023 ④ 판별 기준: 분류 코드 SH040300 (찬용 결정, 11/19).
 
 이미 내려받은 TourAPI 목록 원본(``data/raw/tourapi/list/areaBasedList2_p1.json``)만 읽는다.
 API를 새로 호출하지 않는다. 결과는 ``config/duty-free-exclusion.proposal.json``에 쓴다.
 
-판별 기준(제안, 이찬용 → PM 확인 대기): TourAPI 신분류 ``lclsSystm3 == "SH040300"``(분류명
+판별 기준(DEC-023 ④ 판별 기준: 분류 코드 SH040300 (찬용 결정, 11/19)): TourAPI 신분류 ``lclsSystm3 == "SH040300"``(분류명
 "사후면세점", 상위 SH04 "면세점"). DB ``places``에는 분류 코드 칸이 없어서, 런타임 후보 검색은
 이 스크립트가 만든 장소 ID 목록으로 제외한다(``app.retrieval.settings``).
 
@@ -32,7 +32,7 @@ def build(raw: dict) -> dict:
     hits = sorted({item["contentid"] for item in shopping if item.get("lclsSystm3") in DUTY_FREE_CODES},
                   key=lambda value: (len(value), value))
     return {
-        "status": "제안(임시), 확인 대기 — 판별 기준은 PM 확인 전 (DEC-023 ④)",
+        "status": "DEC-023 ④ 판별 기준: 분류 코드 SH040300 (찬용 결정, 11/19)",
         "criterion": {
             "source": "TourAPI areaBasedList2 lclsSystm3",
             "codes": list(DUTY_FREE_CODES),

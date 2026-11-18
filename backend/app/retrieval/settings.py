@@ -4,7 +4,8 @@
 - Walking radius: ``BUSANFIT_WALK_RADIUS_M`` via ``app.data.settings.walk_radius_m`` (DEC-001, 1500 m).
 - Candidate cap: ``CourseSettings.max_candidates`` (``config/courses.json``, SDD 7.3, 20).
 - Excluded place IDs: files listed in ``excludedPlaceIdFiles``. Today only the 사후면세점 list
-  (DEC-023 ④). 판별 기준은 제안(임시), 확인 대기 — see ``pipelines/duty_free_ids.py``.
+  (DEC-023 ④). DEC-023 ④ 판별 기준: 분류 코드 SH040300 (찬용 결정, 11/19) — see
+  ``pipelines/duty_free_ids.py``.
 
 A broken setting raises ``ValueError``; it is never replaced by a default silently.
 """

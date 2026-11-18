@@ -11,7 +11,7 @@ FR-007·008 (#22). `domain/course.CandidateRetriever`를 구현한다. 프로필
 |---|---|---|
 | 권역·도보 반경 | 권역 중심(DEC-023 ①, 해운대해수욕장 35.159084, 129.160279)에서 `BUSANFIT_WALK_RADIUS_M`(기본 1500 m, DEC-001) 이내. Repository 질의 | — |
 | 제외 카테고리 | 프로필 `excludedCategories`. Repository 질의 | — |
-| 사후면세점 | 설정의 제외 ID 목록(DEC-023 ④). **판별 기준 제안(임시), 확인 대기** | 집계하지 않음(확정 제외) |
+| 사후면세점 | 설정의 제외 ID 목록(DEC-023 ④). **DEC-023 ④ 판별 기준: 분류 코드 SH040300 (찬용 결정, 11/19)** | 집계하지 않음(확정 제외) |
 | 주소 | 비어 있지 않음 | `address` |
 | 운영시간 | 이용 시간대의 요일에, 시간대 안에서 기본 체류시간(`default_stay_min`)만큼 머물 수 있는 영업 구간이 있음. 자정 넘김·`24:00`·전날 밤 영업은 `courses/open_hours.opening_windows`와 같은 방식으로 읽음 | `open_hours` NULL 또는 그 요일 키 없음 → `openHours` (DEC-023 ③, 상시 영업으로 보지 않음) |
 | 이동제약 | WHEELCHAIR → `wheelchair`, STROLLER → `stroller`, INJURY → `wheelchair`(DEC-016 ③). `true`만 통과, `false`는 제외. **`grade`는 보지 않음**(DEC-015) | null 또는 무장애 행 없음 → `mobility.wheelchair`/`mobility.stroller` |
@@ -22,7 +22,7 @@ FR-007·008 (#22). `domain/course.CandidateRetriever`를 구현한다. 프로필
 - 후보는 거리, 같으면 장소 ID 순. 상한(20)은 `config/courses.json` `maxCandidates`.
 - Repository 오류(`RepositoryError`)는 그대로 올린다. 빈 후보는 "조건에 맞는 장소 없음"이다. 중심 좌표가 없는 권역은 `ValueError`.
 
-## 사후면세점 기준 (제안, 확인 대기)
+## 사후면세점 기준 (DEC-023 ④ 판별 기준: 분류 코드 SH040300 (찬용 결정, 11/19))
 `pipelines/duty_free_ids.py`가 이미 받은 TourAPI 목록 원본만 읽어 `lclsSystm3 == SH040300`(분류명 "사후면세점")인 쇼핑 장소 ID를 만든다. 해운대 쇼핑 117곳 중 112곳. DB `places`에 분류 코드 칸이 없어서 ID 목록으로 제외한다. 원본을 다시 받으면 `--check`로 목록이 최신인지 확인한다.
 
 ## 주의

@@ -6,7 +6,7 @@ Implements ``app.domain.course.CandidateRetriever``: hard filters only, then dis
 Hard conditions (a candidate must pass all of them):
 1. area and walking radius from the area center (Repository query, DEC-001, DEC-023 ①)
 2. excluded categories (Repository query, DEC-013)
-3. not in the configured excluded-ID list (사후면세점, DEC-023 ④ — 판별 기준 제안(임시), 확인 대기)
+3. not in the configured excluded-ID list (사후면세점 — DEC-023 ④ 판별 기준: 분류 코드 SH040300 (찬용 결정, 11/19))
 4. address present
 5. opening hours: on the day of ``timeWindow`` an opening interval leaves room for the place's
    ``default_stay_min`` inside the window. ``open_hours`` NULL or that weekday missing = unknown
