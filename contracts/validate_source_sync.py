@@ -23,7 +23,12 @@ def main():
     for name, body in pairs:
         if json.loads(body) != json.loads((root / "examples" / name).read_text(encoding="utf-8")):
             raise ValueError(f"Source example differs: {name}")
+    policy = json.loads((root / 'policy-cases.json').read_text(encoding='utf-8'))
+    policy_blocks = [json.loads(block) for block in blocks if '"assumedCapabilities"' in block]
+    if len(policy_blocks) != 1 or policy_blocks[0] != policy:
+        raise ValueError('Source policy cases differ from policy-cases.json')
     print(f"PASS: source JSON matches {len(spec['components']['schemas'])} schemas and {len(pairs)} examples; prose and HTTP behavior not checked.")
+    print(f"PASS: source matches {len(policy['cases'])} synthetic policy cases.")
 
 
 if __name__ == "__main__":
