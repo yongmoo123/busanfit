@@ -385,11 +385,14 @@ export default function ProfileEditor({
         )}
 
         <div className="profile-actions">
-          {feedback?.restart
-            ? <button type="button" className="primary-button" onClick={restart}>새 세션 시작</button>
-            : <button className="primary-button" type="submit" disabled={!canSave || !dirty || isSaving}>
-                {isSaving ? '저장 중…' : isMock ? '가상으로 저장' : '조건 저장 (실제 API)'}
-              </button>}
+          {feedback?.restart && (
+            <button type="button" className="primary-button" onClick={restart}>새 세션 시작</button>
+          )}
+          {!feedback?.restart && (!feedback?.result || dirty) && (
+            <button className="primary-button" type="submit" disabled={!canSave || !dirty || isSaving}>
+              {isSaving ? '저장 중…' : isMock ? '가상으로 저장' : '조건 저장 (실제 API)'}
+            </button>
+          )}
           <button type="button" className="profile-secondary" onClick={onClose} disabled={isSaving}>닫기</button>
         </div>
       </form>

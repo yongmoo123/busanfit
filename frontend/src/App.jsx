@@ -113,7 +113,11 @@ function ConditionCard({ profile, onRecommend, onEdit }) {
 
       <div className="profile-actions">
         <button type="button" className="primary-button" onClick={onEdit}>조건 편집</button>
-        <button type="button" className="profile-secondary" onClick={onRecommend}>가상 코스 미리보기</button>
+        {onRecommend && (
+          <button type="button" className="profile-secondary" onClick={onRecommend}>
+            가상 코스 미리보기
+          </button>
+        )}
       </div>
     </div>
   )
@@ -344,6 +348,8 @@ function App() {
       return { profile, status: questions.length ? 'NEEDS_INPUT' : 'READY', questions, warnings: [] }
     }
 
+    const targetMessageId = editor?.target
+
     if (!session || profileSaveRef.current || chatRequestRef.current) {
       throw new Error('서버 연결 또는 이전 저장이 끝날 때까지 기다려 주세요.')
     }
@@ -360,6 +366,25 @@ function App() {
           expiresAt: result.sessionExpiresAt,
         }
       })
+      const notes = [
+        ...(result.questions ?? []),
+        ...(result.warnings ?? []),
+      ].map((item) => item.message).filter(Boolean)
+
+      setMessages((previous) =>
+        previous.map((message) =>
+          message.id === targetMessageId
+            ? {
+                ...message,
+                content: ['여행 조건을 저장했어요.', ...notes].join('\n\n'),
+                status: result.status,
+                profile: result.profile,
+                hasSavedProfile: true,
+              }
+            : message,
+        ),
+      )
+
       return result
     } finally {
       profileSaveRef.current = false
@@ -597,9 +622,11 @@ function App() {
                     )}
 
                     <div className="message-body">
-                      <div className="message-bubble">
-                        {message.content}
-                      </div>
+                      {(!message.hasSavedProfile || editor?.target !== message.id) && (
+                        <div className="message-bubble">
+                          {message.content}
+                        </div>
+                      )}
 
                       {message.isMock && (
                         <span className="message-caption">가상 응답</span>
@@ -607,10 +634,10 @@ function App() {
 
                       {editor?.target === message.id ? (
                         renderProfileEditor()
-                      ) : message.status === 'READY' && message.profile ? (
+                      ) : message.profile && (message.status === 'READY' || message.hasSavedProfile) ? (
                         <ConditionCard
                           profile={message.profile}
-                          onRecommend={handleRecommend}
+                          onRecommend={message.status === 'READY' ? handleRecommend : undefined}
                           onEdit={() => openEditor(message.id)}
                         />
                       ) : message.canEditProfile ? (
