@@ -23,3 +23,5 @@ ai/service.py의 AIService·Provider와 constraints의 규칙 파서를 HTTP·�
 구현 참고: [FastAPI 앱 시작](https://fastapi.tiangolo.com/tutorial/first-steps/), [공통 오류 처리](https://fastapi.tiangolo.com/tutorial/handling-errors/).
 
 FR-014 ①: 성공 코스 응답의 suggestions는 실제 사용된 DEFAULT 프로필 항목에서 생성합니다. 기존 카드·capabilities에 맞는 EDIT_PROFILE만 최대 3개이며 자동 저장·하드 완화·체류시간 제안은 없습니다. [#26 실행·검증](../docs/ISSUE26_SUGGESTIONS_IMPLEMENTATION.md).
+
+FR-018 동행 점수는 courses/companion_scoring.py의 미승인 제안 모듈로 구현했습니다. 일반 CourseService·default_score·capabilities는 바꾸지 않았고 app.companion_demo에서만 명시적으로 주입합니다. [#27 제안·검증·후속](../docs/ISSUE27_COMPANION_SCORING_IMPLEMENTATION.md).

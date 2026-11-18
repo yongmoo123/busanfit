@@ -3,7 +3,7 @@
 사용자의 지역·시간·이동수단·이동제약·예산·선호·동행 조건에 맞춰 실제 부산 공공데이터로 놀거리 코스를 구성하는 소프트웨어공학 팀프로젝트입니다.
 LLM은 조건 해석과 설명, DB와 규칙 엔진은 장소 선택·시간 계산·필수 조건 검증을 담당합니다. VLM은 범위 밖입니다.
 
-**현재 상태: 세션·조건 카드·채팅 API, Gemini 추출 어댑터와 규칙 대체 경로, 채팅/카드 화면 연결 구현.** 일반 서버는 #21·#22 검증 전까지 빈 capabilities를 유지합니다. 코스 엔진·추천 이유·장소 상세 API를 구현했으며 실제 DB·검색·이동시간·지도는 미연결입니다. #25는 별도 가상 DB·가상 모델로 검증합니다([실행·검증 기록](docs/ISSUE25_EXPLANATIONS_IMPLEMENTATION.md)). #26의 기본값 항목 EDIT_PROFILE 제안 생성도 구현했습니다([검증·프론트 인계](docs/ISSUE26_SUGGESTIONS_IMPLEMENTATION.md)). 체류시간 제안은 제외합니다. 키 없는 화면 검증은 별도 가상 시나리오 서버를 사용합니다. [이슈 #20 실행·검증 기록](docs/ISSUE20_CHAT_IMPLEMENTATION.md)을 참고하세요. 가상 예시를 실제 부산 데이터로 사용하지 않습니다.
+**현재 상태: 세션·조건 카드·채팅 API, Gemini 추출 어댑터와 규칙 대체 경로, 채팅/카드 화면 연결 구현.** 일반 서버는 #21·#22 검증 전까지 빈 capabilities를 유지합니다. 코스 엔진·추천 이유·장소 상세 API를 구현했으며 실제 DB·검색·이동시간·지도는 미연결입니다. #25는 별도 가상 DB·가상 모델로 검증합니다([실행·검증 기록](docs/ISSUE25_EXPLANATIONS_IMPLEMENTATION.md)). #26의 기본값 항목 EDIT_PROFILE 제안 생성도 구현했습니다([검증·프론트 인계](docs/ISSUE26_SUGGESTIONS_IMPLEMENTATION.md)). 체류시간 제안은 제외합니다. #27 동행 가중치는 미승인 제안으로 가상 검증했으며 일반 경로는 비활성입니다([제안 표](docs/proposals/issue-27-companion-weights.md)). 키 없는 화면 검증은 별도 가상 시나리오 서버를 사용합니다. [이슈 #20 실행·검증 기록](docs/ISSUE20_CHAT_IMPLEMENTATION.md)을 참고하세요. 가상 예시를 실제 부산 데이터로 사용하지 않습니다.
 
 ## 팀 작업 영역
 
@@ -105,6 +105,8 @@ GitHub Actions는 main/develop push와 PR에서 같은 검사를 실행합니다
 #17 모듈이 함께 반영되면 `/api/chat`과 DEC-020 카드 정규화를 사용한다. #13 단독에서는 기존 세션·카드 API만 등록된다. 실제 Provider는 미설정이며 재시도 후 규칙 파서로 대체한다. 현재 capabilities는 비어 있어 활성 조건은 거절된다. 검토 순서·검증·실행 제한·capabilities 활성화 계획은 [구현 기록](docs/ISSUE6_8_IMPLEMENTATION.md)을 따른다. PR/브랜치 병합 없이 소스 검토 사본에서 188개 통합 테스트를 통과했다.
 
 세션 종료는 기존 PR #12를 로컬 통합해 DELETE /api/sessions/{sessionId}의 멱등204·no-store를 제공한다. SQLite Repository는 PR #41의 구현을 재사용해 가상행으로만 검증하며 실제 검색/이동시간·일반 capabilities는 연결 전 닫혀 있다.
+
+[2026-11-17 서버 완료 기준 점검](docs/SERVER_COMPLETION_AUDIT_2026-11-17.md): 새 PR 없이 기존 #48·#49·#50·#54·#55·#56에 서버 보완을 반영했다. 실제 LLM 평가는 사용자 보류, 실제 해운대 검색/이동시간·프론트·PM 확인은 후속이며 일반 가중치는 비활성이다. `python evaluation/server/run.py --output evaluation/server/results/offline-2026-11-17.json`으로 근거를 수집한다.
 
 ## 2026-11-11 프론트 종료 연동 검토
 
