@@ -1,7 +1,7 @@
 """PlaceRepository interface — COMP-10 (FR-007, AI-REQ-01, NFR-009, DEC-003, DEC-005).
 
 The course engine and retrieval use only this interface, never SQLite directly (DEC-005).
-Draft pending agreement with 김영무 (issue #7 작업 A / #8 작업 A).
+Interface agreed with 김영무 (PR #15, ``07ad02c``; issue #7 작업 A / #8 작업 A).
 
 Failure rules shared by every implementation:
 - Bad arguments raise ``ValueError``.
