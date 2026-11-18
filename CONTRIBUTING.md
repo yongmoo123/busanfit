@@ -25,8 +25,10 @@ git switch -c feature/FR-001-session
 - 초안 변경을 팀 확정으로 취급하지 않습니다. 합의는 docs/DECISIONS.md에 기록합니다.
 
 ## 저장소 관리자 설정
-팀원 GitHub 계정으로 Collaborator 초대, main/develop의 PR·리뷰 1명·CI `checks` 필수 규칙을 설정합니다. GitHub 플랜/저장소 설정에 따른 적용 가능 여부를 실제 확인해야 하며, 아직 설정하지 않았습니다.
-CODEOWNERS는 팀원 GitHub 계정을 받은 뒤 작성합니다. 이름을 계정명으로 추측하지 않습니다.
+2026-11-08 공개 전환 후 main/develop에 PR 필수·작성자 외 승인 1명 이상·GitHub Actions의 `checks (3.11)`와 `checks (3.12)` 통과 필수를 적용하고 재조회로 확인했습니다. 관리자에게도 적용합니다. 팀원 4명 모두 쓰기 권한이 있습니다. 앞선 비공개 상태에서는 플랜 제한으로 403이 발생했으나 공개 전환 후 해소되었습니다.
+이슈 #8의 계정과 담당 경계를 기준으로 [.github/CODEOWNERS](.github/CODEOWNERS)를 작성한 로컬 초안입니다. 병합·실제 자동 리뷰 요청은 아직 확인하지 않았습니다. 공개 저장소 전환으로 플랜 제한은 해소되었습니다. CODEOWNERS는 대상 브랜치에 병합된 뒤 적용되므로 자동 리뷰 요청 동작은 병합 후 확인합니다.
+CODEOWNERS는 PR의 대상 브랜치에 있는 파일을 사용하며 마지막으로 일치하는 규칙이 우선합니다. 한 줄에 여러 담당자가 있어도 전원 승인이 강제되는 것은 아닙니다. 공동 파일의 관련 담당자 검토와 AGENTS.md 변경의 PM 검토는 팀 협업 규칙에 따라 별도로 확인합니다.
+현재 원격 보호 설정과 아직 반영되지 않은 CODEOWNERS 초안의 상태는 [설정 확인 기록](docs/REPOSITORY_SETTINGS.md)에 있습니다. 코드 소유자 승인 필수·최신 base 동기화 강제·추가 커밋 후 승인 무효화는 이번에 활성화하지 않았습니다.
 
 ## 의존성
 requirements.txt와 requirements-dev.txt는 직접 의존성 범위, requirements-lock.txt는 검증한 환경의 전체 고정 버전입니다. 새 가상환경에서 설치·테스트한 뒤 lock을 갱신합니다.
