@@ -252,8 +252,9 @@ def test_partial_companions_apply_stroller_without_inventing_count_or_type(envir
     body = chat(environment, '아기 동반', 1).json()
     assert body['profile']['companions']['value'] is None
     assert body['profile']['mobility'] == condition(['STROLLER'], source='DEFAULT')
-    assert body['status'] == 'NEEDS_INPUT'
-    assert [q['field'] for q in body['questions']] == ['companions']
+    # DEC-022: unknown count/type alone does not block course readiness.
+    assert body['status'] == 'READY'
+    assert body['questions'] == []
 
 
 def test_questions_limit_does_not_discard_hidden_pending_or_echo_confirm_it(environment):

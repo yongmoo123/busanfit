@@ -225,6 +225,8 @@ Software Design Document (SDD)
 
 ## 7.3 Prompt 설계
 
+이슈 #20 구현: 추출 Provider는 취소 가능한 Gemini generateContent REST 어댑터이며 JSON 스키마·업무 의미를 검증한다. 실패 시 각 10초·1회 재시도 후 ChatRuleParser로 대체하고 COMP-02가 정책·revision을 처리한다. 기준 한국 날짜를 프롬프트에 제공하며 평가 시에는 평가셋 referenceNow를 고정한다. DEC-022의 영유아 질문 표시 이력·부분 동행은 메모리 세션에만 저장한다. 프론트는 실제 chat/profile API를 순차 호출한다. 일반 capabilities 활성화는 #21·#22의 기존 합의를 유지한다. [실행·검증 기록](ISSUE20_CHAT_IMPLEMENTATION.md).
+
 - System Prompt 목적: 용도별 3종으로 분리한다. ① 추출: "부산 놀거리 코스 서비스의 조건 분석기" 역할로, 지정 JSON 스키마의 필드만 채우고 언급 없는 필드는 null, 장소 추천 금지, "꼭·절대·못" 표현은 strength=HARD. ② 수정 해석: 코스 요약과 메시지를 받아 ChangeOp(REMOVE·REPLACE·EXTEND_STAY·INDOOR·INCLUDE_UNKNOWN) 하나로만 응답. ③ 설명: 제공된 장소 필드만 근거로 1~2문장 작성, 새 장소·가격·시간 언급 금지.
 
 - 검색 대상 데이터/Chunk 전략: 문서 청크 대신 구조화 DB 레코드를 사용한다. 장소 1개 = 컨텍스트 1단위(이름, 카테고리, 개요 200자 이내, 접근성 등급, 운영시간, 실내 여부)로 구성한다.
