@@ -157,7 +157,7 @@
 - 이유: NFR-003의 "세션 종료 시 폐기"를 구현할 수단이 기존 계약에 없다.
 - 영향: NFR-003
 - 반영 위치:
-  - [ ] API 계약(openapi.json, API_CONTRACT.md) → #12 리뷰 중
+  - [x] API 계약(openapi.json, API_CONTRACT.md) → [PR #12](https://github.com/yongmoo123/busanfit/pull/12), 2026-11-18 develop 병합. 세션 종료 구현·계약 반영이며 프론트·배포 로그 인수 완료를 뜻하지 않는다.
   - [x] SDD 6 API 표에 API-011 추가
   - [x] SDD 12 추적표 NFR-003의 API에 API-011 추가
 
@@ -368,6 +368,21 @@
 - 미결: 무장애 정보의 문장 판정 규칙(PR #45 제안 3)은 11/16까지 별도로 정한다.
 
 ---
+
+## 2026-11-18 PR 병합 반영 기록
+
+- 운영 방식: 승인 완료·CI 통과·충돌 없음 조건을 모두 충족한 PR은 작성자가 직접 병합한다. 기존 리뷰어와 리뷰 이력은 유지하고 병합 후 이 문서에 실제 반영 범위를 기록한다(김영무 작업 지시, 2026-11-18).
+- 아래 PR은 병합 직전 GitHub `APPROVED`, 최신 head의 CI 성공, `MERGEABLE`·`CLEAN`을 확인했다. 병합자는 작성자 `yongmoo123`이며 기존 PR의 리뷰어 설정·승인 이력은 변경하지 않았다.
+
+| PR | develop 병합 커밋 | 실제 반영 범위 |
+|---|---|---|
+| [#11](https://github.com/yongmoo123/busanfit/pull/11) | [7c7d583](https://github.com/yongmoo123/busanfit/commit/7c7d58363bc2176e17d084bfb25864045e3734c8) | CODEOWNERS 및 저장소 보호 설정 기록. main 반영과 실제 자동 리뷰 요청 동작 확인은 후속. |
+| [#12](https://github.com/yongmoo123/busanfit/pull/12) | [85ee997](https://github.com/yongmoo123/busanfit/commit/85ee9973d38d6ddc627d8c853eb0d3f2bcc1f8fc) | DEC-009 세션 종료 API·계약·테스트. 실제 프론트·상위 프록시 로그 검수는 후속. |
+| [#17](https://github.com/yongmoo123/busanfit/pull/17) | [be5446a](https://github.com/yongmoo123/busanfit/commit/be5446a563cfc368450f3fb11140d37a1534e432) | AIService·규칙 파서·DEC-020 유모차 정규화. #13 채팅 정책 연결과 실제 LLM 평가는 별도. |
+
+- 병합 후 develop `be5446a`의 `checks (3.11)`·`checks (3.12)`·`Frontend lint and build`도 모두 성공했다. 이번 작업에서 로컬 테스트를 새로 실행하지는 않았다.
+- 보류: #13·#48·#49·#50·#54·#55·#56은 최종 재조회 시 충돌(`CONFLICTING`·`DIRTY`)이 있어 병합하지 않았다. #13은 #12·#17 선행 병합 후 충돌이 확인됐다. 승인과 기존 head CI 성공만으로 병합 조건을 충족한 것으로 보지 않는다.
+- DEC-019~022의 미병합 구현·프론트 연결·실데이터 검증 항목은 완료로 표시하지 않는다.
 
 ## 미결 항목
 | 항목 | 담당 | 기한 |
