@@ -1,0 +1,12 @@
+{
+  "areaCenters": {
+    "HAEUNDAE": {
+      "latitude": 35.159084,
+      "longitude": 129.160279,
+      "basis": "DEC-023 ①: 해운대해수욕장 (TourAPI contentid 126081)"
+    }
+  },
+  "excludedPlaceIdFiles": [
+    "duty-free-exclusion.proposal.json"
+  ]
+}

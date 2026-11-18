@@ -249,6 +249,8 @@ FR-005·006 보완: config/defaults.json을 서버 기본 체류시간 함수와
 
 - 이동제약 판정(DEC-015·016): 하드 필터의 접근성은 접근성 등급(grade)이 아니라 사용자 이동제약에 맞는 **항목별 값**으로 판정한다. WHEELCHAIR는 `wheelchair = true`, STROLLER는 `stroller = true`, INJURY의 계단 회피는 `wheelchair = true`를 대리 지표로 사용한다. 값이 null이면 기본 후보에서 제외하고 `excludedUnknown`으로 집계해 포함 재생성 제안(FR-013) 대상으로 두며, false면 제외한다. 등급은 표시용 요약이다(정보 없음 UNKNOWN, 휠체어·유모차 모두 false UNSUITABLE, 하나라도 true VERIFIED).
 
+FR-007·008 구현(#22): `retrieval/PlaceRetriever`가 CandidateRetriever를 구현한다. PlaceRepository 반경 질의(권역 중심 DEC-023 ①은 `config/retrieval.json`, 반경 `BUSANFIT_WALK_RADIUS_M`) 뒤 사후면세점 ID 제외(DEC-023 ④, 판별 기준 TourAPI 신분류 `SH040300` 제안·확인 대기), 주소, 운영시간(이용 시간대 안에 기본 체류시간만큼 영업, NULL·요일 누락은 미확인으로 제외 DEC-023 ③), 이동제약 항목별 판정, HARD 실내·실외를 적용하고 거리순 상위 20개를 돌려준다. 정보 없음으로만 제외된 장소는 `excludedUnknown` ID·항목(`openHours`, `mobility.wheelchair` 등)으로 넘긴다. 소프트 점수화는 아직 없다. [구현 기준](../backend/app/retrieval/README.md).
+
 - 부상(INJURY) 규칙(DEC-016): 보행 속도를 낮추고(초기값 4→3km/h), 장소 사이 구간당 도보가 초기값 10분을 넘으면 그 구간을 쓰지 않는다(HARD). 수치는 설정값이며 데이터 확인 후 조정한다. 이동 경로의 계단·경사는 데이터가 없어 확인하지 못하므로 `routeAccessibility: UNVERIFIED`와 경고로 알린다. 후보가 부족해도 계단 조건을 자동으로 빼지 않고 사용자에게 해제를 제안한다.
 
 - 출처 표시 방식: LLM 출력에는 출처를 쓰지 않고, 시스템이 places.source_id(기본 정보 출처)와 accessibility.source_id(무장애 정보 출처)를 각각 data_sources와 조인해 중복 없이 모은 출처 목록을 장소 카드에 "출처: 제공기관·데이터명(기준일)"으로 첨부한다(DEC-003).
