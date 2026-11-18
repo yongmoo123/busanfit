@@ -1,5 +1,5 @@
 # DB·PlaceRepository — 이찬용 · COMP-10
-FR-007·008·012·020. 스키마만 있음, Repository 구현은 진행 중(이슈 #7).
+FR-007·008·012·020. 스키마·DB 생성 명령·`SqlitePlaceRepository`(반경 검색, 장소 조회, 장소 ID 존재 확인, 출처 조회)가 있음. 장소 적재 명령은 아직 없음(이슈 #7).
 입력: 정규화된 실제 장소/출처, 지원 검색 조건. 출력: 계약의 Place·Source 및 내부 운영시간 구간.
 DB는 SQLite입니다(DEC-005, SDD ADR-008). 좌표는 latitude/longitude REAL, 반경 검색은 위경도 사각형 1차 필터 후 하버사인 2차 필터입니다. 김영무와 Repository 입출력·복수 출처 매핑을 맞춥니다. 후보 판단은 retrieval/COMP-04에서 분리합니다.
 
