@@ -5,6 +5,7 @@ import { createSession, saveProfile, sendChat, deleteSession } from './sessionAp
 import { createEmptyProfile } from './profile.js'
 import { budgetLabel } from './profileDefaults.js'
 import ProfileEditor from './ProfileEditor.jsx'
+import CourseTimeline from './CourseTimeline.jsx'
 import './App.css'
 
 const MIN_SIDEBAR_WIDTH = 220
@@ -117,21 +118,6 @@ function ConditionCard({ profile, onRecommend, onEdit, ready }) {
       <div className="profile-actions">
         <button type="button" className="primary-button" onClick={onEdit}>조건 편집</button>
         <button type="button" className="profile-secondary" disabled={!ready} onClick={onRecommend}>가상 코스 미리보기</button>
-      </div>
-    </div>
-  )
-}
-
-function CoursePlaceholder() {
-  return (
-    <div className="course-placeholder">
-      <div className="course-placeholder-icon">◇</div>
-      <div>
-        <h3>추천 코스 화면 준비 중</h3>
-        <p>
-          실제 장소와 이동 경로를 포함한 추천 결과는
-          코스 API 연동 후 제공될 예정이에요.
-        </p>
       </div>
     </div>
   )
@@ -410,9 +396,9 @@ function App() {
         key={editor.isMock ? 'mock' : 'live'}
         initialProfile={editor.isMock ? readyMock.profile : session?.savedProfile ?? createEmptyProfile()}
         isMock={editor.isMock}
+        capabilities={editor.isMock ? null : session?.capabilities}
         canSave={editor.isMock || (Boolean(session) && !isSending && !sessionError)}
         sessionError={editor.isMock ? '' : sessionError}
-        capabilities={editor.isMock ? null : session?.capabilities}
         onSave={handleSaveProfile}
         onRestart={retrySession}
         onClose={() => setEditor(null)}
@@ -500,7 +486,7 @@ function App() {
       {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: '여행 코스 추천 기능은 현재 준비 중이에요.',
+        content: '가상 코스 결과를 확인해 보세요.',
         showCoursePlaceholder: true,
         isMock: true,
       },
@@ -643,7 +629,7 @@ function App() {
                       {editor?.target === message.id && !message.profile && renderProfileEditor()}
 
                       {message.showCoursePlaceholder && (
-                        <CoursePlaceholder />
+                        <CourseTimeline />
                       )}
                     </div>
                   </div>

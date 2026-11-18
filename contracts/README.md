@@ -9,4 +9,4 @@ validate_contract.py는 기존 검사, validate_source_sync.py는 docs/sources/0
 `policy-cases.json`은 14개 가상 계약 시나리오입니다. before·extractedProfile·pendingFields·assumedCapabilities는 검수 메타데이터이며 HTTP 필드가 아닙니다. 기대 요청·응답만 기존 스키마로 검사합니다. 예시의 지원 범위는 현재 서버 capabilities를 활성화하지 않습니다.
 `policy_contract.py`는 정적 기대 사례의 상태·출처·질문·경고·revision을 검사하고 잘못된 사례를 넣은 negative control도 확인합니다. 실행은 기존 `python contracts/validate_contract.py`에 포함됩니다. `validate_source_sync.py`는 04번 참고 문서의 정책 사례도 비교합니다. 이 검사들은 서버의 정책 처리 구현을 검증하지 않습니다.
 
-DEC-009 세션 종료는 별도 PR #12의 변경으로, 아직 이 브랜치 기준 develop 계약에는 포함되지 않았습니다. 이 작업은 기존 5 operations·31 schemas의 필드·타입·enum을 유지합니다.
+2026-11-08 DEC-009 반영: DELETE /api/sessions/{sessionId}를 계약·구현·검사에 추가했습니다. 현재 6 operations이며 나머지 미합의 정책의 새 승인이 아닙니다. 종료 예시는 examples/06-session-delete.http이고 204 본문이 없어 JSON 예시 목록에는 추가하지 않습니다. 오류는 기존 ErrorResponse입니다.

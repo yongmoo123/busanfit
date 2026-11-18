@@ -36,7 +36,7 @@ def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1
     app = FastAPI(
         title="BusanFit — 세션·조건 API",
         version="0.0.4",
-        description=("세션 생성·조건 카드 전체 교체를 지원합니다. "
+        description=("세션 생성·종료·조건 카드 전체 교체를 지원합니다. "
                      + ("조건 채팅·규칙 대체 처리를 지원합니다. " if condition_extractor is not None else
                         "조건 채팅을 사용할 수 없습니다. ")
                      + "Gemini는 환경변수 설정 시 추출에 연결됩니다. #21·#22 활성화 전 일반 capabilities는 비어 있습니다. 코스·장소 API는 미완료입니다."),
