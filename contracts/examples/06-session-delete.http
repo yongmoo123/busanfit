@@ -1,0 +1,18 @@
+# DEC-009 synthetic wire example; UUID below is a fixture, not a real session.
+# For a live test, create a session and replace the UUID in the URL.
+# No request body, and no JSON response body (not even {} or null).
+DELETE /api/sessions/11111111-1111-4111-8111-111111111111 HTTP/1.1
+Host: localhost:8000
+
+# Expected: deleting an existing, missing, expired, or already deleted UUID.
+# HTTP/1.1 204 No Content
+# Cache-Control: no-store
+# (zero response body bytes)
+
+### Repeating the same request also returns 204.
+DELETE /api/sessions/11111111-1111-4111-8111-111111111111 HTTP/1.1
+Host: localhost:8000
+
+### Invalid UUID: 422 INVALID_REQUEST, contract ErrorResponse JSON.
+DELETE /api/sessions/not-a-uuid HTTP/1.1
+Host: localhost:8000

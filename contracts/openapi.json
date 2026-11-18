@@ -1012,6 +1012,61 @@
           }
         }
       }
+    },
+    "/api/sessions/{sessionId}": {
+      "delete": {
+        "operationId": "deleteSession",
+        "summary": "세션 종료 (DEC-009)",
+        "tags": [
+          "Session"
+        ],
+        "description": "본문 없이 호출. 세션 데이터 폐기 후 204. 없는 세션·만료 세션·반복 종료도 204. 종료는 TTL 갱신 및 세션 작업 제한을 적용하지 않는다.",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "11111111-1111-4111-8111-111111111111"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "폐기 완료 또는 이미 없는 세션. 응답 본문 없음.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "잘못된 sessionId 형식",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 내부 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

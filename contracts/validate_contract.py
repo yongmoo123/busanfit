@@ -155,4 +155,11 @@ for invalid, schema in [
         continue
     raise AssertionError("Negative control unexpectedly accepted")
 operations = sum(len(v) for v in spec["paths"].values())
+delete = spec['paths']['/api/sessions/{sessionId}']['delete']
+assert 'requestBody' not in delete
+assert 'content' not in delete['responses']['204']
+assert delete['parameters'][0]['schema'] == {'type': 'string', 'format': 'uuid'}
+assert delete['responses']['204']['headers']['Cache-Control']['schema']['const'] == 'no-store'
+for code in ['422', '500']:
+    assert delete['responses'][code]['content']['application/json']['schema']['$ref'] == '#/components/schemas/ErrorResponse'
 print(f"PASS: {operations} operations, {len(schemas)} schemas, {len(index)} JSON examples; references, embedded examples, timeline, source links, negative controls.")

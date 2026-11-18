@@ -31,8 +31,8 @@ def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1
 
     app = FastAPI(
         title="BusanFit — 세션·조건 카드 API",
-        version="0.0.3",
-        description="세션 생성·조건 카드 전체 교체를 지원합니다. 추천 엔진 미연결로 활성 조건은 현재 거절합니다. LLM·코스·장소 API는 미구현입니다.",
+        version="0.0.4",
+        description="세션 생성·종료·조건 카드 전체 교체를 지원합니다. 추천 엔진 미연결로 활성 조건은 현재 거절합니다. LLM·코스·장소 API는 미구현입니다.",
         debug=False,
         lifespan=lifespan,
     )
