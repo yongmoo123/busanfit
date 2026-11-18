@@ -105,3 +105,7 @@ GitHub Actions는 main/develop push와 PR에서 같은 검사를 실행합니다
 #17 모듈이 함께 반영되면 `/api/chat`과 DEC-020 카드 정규화를 사용한다. #13 단독에서는 기존 세션·카드 API만 등록된다. 실제 Provider는 미설정이며 재시도 후 규칙 파서로 대체한다. 현재 capabilities는 비어 있어 활성 조건은 거절된다. 검토 순서·검증·실행 제한·capabilities 활성화 계획은 [구현 기록](docs/ISSUE6_8_IMPLEMENTATION.md)을 따른다. PR/브랜치 병합 없이 소스 검토 사본에서 188개 통합 테스트를 통과했다.
 
 세션 종료는 기존 PR #12를 로컬 통합해 DELETE /api/sessions/{sessionId}의 멱등204·no-store를 제공한다. SQLite Repository는 PR #41의 구현을 재사용해 가상행으로만 검증하며 실제 검색/이동시간·일반 capabilities는 연결 전 닫혀 있다.
+
+## 2026-11-11 프론트 종료 연동 검토
+
+새 채팅·pagehide/keepalive·BFCache 처리와 이전 세션의 늦은 응답 무시는 프론트 연동 시 확인합니다. 204는 빈 응답이며 JSON 파싱하지 않습니다. 세션 경로가 남을 수 있는 Uvicorn·프록시·호스팅 로그 검수는 [세션 로그 보호](deployment/SESSION_LOG_PRIVACY.md)를 따릅니다. 실제 프록시·브라우저 검증은 아직 수행하지 않았습니다.

@@ -218,14 +218,45 @@ export default function ProfileEditor({ initialProfile, isMock, canSave, session
   }, [feedback])
 
   function edit(name, value, strength) {
-    setProfile((current) => ({
-      ...current,
-      [name]: name === 'includeUnknownAccessibility' ? value : {
-        value,
-        source: value === null ? 'UNSET' : 'USER',
-        strength: strength ?? current[name].strength,
-      },
-    }))
+    setProfile((current) => {
+      const next = {
+        ...current,
+        [name]: name === 'includeUnknownAccessibility' ? value : {
+          value,
+          source: value === null ? 'UNSET' : 'USER',
+          strength: strength ?? current[name].strength,
+        },
+      }
+
+      if (!isMock || (name !== 'companions' && name !== 'mobility')) {
+        return next
+      }
+
+      const hasInfant = next.companions.value?.hasInfant === true
+      const mobility = next.mobility
+
+      if (hasInfant && mobility.source === 'UNSET') {
+        next.mobility = {
+          value: ['STROLLER'],
+          source: 'DEFAULT',
+          strength: 'HARD',
+        }
+      } else if (
+        !hasInfant
+        && mobility.source === 'DEFAULT'
+        && mobility.value?.includes('STROLLER')
+      ) {
+        const remaining = mobility.value.filter((item) => item !== 'STROLLER')
+        next.mobility = {
+          ...mobility,
+          value: remaining.length ? remaining : null,
+          source: remaining.length ? 'DEFAULT' : 'UNSET',
+        }
+      }
+
+      return next
+    })
+
     setDirty(true)
     setFeedback((current) => current?.restart ? current : null)
   }
@@ -236,14 +267,25 @@ export default function ProfileEditor({ initialProfile, isMock, canSave, session
 
   function field(name, children) {
     const condition = name === 'includeUnknownAccessibility' ? null : profile[name]
+    const supportedValues = name === 'area'
+      ? capabilities?.supportedAreas
+      : name === 'transport'
+        ? capabilities?.supportedTransports
+        : null
+
+    const isUnsupported = Array.isArray(supportedValues)
+      && condition?.value != null
+      && (!capabilities.supportedProfileFields.includes(name)
+        || !supportedValues.includes(condition.value))
+
     return (
       <ProfileField name={name} condition={condition} error={detailFor(name)}
         onStrength={(strength) => edit(name, condition.value, strength)}>
         {children}
         {capabilities && (name === 'includeUnknownAccessibility'
           ? !capabilities.supportsUnknownAccessibilityInclusion
-          : !capabilities.supportedProfileFields.includes(name)) &&
-          <p className="profile-support-note">현재 지원하지 않는 조건이에요. 미입력·제약 없음·포함 안 함 상태는 유지할 수 있어요.</p>}
+          : !capabilities.supportedProfileFields.includes(name) || isUnsupported) &&
+          <p role="status" className="profile-support-note">현재 지원하지 않는 조건이에요. 미입력·제약 없음·포함 안 함 상태는 유지할 수 있어요.</p>}
       </ProfileField>
     )
   }
