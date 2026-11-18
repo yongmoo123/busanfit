@@ -107,3 +107,7 @@ GitHub Actions는 main/develop push와 PR에서 같은 검사를 실행합니다
 세션 종료는 기존 PR #12를 로컬 통합해 DELETE /api/sessions/{sessionId}의 멱등204·no-store를 제공한다. SQLite Repository는 PR #41의 구현을 재사용해 가상행으로만 검증하며 실제 검색/이동시간·일반 capabilities는 연결 전 닫혀 있다.
 
 [2026-11-17 서버 완료 기준 점검](docs/SERVER_COMPLETION_AUDIT_2026-11-17.md): 새 PR 없이 기존 #48·#49·#50·#54·#55·#56에 서버 보완을 반영했다. 실제 LLM 평가는 사용자 보류, 실제 해운대 검색/이동시간·프론트·PM 확인은 후속이며 일반 가중치는 비활성이다. `python evaluation/server/run.py --output evaluation/server/results/offline-2026-11-17.json`으로 근거를 수집한다.
+
+## 2026-11-11 프론트 종료 연동 검토
+
+새 채팅·pagehide/keepalive·BFCache 처리와 이전 세션의 늦은 응답 무시는 프론트 연동 시 확인합니다. 204는 빈 응답이며 JSON 파싱하지 않습니다. 세션 경로가 남을 수 있는 Uvicorn·프록시·호스팅 로그 검수는 [세션 로그 보호](deployment/SESSION_LOG_PRIVACY.md)를 따릅니다. 실제 프록시·브라우저 검증은 아직 수행하지 않았습니다.
