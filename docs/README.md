@@ -9,6 +9,7 @@
 | `srs.md` | 기준 문서 | 요구사항의 유일한 기준 (FR·NFR·AI-REQ·UC·AC) |
 | `sdd.md` | 기준 문서 | 설계의 유일한 기준 (아키텍처·컴포넌트·DB·API 개요) |
 | `plan.md` | 기준 문서 | 프로젝트 계획서 (범위·일정·역할·위험) |
+| `test-report.md` | 제출 문서 | 테스트 및 품질 보고서 (TC·인수 테스트·비기능 측정 결과, DEC-031) |
 | `../contracts/openapi.json` + `API_CONTRACT.md` | 기준 문서 | API 형식(OpenAPI)과 의미 규칙의 유일한 기준 |
 | `DECISIONS.md` | 기록 | 결정 로그. 기준 문서와 다르면 확정 결정이 우선 |
 | `meetings/YYYY-MM-DD.md` | 기록 | 회의록 (참석자·안건·결정·할 일) |
@@ -58,6 +59,8 @@ SDD 6장 API 표는 개요만 두고, 필드·상태·오류의 상세는 API �
 ```text
 pandoc docs/sdd.md -f gfm -o build/02_설계서SDD_5팀_부산핏_v0.2.docx --reference-doc=docs/templates/reference.docx --resource-path=docs --lua-filter=docs/templates/br-to-linebreak.lua
 ```
+
+제출 파일 이름: `01_요구사항명세서SRS_5팀_부산핏.docx`, `02_설계서SDD_5팀_부산핏.docx`, `03_테스트보고서TQR_5팀_부산핏.docx`, `프로젝트 계획서 — 부산핏(BusanFit).docx`(DEC-031). 테스트 보고서는 교수님 템플릿(`03_테스트_보고서_템플릿.docx`)을 서식 기준으로 쓴다.
 
 `br-to-linebreak.lua`는 표 셀 안의 `<br>`을 Word 줄바꿈으로 바꾼다. 이 필터를 빼면 pandoc이 `<br>`을 버려 여러 줄 셀이 한 줄로 붙는다.
 
