@@ -62,6 +62,14 @@ pandoc docs/sdd.md -f gfm -o build/02_설계서SDD_5팀_부산핏_v0.2.docx --re
 
 제출 파일 이름: `01_요구사항명세서SRS_5팀_부산핏.docx`, `02_설계서SDD_5팀_부산핏.docx`, `03_테스트보고서TQR_5팀_부산핏.docx`, `프로젝트 계획서 — 부산핏(BusanFit).docx`(DEC-031). 테스트 보고서는 교수님 템플릿(`03_테스트_보고서_템플릿.docx`)을 서식 기준으로 쓴다.
 
+서식 기준(`--reference-doc`)은 저장소 밖의 기존 제출 docx를 쓴다(학번이 들어 있어 커밋하지 않음). 변환 뒤 Windows + Word에서 표 후처리를 한다. pandoc 결과의 표에는 테두리가 없고 칸 너비가 같게 나오기 때문이다.
+
+```text
+powershell -ExecutionPolicy Bypass -File docs/templates/format-tables.ps1 build/01_요구사항명세서SRS_5팀_부산핏.docx build/02_설계서SDD_5팀_부산핏.docx ...
+```
+
+후처리는 모든 표에 테두리·머리글 음영을 넣고, ID 칸(TC-001 등)을 줄바꿈하지 않게 한 뒤 칸 너비를 내용과 페이지 폭에 맞춘다. 2026-11-19 시험 변환 결과: SRS 20쪽, SDD 30쪽, 테스트 보고서 7쪽, 계획서 11쪽.
+
 `br-to-linebreak.lua`는 표 셀 안의 `<br>`을 Word 줄바꿈으로 바꾼다. 이 필터를 빼면 pandoc이 `<br>`을 버려 여러 줄 셀이 한 줄로 붙는다.
 
 생성한 docx/PDF는 저장소에 커밋하지 않고 Release에 첨부한다.
