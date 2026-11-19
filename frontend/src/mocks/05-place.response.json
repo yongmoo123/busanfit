@@ -1,0 +1,49 @@
+{
+  "place": {
+    "id": "mock-place-001",
+    "name": "[가상] 실내 전시공간 A",
+    "category": "EXHIBITION",
+    "area": "HAEUNDAE",
+    "address": "부산광역시 해운대구 — 테스트용 가상 주소",
+    "coordinates": {
+      "latitude": 35.16,
+      "longitude": 129.16
+    },
+    "indoor": true,
+    "openHours": {
+      "status": "KNOWN",
+      "description": "테스트 설정: 10:00~18:00"
+    },
+    "price": {
+      "status": "UNKNOWN",
+      "amount": null,
+      "currency": "KRW",
+      "basis": "UNKNOWN"
+    },
+    "defaultStayMinutes": 60,
+    "accessibility": {
+      "grade": "UNKNOWN",
+      "wheelchair": null,
+      "stroller": null,
+      "elevator": null,
+      "accessibleToilet": null,
+      "evidence": []
+    },
+    "sourceIds": [
+      "mock-source-01"
+    ]
+  },
+  "sources": [
+    {
+      "id": "mock-source-01",
+      "provider": "테스트용 가상 기관",
+      "datasetName": "API 연결용 가상 장소 데이터",
+      "url": "https://example.invalid/busanfit/mock-data",
+      "license": "MOCK_ONLY — 실제 공공데이터·이용허락의 증거가 아님",
+      "baseDate": "2026-11-01",
+      "retrievedAt": "2026-11-05T09:00:00+09:00"
+    }
+  ],
+  "warnings": [],
+  "requestId": "22222222-2222-4222-8222-222222222222"
+}

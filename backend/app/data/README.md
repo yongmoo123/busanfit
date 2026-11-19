@@ -1,5 +1,5 @@
 # DB·PlaceRepository — 이찬용 · COMP-10
-FR-007·008·012·020. 스키마만 있음, Repository 구현은 진행 중(이슈 #7).
+FR-007·008·012·020. 스키마·DB 생성 명령·`SqlitePlaceRepository`(반경 검색, 장소 조회, 장소 ID 존재 확인, 출처 조회)가 있음. 장소 적재 명령은 아직 없음(이슈 #7).
 입력: 정규화된 실제 장소/출처, 지원 검색 조건. 출력: 계약의 Place·Source 및 내부 운영시간 구간.
 DB는 SQLite입니다(DEC-005, SDD ADR-008). 좌표는 latitude/longitude REAL, 반경 검색은 위경도 사각형 1차 필터 후 하버사인 2차 필터입니다. 김영무와 Repository 입출력·복수 출처 매핑을 맞춥니다. 후보 판단은 retrieval/COMP-04에서 분리합니다.
 
@@ -26,3 +26,5 @@ cd backend; ../.venv/Scripts/python.exe -m app.data.db create; cd ..
 API의 place.id는 `{data_sources.code}:{places.source_place_id}`입니다(예: `tourapi-kor:126508`). DB 내부 정수 `places.id`는 DB를 새로 만들면 바뀌므로 내보내지 않습니다. `data_sources.code`는 적재 스크립트가 고정 값으로 넣으며(관광정보 `tourapi-kor`, 무장애 `tourapi-barrierfree`) 소문자·숫자·하이픈만 허용합니다. `source_place_id`는 영문 대소문자·숫자·`_`·`-`만, 1~64자입니다. 그 밖의 글자(`?` `#` `%` `/` 공백 `.` 한글 등)가 있는 원본 ID는 바꾸지 않고 적재를 거절합니다. 만들기·나누기는 `place_id.py`의 `make_place_id`·`parse_place_id`를 씁니다.
 외부 수집은 pipelines, 요청 시 검색은 이 영역입니다. 초기 적재 재현은 pipelines와 함께 검수합니다.
 FR-017의 역·주차장·엘리베이터·보관함 조회도 담당합니다. FR-019 공유 저장은 Could 후속이며 세션/건강 원문 저장과 구분합니다.
+
+2026-11-17: 기존 PR #50에서 PR #41(451b3f0)의 db/geo/memory/schema/settings/sqlite_repository와 공통 검사를 재사용했다. application/sqlite_adapter.ConnectionPerCallRepository(path)는 호출한 worker thread에서 연결을 열고 닫는다. 테스트 행·후보·이동시간은 가상이고 일반 앱은 자동 연결하지 않는다. 주소 nullable인 원본 스키마의 DEC-023 반영은 데이터 담당 후속이다.
