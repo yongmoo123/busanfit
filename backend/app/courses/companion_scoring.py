@@ -1,7 +1,7 @@
-"""FR-018 draft experiment, NEVER registered in the ordinary composition root.
+"""FR-018 DEC-029 weights, NEVER registered in the ordinary composition root.
 
 Explicitly load and inject into CourseScheduler(scorer=...) for synthetic review.
-Approval and any future ordinary activation require a separate reviewed change.
+PM approval records policy only; ordinary activation awaits real-data integration.
 """
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -65,13 +65,15 @@ def _invalid_constant(value):
 
 
 def load_companion_proposal(path=None) -> CompanionProposal:
+    """Load draft or approved weights without activating ordinary scoring."""
     path = Path(path) if path is not None else Path(__file__).resolve().parents[3] / 'config/companion-weights.proposal.json'
     data = json.loads(path.read_text(encoding='utf-8'), object_pairs_hook=_unique_object, parse_constant=_invalid_constant)
     required = {'version', 'status', 'pmApproved', 'indoorPreferenceWeight', 'companionCategoryWeight', 'categoryWeights'}
     if not isinstance(data, dict) or set(data) != required:
         raise ValueError('invalid proposal keys')
-    if data['status'] != 'PROPOSAL' or data['pmApproved'] is not False:
-        raise ValueError('this loader is only for unapproved proposal experiments')
+    if not ((data['status'] == 'PROPOSAL' and data['pmApproved'] is False)
+            or (data['status'] == 'APPROVED' and data['pmApproved'] is True)):
+        raise ValueError('expected PROPOSAL/false or APPROVED/true approval metadata')
     return CompanionProposal(data['version'], data['indoorPreferenceWeight'],
                              data['companionCategoryWeight'], data['categoryWeights'])
 
