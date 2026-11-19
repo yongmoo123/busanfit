@@ -1,5 +1,5 @@
 # DB·PlaceRepository — 이찬용 · COMP-10
-FR-007·008·012·020. 스키마·DB 생성 명령·`SqlitePlaceRepository`(반경 검색, 장소 조회, 장소 ID 존재 확인, 출처 조회)가 있음. 장소 적재 명령은 아직 없음(이슈 #7).
+FR-007·008·012·020. 스키마·DB 생성 명령·`SqlitePlaceRepository`(반경 검색, 장소 조회, 장소 ID 존재 확인, 출처 조회)가 있음. 해운대 표본 적재 명령은 `pipelines/haeundae_sample.py`(이슈 #7 작업 C)에 있음.
 입력: 정규화된 실제 장소/출처, 지원 검색 조건. 출력: 계약의 Place·Source 및 내부 운영시간 구간.
 DB는 SQLite입니다(DEC-005, SDD ADR-008). 좌표는 latitude/longitude REAL, 반경 검색은 위경도 사각형 1차 필터 후 하버사인 2차 필터입니다. 김영무와 Repository 입출력·복수 출처 매핑을 맞춥니다. 후보 판단은 retrieval/COMP-04에서 분리합니다.
 
@@ -13,7 +13,7 @@ DB는 SQLite입니다(DEC-005, SDD ADR-008). 좌표는 latitude/longitude REAL, 
 $env:BUSANFIT_DB_PATH = "data/busanfit.sqlite3"
 cd backend; ../.venv/Scripts/python.exe -m app.data.db create; cd ..
 ```
-상대 경로는 명령을 실행한 폴더 기준입니다(위 예시는 `backend/data/busanfit.sqlite3`). 같은 경로에 파일이 있으면 덮어쓰지 않고 오류를 냅니다. 다시 만들려면 기존 파일을 직접 지운 뒤 실행합니다. 생성 도중 실패하면 부분 파일을 남기지 않으므로 같은 명령으로 다시 실행할 수 있습니다. 지금은 빈 스키마만 만들며, 해운대 표본 적재 명령은 이슈 #7 작업 C에서 추가합니다.
+상대 경로는 명령을 실행한 폴더 기준입니다(위 예시는 `backend/data/busanfit.sqlite3`). 같은 경로에 파일이 있으면 덮어쓰지 않고 오류를 냅니다. 다시 만들려면 기존 파일을 직접 지운 뒤 실행합니다. 생성 도중 실패하면 부분 파일을 남기지 않으므로 같은 명령으로 다시 실행할 수 있습니다. `db create`는 빈 스키마만 만듭니다. 해운대 표본은 저장소 루트에서 `.venv/Scripts/python.exe -m pipelines.haeundae_sample build --db data/haeundae_sample.sqlite3`로 새 DB 파일에 적재합니다(`--report <경로>`로 보고서 JSON 저장 가능). build는 네트워크 없이 수집 원본(기본 `data/raw/tourapi/`)만 읽고, 같은 경로에 파일이 있으면 덮어쓰지 않고 거절합니다. 원본 수집(`fetch`)과 키 설정은 `pipelines/README.md`를 따릅니다.
 좌표·원본 ID·중복·출처 연결·누락을 검증하고 UNKNOWN은 그대로 유지합니다.
 
 ## 반경 검색 (작업 D)
