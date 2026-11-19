@@ -37,3 +37,14 @@ def build_default_suggestions(profile: Profile, capabilities: Capabilities) -> l
         if len(result) == 3:
             break
     return result
+
+
+def build_unknown_accessibility_suggestions(profile: Profile, capabilities: Capabilities, *, eligible: bool):
+    """A UI confirmation action, never consent or a profile mutation."""
+    if (not capabilities.supportsUnknownAccessibilityInclusion or not eligible
+            or profile.includeUnknownAccessibility or not profile.mobility.value
+            or profile.mobility.strength != 'HARD'):
+        return []
+    return [Suggestion(id='include-unknown-accessibility', type='INCLUDE_UNKNOWN_ACCESSIBILITY',
+                       label='접근성 정보가 없는 장소도 포함해서 다시 만들까요?',
+                       field='includeUnknownAccessibility')]
