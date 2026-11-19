@@ -1,4 +1,4 @@
-"""validate_open_hours — proposed (임시) open_hours shape, 김영무 확인 대기. [가상] values only."""
+"""validate_open_hours — open_hours shape agreed with 김영무 (PR #15). [가상] values only."""
 import pytest
 
 from app.domain.place import WEEKDAY_KEYS, validate_open_hours
