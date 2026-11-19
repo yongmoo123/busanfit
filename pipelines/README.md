@@ -58,7 +58,7 @@ $env:BUSANFIT_DB_PATH = "data/haeundae_sample.sqlite3"     # PowerShell (backend
 - 공통: `serviceKey`, `MobileOS=ETC`, `MobileApp=BusanFit`, `_type=json`.
 - 지역 필터 `areaCode`·`sigunguCode`는 Swagger에 "미사용항목(삭제예정-법정동 코드 대체)"으로 표시되어 법정동 코드를 씁니다. 부산 `26`, 해운대구 `350`은 `ldongCode2` 응답에서 확인했습니다(추측 값 아님).
 - 좌표: `mapx` = 경도, `mapy` = 위도 (위치기반조회 파라미터 설명 "mapX: WGS84 경도").
-- **일일 호출 한도: 문서에 없음.** 포털 페이지와 응답 어디에도 숫자가 없습니다. 공공데이터포털 마이페이지 > 개발계정 상세보기에서 확인해야 합니다.
+- **일일 호출 한도: 상세기능(엔드포인트)별 1000회 (개발계정 기준, 공공데이터포털에서 확인).** 서비스 전체 합산 한도는 확인하지 못했습니다.
 
 ### 보고서 (2026-11-12 수집)
 
@@ -172,7 +172,7 @@ $env:BUSANFIT_DB_PATH = "data/haeundae_sample.sqlite3"     # PowerShell (backend
 - 대상은 국문 fetch와 같은 규칙(`areaBasedList2` 원본 + 대상 유형 12·14·28·38·39)과 같은 순서입니다.
 - 호출 간격 0.5초(`--interval`). 응답이 HTTP 200·`resultCode` 0000이 아니거나 전송 오류가 나면 **그 자리에서 멈추고 재시도하지 않습니다**(한도 초과·인증 오류 포함). 정상 응답은 항목이 비어 있어도 저장합니다(빈 응답 = 정보 없음, 다시 호출하지 않음).
 - 호출 기록은 `data/raw/tourapi/accessibility/fetch_log.jsonl` (국문 `fetch_log.jsonl`과 분리해 국문 `retrieved_at`에 섞이지 않게 함).
-- 일일 호출 한도: 포털 표 기준 상세기능별 1000회(사용자 확인). 기능 간 합산 여부는 **문서에 없음**.
+- 일일 호출 한도: 상세기능(엔드포인트)별 1000회 (개발계정 기준, 공공데이터포털에서 확인). 서비스 전체 합산 한도는 **확인하지 못함**.
 
 ### 결과
 
@@ -213,7 +213,11 @@ $env:BUSANFIT_DB_PATH = "data/haeundae_sample.sqlite3"     # PowerShell (backend
 | URL | <https://www.data.go.kr/data/15101578/openapi.do> |
 | 조회 시각 (`retrieved_at`) | 마지막 수집 호출 시각 (`data/raw/tourapi/fetch_log.jsonl`) |
 | 기준일 (`base_date`) | 문서에 없음 → NULL |
-| **이용허락범위 (공공누리 유형)** | **확인 필요** — 담당자가 직접 확인. 위치: 위 두 포털 페이지의 "이용허락범위" 항목, 그리고 장소별 응답 필드 `cpyrhtDivCd`(Swagger 설명 "저작권 유형"). 확인 전까지 `data_sources.license`는 NULL |
+| **이용허락범위 (공공누리 유형)** | 공공데이터포털 "이용허락범위" 항목 기준 — 한국관광공사_국문 관광정보 서비스: **제한 없음**, 한국관광공사_무장애 여행 정보: **제한 없음**. 현재 적재 코드는 `data_sources.license`를 아직 NULL로 넣음(반영은 후속) |
+| 출처 표시 | 한국관광공사. 화면 문구는 SDD 7.3 형식 "출처: 제공기관·데이터명(기준일)"을 따름 |
+| 관광 사진 (`detailImage2`) | 이미지별로 공공누리 유형이 따로 있음 → 이미지를 화면에 쓸 때 해당 이미지의 유형을 확인해야 함 |
+| 일일 호출 한도 | 상세기능(엔드포인트)별 1000회 (개발계정 기준). 서비스 전체 합산 한도는 확인하지 못함 |
+| 참고 | 장소별 응답 필드 `cpyrhtDivCd`(Swagger 설명 "저작권 유형")가 있음 |
 
 ## 무장애 판정과 적재 (FR-008, DEC-026 초안)
 
