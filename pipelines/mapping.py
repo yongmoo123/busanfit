@@ -6,7 +6,7 @@
 - 카테고리: DEC-013의 7개 값. 매핑표는 ``category_of`` (이슈 #7 "정할 것 2" 제안).
 - 가격: DEC-014. 스프린트 2는 원문(price_text)만, 금액·기준은 NULL. 원문이 없으면 NULL(무료 아님).
 - 운영시간: 확실히 읽을 수 있는 경우만 구조화(``analyze_open_hours``). 아니면 open_hours NULL, 원문만 보존.
-  마지막 주문·입장 마감을 close로 쓰는 것은 제안(임시), 팀 확인 대기.
+  마지막 주문·입장 마감을 close로 쓰는 것은 DEC-023 ⑤ 승인(#51).
 - 누락을 채우지 않는다: 운영시간 누락 ≠ 상시 영업, 가격 누락 ≠ 무료, 실내 여부·접근성은 NULL 그대로.
 """
 from __future__ import annotations
@@ -306,7 +306,7 @@ def _intervals(group: _Group, day: str) -> list[dict] | None:
         segments += [[inside[0], b_start], [b_end, inside[1]]]
         segments.sort()
     for last in group.lasts:
-        # 제안(임시), 팀 확인 대기: 마지막 주문·입장 마감 시각을 그 구간의 close로 쓴다 (보수적 처리).
+        # DEC-023 ⑤ 승인(#51): 마지막 주문·입장 마감 시각을 그 구간의 close로 쓴다 (보수적 처리).
         t = last + 1440 if last <= start else last
         inside = next((s for s in segments if s[0] < t <= s[1]), None)
         if inside is None:

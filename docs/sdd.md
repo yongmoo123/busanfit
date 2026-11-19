@@ -7,7 +7,7 @@ Software Design Document (SDD)
 | 프로젝트명 | 부산핏(BusanFit): 제약 맞춤형 부산 놀거리 코스 추천 서비스 |
 |----|----|
 | 팀명 | 5팀 |
-| 팀원 | 김세민 / 2203515 / PM<br>이찬용 / 2242902 / 백엔드(데이터)<br>김영무 / 2243324 / 백엔드(AI·코스엔진)<br>배진호 / 2243510 / 프론트엔드 |
+| 팀원 | 김세민 / PM<br>이찬용 / 백엔드(데이터)<br>김영무 / 백엔드(AI·코스엔진)<br>배진호 / 프론트엔드 |
 | 버전 | v0.2 |
 | 작성일 | 2026-10-24 |
 | 담당교수 | 임한신 교수님 |
@@ -49,16 +49,18 @@ Software Design Document (SDD)
 
 ## 1.4 단계별 지원 범위
 
-최종 범위(SRS 1.2, FR-005)에 이르기 전, 스프린트별로 지원하는 권역과 이동수단은 다음과 같다(DEC-001, DEC-008). 기능별 스프린트 배치는 프로젝트 계획서 8장(DEC-010)을 따른다.
+최종 범위(SRS 1.2, FR-005)에 이르기 전, 단계별로 지원하는 권역과 이동수단은 다음과 같다(DEC-001, DEC-008, DEC-028). 기능별 스프린트 배치는 프로젝트 계획서 8장(DEC-010)을 따른다.
 
-| 구분 | 스프린트 2 (11/10~11/23) | 스프린트 3 (11/24~12/07) | 최종 (v1.0) |
+| 구분 | 스프린트 2 (11/10~11/22) | 제출본 v1.0 (11/27 개발 완료) | 향후 확장 |
 |----|----|----|----|
-| 권역 | 해운대 | 서면·광안리·남포 추가 | 서면·해운대·광안리·남포 (SRS 1.2) |
-| 이동수단 | 도보(WALK)만 지원 | 대중교통(PUBLIC) 추가, 이어서 자차(CAR) 추가 | 도보·대중교통·자차 (SRS FR-002) |
-| 자차 | 자차 표현도 추출하되 `capabilities` 기준 미지원으로 안내 | 대중교통 다음 순서로 추가. 주차장 표시(FR-017)·검색 반경 5km를 함께 묶음. 일정이 빠듯하면 가장 먼저 축소 | 지원 |
-| 기본 이동수단 | WALK (`source=DEFAULT`로 카드에 표시) | 대중교통(PUBLIC) | 대중교통(PUBLIC) (SRS FR-005) |
+| 권역 | 해운대 | 해운대 + 서면·광안리·남포 (권역 확장 완료 시) | 부산 전역 |
+| 이동수단 | 도보(WALK)만 지원 | 도보(WALK)만 지원 | 대중교통(PUBLIC), 자차(CAR) (SRS FR-002) |
+| 자차 | 자차 표현도 추출하되 `capabilities` 기준 미지원으로 안내 | 같음 | 주차장 표시(FR-017)·검색 반경 5km와 함께 추가 |
+| 기본 이동수단 | WALK (`source=DEFAULT`로 카드에 표시) | WALK | 대중교통(PUBLIC) (SRS FR-005, DEC-001) |
 | 지원 범위 안내 | 응답의 `capabilities`로 화면에 표시 | 같음 | 같음 |
-| 도보 검색 반경 | 권역 중심 기준 1.5km (설정값, 데이터 확인 후 조정) | 같음 | 같음 |
+| 도보 검색 반경 | 권역 중심 기준 1.5km (설정값) | 같음 | 같음 |
+
+제출 일정 변경(DEC-028)으로 원래의 스프린트 3(대중교통·자차·권역 추가) 중 권역 확장만 제출본에 포함하고, 나머지는 향후 확장으로 둔다.
 
 *관련 요구사항: FR-002, FR-005, FR-007, FR-008, FR-009, FR-017*
 
@@ -233,11 +235,21 @@ Software Design Document (SDD)
 
 ## 7.3 Prompt 설계
 
+FR-009 구현 보완: CourseService가 CandidateRetriever·TravelTimeProvider·PlaceRepository를 주입받아 CourseScheduler와 CourseValidator를 호출한다. 실제 검색/이동시간을 구현하지 않고 가짜 포트로 먼저 검증했다. 스케줄러는 DB·LLM을 호출하지 않고 검증기는 Repository에서 장소 사실을 다시 확인한다. 배치 초안 후 최대 3회 수리·재검증, 마지막 사실 재검사, API 반환 전 세션 revision/만료 재검사를 수행한다. 코스 경로·필드와 장소 2~6곳 제한은 기존 Course 계약을 유지한다. [#23 연결·검증 기록](ISSUE23_COURSES_IMPLEMENTATION.md).
+
+FR-005·006 보완: config/defaults.json을 서버 기본 체류시간 함수와 카드 안내가 공유한다. application/profile_support.py는 실제 후보 검색 연결·필드 검증 완료를 받은 뒤 지원 범위를 만드는 구성 경계이며 기본 앱은 비활성이다. #22의 검색·항목별 판정과 #23 스케줄러를 새로 구현하지 않았다. [이슈 #21 구현·후속 연결 기록](ISSUE21_DEFAULTS_IMPLEMENTATION.md).
+
+이슈 #20 구현: 추출 Provider는 취소 가능한 Gemini generateContent REST 어댑터이며 JSON 스키마·업무 의미를 검증한다. 실패 시 각 10초·1회 재시도 후 ChatRuleParser로 대체하고 COMP-02가 정책·revision을 처리한다. 기준 한국 날짜를 프롬프트에 제공하며 평가 시에는 평가셋 referenceNow를 고정한다. DEC-022의 영유아 질문 표시 이력·부분 동행은 메모리 세션에만 저장한다. 프론트는 실제 chat/profile API를 순차 호출한다. 일반 capabilities 활성화는 #21·#22의 기존 합의를 유지한다. [실행·검증 기록](ISSUE20_CHAT_IMPLEMENTATION.md).
+
 - System Prompt 목적: 용도별 3종으로 분리한다. ① 추출: "부산 놀거리 코스 서비스의 조건 분석기" 역할로, 지정 JSON 스키마의 필드만 채우고 언급 없는 필드는 null, 장소 추천 금지, "꼭·절대·못" 표현은 strength=HARD. ② 수정 해석: 코스 요약과 메시지를 받아 ChangeOp(REMOVE·REPLACE·EXTEND_STAY·INDOOR·INCLUDE_UNKNOWN) 하나로만 응답. ③ 설명: 제공된 장소 필드만 근거로 1~2문장 작성, 새 장소·가격·시간 언급 금지.
 
 - 검색 대상 데이터/Chunk 전략: 문서 청크 대신 구조화 DB 레코드를 사용한다. 장소 1개 = 컨텍스트 1단위(이름, 카테고리, 개요 200자 이내, 접근성 등급, 운영시간, 실내 여부)로 구성한다.
 
 - Top-k 또는 Retrieval 기준: 하드 필터(권역, 영업시간, 접근성, 예산, 제외 카테고리, 날씨) 통과 후 소프트 점수 상위 20개를 스케줄러에 투입한다. 검색 반경은 도보 권역 중심 기준 1.5km(설정값, 데이터 확인 후 조정, DEC-001), 대중교통 2km, 자차 5km이며, 설명 생성 LLM에는 최종 코스 장소(3~6개)만 전달한다.
+
+- 이동제약 판정(DEC-015·016): 하드 필터의 접근성은 접근성 등급(grade)이 아니라 사용자 이동제약에 맞는 **항목별 값**으로 판정한다. WHEELCHAIR는 `wheelchair = true`, STROLLER는 `stroller = true`, INJURY의 계단 회피는 `wheelchair = true`를 대리 지표로 사용한다. 값이 null이면 기본 후보에서 제외하고 `excludedUnknown`으로 집계해 포함 재생성 제안(FR-013) 대상으로 두며, false면 제외한다. 등급은 표시용 요약이다(정보 없음 UNKNOWN, 휠체어·유모차 모두 false UNSUITABLE, 하나라도 true VERIFIED).
+
+- 부상(INJURY) 규칙(DEC-016): 보행 속도를 낮추고(초기값 4→3km/h), 장소 사이 구간당 도보가 초기값 10분을 넘으면 그 구간을 쓰지 않는다(HARD). 수치는 설정값이며 데이터 확인 후 조정한다. 이동 경로의 계단·경사는 데이터가 없어 확인하지 못하므로 `routeAccessibility: UNVERIFIED`와 경고로 알린다. 후보가 부족해도 계단 조건을 자동으로 빼지 않고 사용자에게 해제를 제안한다.
 
 - 출처 표시 방식: LLM 출력에는 출처를 쓰지 않고, 시스템이 places.source_id(기본 정보 출처)와 accessibility.source_id(무장애 정보 출처)를 각각 data_sources와 조인해 중복 없이 모은 출처 목록을 장소 카드에 "출처: 제공기관·데이터명(기준일)"으로 첨부한다(DEC-003).
 
@@ -256,12 +268,23 @@ Software Design Document (SDD)
 | 부적절 입력·범위 밖 요청 | 입력 검증 후 차단, 서비스 범위 안내 | "부산 지역 놀거리 코스만 도와드릴 수 있어요" | AI-REQ-03 |
 | 요청 한도 초과 (429) | 2초 후 1회 재시도, 실패 시 대체 경로 | "잠시 후 다시 시도해 주세요" / rate_limit 로그 | NFR-002 |
 
+**대체 처리 후 응답 판정 (DEC-021)**
+
+| 상황 | 응답 |
+|----|----|
+| LLM 정상, 지역·시간 미입력 | 200 NEEDS_INPUT, 부족 항목 질문(최대 2개) |
+| LLM 재실패 → 파서, 기존 값을 포함해 지역·시간 **둘 다** 없음 | 503 AI_UNAVAILABLE, 기존 프로필·revision·대화·TTL 유지, 카드 직접 입력 안내 |
+| LLM 재실패 → 파서, 지역·시간 중 하나만 확보 | 200 NEEDS_INPUT, 부족 항목 질문 + 대체 처리 안내 |
+| LLM 재실패 → 파서, 둘 다 확보 | 일반 검증 결과(200 또는 422) |
+
+언급하지 않은 기존 값은 유지하고, 파서의 UNSET으로 기존 USER/HARD 조건을 덮어쓰지 않는다. 확인되지 않은 하드 조건이나 해석하지 못한 변경 의도가 남으면 NEEDS_INPUT으로 두고 `questions`(field)와 `warnings`(code)로 확인을 요청한다. 코스는 READY에서만 생성한다.
+
 # 8. 예외 처리 및 로깅
 
 | **오류 ID** | **오류 상황** | **시스템 동작** | **로그/모니터링** | **관련 요구사항** |
 |----|----|----|----|----|
 | ERR-001 | 잘못된 입력 (잘못된 JSON / 빈 메시지, 1,000자 초과, 시각 역전 등 스키마·값 검증 실패) | 잘못된 JSON은 400 INVALID_REQUEST, 스키마·값 검증 실패는 422(INVALID_REQUEST / INVALID_PROFILE / PROFILE_INCOMPLETE / UNSUPPORTED_CONSTRAINT) + 입력 안내 (DEC-004) | 입력 오류 로그 (원문 미기록) | FR-001, FR-006 |
-| ERR-002 | 외부 AI 장애 | 재시도 1회 → 키워드 규칙 파서로 대체(확신하지 못한 하드 판단 항목은 UNSET, 소프트 항목은 기본값, warnings로 안내) → 파서도 지역·시간을 추출하지 못하면 503 AI_UNAVAILABLE + 카드 직접 입력 안내. 하드 제약을 지운 채 코스를 만들지 않으며, 추천 이유 생성 실패는 템플릿 문장으로 대체 (DEC-007) | 오류 유형·응답시간 로그 | AI-REQ-02 / NFR-002 |
+| ERR-002 | 외부 AI 장애 | 재시도 1회 → 키워드 규칙 파서로 대체(확신하지 못한 하드 판단 항목은 UNSET, 소프트 항목은 기본값, warnings로 안내) → 기존 값을 포함해 지역·시간이 둘 다 없으면 503 AI_UNAVAILABLE + 카드 직접 입력 안내(7.4 판정표). 하드 제약을 지운 채 코스를 만들지 않으며, 추천 이유 생성 실패는 템플릿 문장으로 대체 (DEC-007, DEC-021) | 오류 유형·응답시간 로그 | AI-REQ-02 / NFR-002 |
 | ERR-003 | 세션 없음·만료 | 410 응답 + 새 세션 안내 | 세션 만료 로그 (해시 ID) | NFR-003 |
 | ERR-004 | 후보 부족으로 코스 생성 불가 | 200 응답 + warnings, 완화 제안 칩 | 후보 수 로그 | FR-007, FR-014 |
 | ERR-005 | 기상청 API 장애 | 날씨 미반영으로 진행, 화면에 표시 | 외부 API 오류 로그 | FR-016 / NFR-002 |
@@ -298,6 +321,8 @@ Software Design Document (SDD)
 ![](images/sdd-10-1-deployment.png)
 
 그림 10-1. 배포 다이어그램. 단일 클라우드 VM에 Docker Compose로 nginx(정적 파일·HTTPS), api(FastAPI), batch(DataCollector) 컨테이너를 운영한다. DB는 별도 컨테이너 없이 SQLite 파일을 사용하며, api는 이 파일을 읽고 batch는 새 DB 파일을 만들어 교체한다(DEC-005).
+
+제출본(v1.0)은 로컬 실행으로 시연 영상을 촬영하며, 위 배포 구조와 FR-020 주기 갱신은 향후 확장의 목표 구조다(DEC-028).
 
 *관련 요구사항: NFR-001, NFR-002, NFR-008, FR-020*
 
@@ -346,6 +371,7 @@ Software Design Document (SDD)
 | FR-015 | UC-005 | COMP-03, COMP-05, COMP-07 | ChangeOp | API-005 | SD-02 | TC-015, AI-TC-04 | Draft |
 | FR-016 | UC-003 | COMP-12, COMP-04 | WeatherProvider / places.indoor | API-004 | SD-01 | TC-016 | Draft |
 | FR-017 | UC-004 | COMP-10, COMP-01 | facilities | API-007 | \- | TC-017 | Draft |
+| FR-018 | UC-001, UC-003 | COMP-03, COMP-05 | ConstraintAnalyzer, CourseScheduler | API-002, API-004 | SD-01 | TC-018 | Draft |
 | FR-019 | \- | COMP-02 | shared_courses | API-008, 009 | \- | TC-019 | Draft |
 | FR-020 | UC-007 | COMP-11 | DataCollector / batch_logs | API-010 | \- | TC-020 | Draft |
 | NFR-001 | \- | COMP-02 / Cache | 위경도 인덱스·하버사인 필터, 후보 상한 20 | \- | \- | TC-021 | Draft |
@@ -355,3 +381,22 @@ Software Design Document (SDD)
 | AI-REQ-05 | UC-003 | COMP-07 | CourseValidator | API-004 | SD-01 | TC-028, AI-TC-05 | Draft |
 
 *※ 초기 설계 단계에서는 미정 요소를 비워둘 수 있으며, 구현·테스트가 진행되면서 API/Class/Test Case 매핑을 보완합니다.*
+
+## 구현 보완 기록 — FR-002·006·018 / DEC-019~021 (2026-11-11)
+
+COMP-02/03의 application/condition_policy.py는 부분 추출을 기존 프로필과 병합하고 미확인 항목을 세션 내부 pending_fields에 유지한다. 외부 응답 필드는 늘리지 않는다. 질문은 최대 2개이며 코스 진입은 SessionStore.begin_course의 최신 revision·READY 검사를 거친다. 실제 코스 엔진은 아직 미연결이다. AIService·규칙 파서·유모차 정규화는 PR #17, 계약·HTTP 연결은 PR #13으로 구분한다. 구현 상세와 단독/통합 검증, 활성화 계획은 [구현 기록](ISSUE6_8_IMPLEMENTATION.md)을 참조한다. PM의 DEC-019~021은 확정이며 결정 기록 PR #18·SDD 정책 상세 PR #40의 병합 상태와 구분한다.
+
+
+## FR-012 구현 추적 (2026-11-16)
+
+이슈 #25의 COMP-08/API-006을 구현했다. 검증된 최종 코스에서만 구조화 근거를 선택하고 시스템이1~2문장·숫자를 조립한다. 실패 시TEMPLATE/AI_FALLBACK을 사용한다. 사용자 원문·세션·전체 프로필은 설명에 보내지 않으며 개요는200자로 제한한다. GET /api/places/{placeId}는 기존 PlaceResponse로 장소·출처·정보 없음·공공데이터 고지를 반환하며 없는 장소404와 저장소 오류500을 구분한다. 코스와 상세의 Place/Source 변환을 공통화했다. 실제 DB·모델·UI-04 연결과 인수 검증은 후속이다. [구현·검증 기록](ISSUE25_EXPLANATIONS_IMPLEMENTATION.md).
+
+
+## FR-014 ① 구현 추적 (2026-11-17)
+
+이슈 #26 서버 제안 생성을 구현했다. 최종 적용 프로필의 DEFAULT·값 있음·capabilities 지원 항목에서 기존 카드 EDIT_PROFILE을 최대 3개 만든다. 클릭으로 값을 자동 변경하거나 하드 제약을 완화하지 않으며 사용자 카드 저장 후 새 revision으로 재생성한다. 체류시간은 이번 범위에서 제외했다. 정보 없음·날씨·부분 수정 및 프론트 칩·화면 캡처는 후속이다. [구현·검증·인계 기록](ISSUE26_SUGGESTIONS_IMPLEMENTATION.md).
+
+
+## FR-018 구현 추적 (2026-11-17, 이슈 #27)
+
+동행 카테고리 점수 함수와 가중치 제안 설정을 구현해 가상 후보로 검증했다. 가족 관광·전시·공원 우대 방향은 DEC-013을 따르지만 수치·다른 동행 매핑·실내 대비 계수는 PM 미확정이다. 일반 경로에는 활성화하지 않고 기존 default_score를 유지한다. 가격·분위기·야경·활동성·인원 적합성을 추정하지 않으며 하드 필터·검증기·영유아 유모차·부상 규칙을 유지한다. [제안 표](proposals/issue-27-companion-weights.md), [구현·검증 기록](ISSUE27_COMPANION_SCORING_IMPLEMENTATION.md).

@@ -1,0 +1,27 @@
+{
+  "status": "INSUFFICIENT_PLACES",
+  "course": null,
+  "suggestions": [
+    {
+      "id": "suggestion-01",
+      "type": "EDIT_PROFILE",
+      "label": "방문 시간을 다시 설정하기",
+      "field": "timeWindow"
+    }
+  ],
+  "warnings": [
+    {
+      "code": "INSUFFICIENT_PLACES",
+      "message": "현재 조건으로 방문 가능한 장소가 두 곳 미만입니다. 조건을 직접 변경한 뒤 다시 요청해 주세요.",
+      "placeIds": []
+    }
+  ],
+  "excludedUnknown": {
+    "count": 3,
+    "fields": [
+      "openHours"
+    ]
+  },
+  "sessionExpiresAt": "2026-11-05T10:30:00+09:00",
+  "requestId": "22222222-2222-4222-8222-222222222222"
+}

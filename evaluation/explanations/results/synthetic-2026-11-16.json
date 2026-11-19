@@ -1,0 +1,98 @@
+{
+  "syntheticOnly": true,
+  "realDbVerified": false,
+  "realLlmVerified": false,
+  "codeRevision": "cbdd77ea82d97a0a90ad1326bb782951a0736dae",
+  "workingTreeModified": false,
+  "runDate": "2026-11-16T15:28:29.687124+09:00",
+  "scenarios": [
+    {
+      "mode": "GENERAL",
+      "provider": "synthetic-selector",
+      "status": "SUCCESS",
+      "items": 4,
+      "reasonMethod": "LLM",
+      "hardViolations": 0,
+      "detailMatchesCourse": true,
+      "unknownDetailPreserved": true,
+      "elapsedMs": 14.465
+    },
+    {
+      "mode": "WHEELCHAIR",
+      "provider": "synthetic-selector",
+      "status": "SUCCESS",
+      "items": 4,
+      "reasonMethod": "LLM",
+      "hardViolations": 0,
+      "detailMatchesCourse": true,
+      "unknownDetailPreserved": true,
+      "elapsedMs": 11.413
+    },
+    {
+      "mode": "STROLLER",
+      "provider": "synthetic-selector",
+      "status": "SUCCESS",
+      "items": 4,
+      "reasonMethod": "LLM",
+      "hardViolations": 0,
+      "detailMatchesCourse": true,
+      "unknownDetailPreserved": true,
+      "elapsedMs": 12.22
+    },
+    {
+      "mode": "INJURY",
+      "provider": "synthetic-selector",
+      "status": "SUCCESS",
+      "items": 2,
+      "reasonMethod": "LLM",
+      "hardViolations": 0,
+      "detailMatchesCourse": true,
+      "unknownDetailPreserved": true,
+      "elapsedMs": 8.903
+    },
+    {
+      "mode": "GENERAL",
+      "provider": "unconfigured",
+      "status": "SUCCESS",
+      "items": 4,
+      "reasonMethod": "TEMPLATE",
+      "hardViolations": 0,
+      "detailMatchesCourse": true,
+      "unknownDetailPreserved": true,
+      "elapsedMs": 9.318
+    },
+    {
+      "mode": "WHEELCHAIR",
+      "provider": "unconfigured",
+      "status": "SUCCESS",
+      "items": 4,
+      "reasonMethod": "TEMPLATE",
+      "hardViolations": 0,
+      "detailMatchesCourse": true,
+      "unknownDetailPreserved": true,
+      "elapsedMs": 10.422
+    },
+    {
+      "mode": "STROLLER",
+      "provider": "unconfigured",
+      "status": "SUCCESS",
+      "items": 4,
+      "reasonMethod": "TEMPLATE",
+      "hardViolations": 0,
+      "detailMatchesCourse": true,
+      "unknownDetailPreserved": true,
+      "elapsedMs": 11.561
+    },
+    {
+      "mode": "INJURY",
+      "provider": "unconfigured",
+      "status": "SUCCESS",
+      "items": 2,
+      "reasonMethod": "TEMPLATE",
+      "hardViolations": 0,
+      "detailMatchesCourse": true,
+      "unknownDetailPreserved": true,
+      "elapsedMs": 11.108
+    }
+  ]
+}
