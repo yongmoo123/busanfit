@@ -45,7 +45,8 @@ def fixture_connection(stored):
     travel = FakeTravel()
     return SimpleNamespace(repository=repository,
         service=CourseService(FakeRetriever(places), travel, repository), settings=CourseSettings(),
-        retrieval_settings=SimpleNamespace(area_centers={'HAEUNDAE': (35.16, 129.16)}, excluded_place_ids=frozenset()),
+        retrieval_settings=SimpleNamespace(area_centers={'HAEUNDAE': runner.EVALUATION_CENTER},
+                                           radius_m=1500, excluded_place_ids=frozenset()),
         weights_version='synthetic-fixture')
 
 
@@ -148,7 +149,7 @@ def test_no_fake_or_implicit_travel_factory():
 
 
 def test_missing_pr65_is_an_explicit_dependency_error(stored):
-    if importlib.util.find_spec('app.retrieval') is not None:
+    if importlib.util.find_spec('app.retrieval.retriever') is not None:
         pytest.skip('dependency is present in this combined validation tree')
     with pytest.raises(CourseConnectionError, match='PR #65'):
         prepare_course_connection(stored[0], travel_provider=FakeTravel())
@@ -175,14 +176,18 @@ def test_preparation_keeps_ordinary_app_closed(stored):
 @pytest.mark.parametrize('radius', [1500, 2000])
 def test_actual_pr65_retrieval_and_shared_radius_with_fixture_db(stored, radius):
     settings_module = pytest.importorskip('app.retrieval.settings', reason='PR #65 not yet in develop')
-    settings = settings_module.RetrievalSettings({'HAEUNDAE': (35.16, 129.16)}, radius)
+    settings = settings_module.RetrievalSettings({'HAEUNDAE': runner.EVALUATION_CENTER}, radius)
     connection = prepare_course_connection(stored[0], travel_provider=FakeTravel(), retrieval_settings=settings)
     assert connection.settings.radius_meters == radius
     assert connection.service.scheduler.settings == connection.settings
     assert connection.service.validator.settings == connection.settings
     assert connection.repository.read_only
     assert connection.service.scheduler.scorer.proposal.version == connection.weights_version
-    assert runner.evaluate_database(connection, dataset(stored[0].parent), synthetic=True)['automatedChecksPassed']
+    if radius == 1500:
+        assert runner.evaluate_database(connection, dataset(stored[0].parent), synthetic=True)['automatedChecksPassed']
+    else:
+        with pytest.raises(ValueError, match='1500m'):
+            runner.evaluate_database(connection, dataset(stored[0].parent), synthetic=True)
 
 
 @pytest.mark.parametrize('radius,expected', [(1500, 'INSUFFICIENT_PLACES'), (2000, 'SUCCESS')])
@@ -191,9 +196,39 @@ def test_search_and_validator_agree_for_fixture_places_between_1500_and_2000_m(s
     with connect(stored[0]) as conn:
         conn.execute('UPDATE places SET latitude = 35.175, longitude = 129.16')
     conn.close()
-    settings = settings_module.RetrievalSettings({'HAEUNDAE': (35.16, 129.16)}, radius)
+    settings = settings_module.RetrievalSettings({'HAEUNDAE': runner.EVALUATION_CENTER}, radius)
     connection = prepare_course_connection(stored[0], travel_provider=FakeTravel(), retrieval_settings=settings)
-    report = runner.evaluate_database(connection,
-        dataset(stored[0].parent, expected='SUCCESS_OR_INSUFFICIENT'), synthetic=True)
-    assert report['automatedChecksPassed']
-    assert all(r['outcome'] == expected for r in report['scenarioResults'][:4])
+    # Configurable app connection remains supported. This is not an official CS run.
+    from app.api.profile_models import Profile
+    from app.application.extraction import blank_profile
+    from app.application.profile_support import INITIAL_FIELDS, ProfileSupport, build_profile_capabilities
+    cases = json.loads(dataset(stored[0].parent).read_text())['cases'][:4]
+    for case in cases:
+        result = connection.service.generate(Profile.model_validate(blank_profile() | case['profile']), 1,
+            build_profile_capabilities(ProfileSupport(True, frozenset(INITIAL_FIELDS), True)))
+        assert ('SUCCESS' if result.course is not None else 'INSUFFICIENT_PLACES') == expected
+
+
+@pytest.mark.parametrize('fault', ['radius', 'retrieval-radius', 'center'])
+def test_official_evaluation_rejects_scope_mismatch_before_database_or_http(stored, tmp_path, monkeypatch, fault):
+    from dataclasses import replace
+    connection = fixture_connection(stored)
+    if fault == 'radius':
+        connection.settings = replace(connection.settings, radius_meters=2000)
+        connection.retrieval_settings.radius_m = 2000
+    elif fault == 'retrieval-radius':
+        connection.retrieval_settings.radius_m = 2000
+    else:
+        connection.retrieval_settings.area_centers = {'HAEUNDAE': (35.16, 129.16)}
+    def forbidden(*args, **kwargs):
+        raise AssertionError('a scope mismatch must not start evaluation')
+    monkeypatch.setattr(runner, 'file_sha256', forbidden)
+    monkeypatch.setattr(runner, 'create_app', forbidden)
+    with pytest.raises(ValueError, match='1500m|DEC-023'):
+        runner.evaluate_database(connection, dataset(tmp_path), synthetic=True)
+
+
+def test_official_evaluation_accepts_and_records_approved_scope(stored, tmp_path):
+    report = runner.evaluate_database(fixture_connection(stored), dataset(tmp_path), synthetic=True)
+    assert report['automatedChecksPassed'] and report['radiusMeters'] == 1500
+    assert report['evaluationCenter'] == {'latitude': 35.159084, 'longitude': 129.160279}

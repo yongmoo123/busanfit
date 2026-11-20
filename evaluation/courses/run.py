@@ -38,7 +38,7 @@ def main():
         try:
             return run_database(args)
         except (OSError, ValueError, ImportError, RuntimeError):
-            parser.exit(2, 'DB evaluation prerequisites failed; check DB path/SHA, PR #53/#65 and COMP-06 factory.\n')
+            parser.exit(2, 'DB evaluation prerequisites failed; check DB path/SHA, PR #53/#65, COMP-06 factory and official 1500m/DEC-023 center.\n')
     contract = runpy.run_path(str(ROOT / 'contracts/validate_contract.py'))
     places = [synthetic_place(i) for i in range(1, 9)]
     places[5] = replace(places[5], open_hours=OpenHoursRecord(None, None))

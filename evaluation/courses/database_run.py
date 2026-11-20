@@ -19,6 +19,19 @@ from app.data.geo import haversine_m
 from app.main import create_app
 
 ROOT = Path(__file__).resolve().parents[2]
+# PR #53 CS-01~10 / DEC-001·023: the evaluation scope is fixed,
+# independently of configurable search/validation settings used by the app.
+EVALUATION_RADIUS_METERS = 1500
+EVALUATION_CENTER = (35.159084, 129.160279)
+
+
+def validate_evaluation_scope(connection):
+    settings = connection.retrieval_settings
+    if (connection.settings.radius_meters != EVALUATION_RADIUS_METERS
+            or settings.radius_m != EVALUATION_RADIUS_METERS):
+        raise ValueError('official course evaluation requires a 1500m radius')
+    if settings.area_centers.get('HAEUNDAE') != EVALUATION_CENTER:
+        raise ValueError('official course evaluation requires the DEC-023 HAEUNDAE center')
 
 
 def file_sha256(path):
@@ -74,6 +87,7 @@ def evaluate_database(connection, cases_path, *, synthetic=False):
     """
     if not __debug__:
         raise ValueError('contract checks require Python without -O')
+    validate_evaluation_scope(connection)
     dataset = load_cases(cases_path)
     cases_sha = file_sha256(cases_path)
     db_path = connection.repository.path
@@ -136,7 +150,7 @@ def evaluate_database(connection, cases_path, *, synthetic=False):
                             distances[place.id] = haversine_m(*center, place.latitude, place.longitude)
                         audit(body, profile, revision, connection.repository,
                               connection.service.travel_provider, distances,
-                              radius_meters=connection.settings.radius_meters)
+                              radius_meters=EVALUATION_RADIUS_METERS)
                     elif case['expected']['outcome'] != 'SUCCESS_OR_INSUFFICIENT' or body['course'] is not None:
                         raise AssertionError('unexpected_insufficient')
                     result.update(state='PASS', outcome=body['status'], hardViolations=0, missingPlaceIds=0,
@@ -162,6 +176,7 @@ def evaluate_database(connection, cases_path, *, synthetic=False):
             'workingTreeModified': bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True).strip()),
             'dbSha256': before, 'casesSha256': cases_sha, 'casesVersion': dataset.get('version'),
             'radiusMeters': connection.settings.radius_meters, 'weightsVersion': connection.weights_version,
+            'evaluationCenter': {'latitude': EVALUATION_CENTER[0], 'longitude': EVALUATION_CENTER[1]},
             'travelProvider': type(connection.service.travel_provider).__module__ + ':' + type(connection.service.travel_provider).__qualname__,
             'scenarioResults': results, 'executedScenarios': len(executed),
             'excludedScenarios': len(results) - len(executed), 'automatedChecksPassed': passed,
