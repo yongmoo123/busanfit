@@ -228,7 +228,7 @@ Software Design Document (SDD)
 
 | **AI 요소** | **모델/서비스** | **역할** | **입력/출력** | **교체 가능성/추상화** | **관련 요구사항** |
 |----|----|----|----|----|----|
-| LLM (추출) | 개발: Gemini Flash 계열(무료 티어) / 시연: Claude Haiku 5.5 또는 GPT-5 mini | 제약 프로필 추출, 하드/소프트 태깅 | 대화 이력 Text → JSON(ConstraintProfile) | AIService.complete(), Provider 설정으로 교체 | FR-002, FR-003, AI-REQ-04, AI-REQ-06 |
+| LLM (추출) | 개발·시연·평가: Gemini Flash 계열(무료 티어, 가상 입력만) / 향후 배포: Claude Haiku 5.5 또는 GPT-5 mini (DEC-030) | 제약 프로필 추출, 하드/소프트 태깅 | 대화 이력 Text → JSON(ConstraintProfile) | AIService.complete(), Provider 설정으로 교체 | FR-002, FR-003, AI-REQ-04, AI-REQ-06 |
 | LLM (수정 해석) | 동일 | 수정 요청 → 변경 연산 | 메시지 + 코스 요약(건강 정보는 범주값만, DEC-006) → JSON(ChangeOp) | 동일 | FR-015, AI-REQ-07 |
 | LLM (설명) | 동일 | 장소별 추천 이유 1~2문장 | 장소 정보 Context → Text | 동일, 실패 시 템플릿 대체 | FR-012, AI-REQ-01 |
 | VLM | 구현 범위 제외 (향후 동일 제공자의 멀티모달 모델) | 사진 분위기 분석 → 유사 장소 검색 | Image + Text → JSON(분위기 태그) | AIService에 completeWithImage() 추가로 확장 | 향후 확장 |
@@ -247,7 +247,7 @@ FR-005·006 보완: config/defaults.json을 서버 기본 체류시간 함수와
 
 - Top-k 또는 Retrieval 기준: 하드 필터(권역, 영업시간, 접근성, 예산, 제외 카테고리, 날씨) 통과 후 소프트 점수 상위 20개를 스케줄러에 투입한다. 검색 반경은 도보 권역 중심 기준 1.5km(설정값, 데이터 확인 후 조정, DEC-001), 대중교통 2km, 자차 5km이며, 설명 생성 LLM에는 최종 코스 장소(3~6개)만 전달한다.
 
-- 이동제약 판정(DEC-015·016): 하드 필터의 접근성은 접근성 등급(grade)이 아니라 사용자 이동제약에 맞는 **항목별 값**으로 판정한다. WHEELCHAIR는 `wheelchair = true`, STROLLER는 `stroller = true`, INJURY의 계단 회피는 `wheelchair = true`를 대리 지표로 사용한다. 값이 null이면 기본 후보에서 제외하고 `excludedUnknown`으로 집계해 포함 재생성 제안(FR-013) 대상으로 두며, false면 제외한다. 등급은 표시용 요약이다(정보 없음 UNKNOWN, 휠체어·유모차 모두 false UNSUITABLE, 하나라도 true VERIFIED).
+- 이동제약 판정(DEC-015·016): 하드 필터의 접근성은 접근성 등급(grade)이 아니라 사용자 이동제약에 맞는 **항목별 값**으로 판정한다. WHEELCHAIR는 `wheelchair = true`, STROLLER는 `stroller = true`, INJURY의 계단 회피는 `wheelchair = true`를 대리 지표로 사용한다. 값이 null이면 기본 후보에서 제외하고 `excludedUnknown`으로 집계해 포함 재생성 제안(FR-013) 대상으로 두며, false면 제외한다. 등급은 표시용 요약이며 휠체어·유모차 두 항목만 본다(둘 중 하나라도 true면 VERIFIED, true 없이 false가 있으면 UNSUITABLE, 둘 다 null이면 UNKNOWN, DEC-026).
 
 FR-007·008 구현(#22): `retrieval/PlaceRetriever`가 CandidateRetriever를 구현한다. PlaceRepository 반경 질의(권역 중심 DEC-023 ①은 `config/retrieval.json`, 반경 `BUSANFIT_WALK_RADIUS_M`) 뒤 사후면세점 ID 제외(DEC-023 ④, 판별 기준: 분류 코드 SH040300 (찬용 결정, 11/19)), 주소, 운영시간(이용 시간대 안에 기본 체류시간만큼 영업, NULL·요일 누락은 미확인으로 제외 DEC-023 ③), 이동제약 항목별 판정, HARD 실내·실외를 적용하고 거리순 상위 20개를 돌려준다. 정보 없음으로만 제외된 장소는 `excludedUnknown` ID·항목(`openHours`, `mobility.wheelchair` 등)으로 넘긴다. 소프트 점수화는 아직 없다. [구현 기준](../backend/app/retrieval/README.md).
 
