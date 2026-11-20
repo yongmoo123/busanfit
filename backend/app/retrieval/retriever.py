@@ -9,7 +9,8 @@ Hard conditions (a candidate must pass all of them):
 3. not in the configured excluded-ID list (사후면세점 — DEC-023 ④ 판별 기준: 분류 코드 SH040300 (찬용 결정, 11/19))
 4. address present
 5. opening hours: on the day of ``timeWindow`` an opening interval leaves room for the place's
-   ``default_stay_min`` inside the window. ``open_hours`` NULL or that weekday missing = unknown
+   ``default_stay_min`` inside the window, judged by the scheduler's ``find_slot`` (a start
+   with seconds is rounded up to the next minute). ``open_hours`` NULL or that weekday missing = unknown
    (DEC-017, DEC-023 ③); never treated as always open.
 6. mobility, per item (DEC-015, DEC-016 ③): WHEELCHAIR → ``wheelchair``, STROLLER → ``stroller``,
    INJURY → ``wheelchair`` (계단 회피 대리 지표). Only ``True`` passes. ``grade`` is not used.
@@ -25,10 +26,10 @@ Repository errors propagate (``RepositoryError``); an empty result means "no mat
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import TYPE_CHECKING
 
-from app.courses.open_hours import opening_windows
+from app.courses.open_hours import find_slot, opening_windows
 from app.data.repository import PlaceRepository
 from app.domain.course import RetrievalResult
 from app.domain.place import PlaceCandidate, PlaceRecord
@@ -114,17 +115,15 @@ def check_place(place: PlaceRecord, start: datetime, end: datetime,
 
 
 def stay_fits(place: PlaceRecord, start: datetime, end: datetime) -> tuple[bool, bool]:
-    """(an opening interval holds ``default_stay_min`` inside [start, end], weekday known).
+    """(the scheduler can place ``default_stay_min`` inside [start, end], weekday known).
 
-    Uses the course engine's ``opening_windows`` so retrieval and validation read the stored
-    intervals the same way (overnight intervals, ``24:00``, previous-day carry-over).
+    Delegates to the course engine's ``find_slot`` so retrieval applies the same rules as the
+    scheduler: ``opening_windows`` (overnight intervals, ``24:00``, previous-day carry-over) and
+    rounding an arrival with seconds up to the next minute. A place the scheduler could never
+    place therefore never takes one of the ``max_candidates`` slots.
     """
-    spans, known = opening_windows(place, start, end)
-    stay = timedelta(minutes=place.default_stay_min)
-    for opening, closing in spans:
-        if min(closing, end) - max(opening, start) >= stay:
-            return True, known
-    return False, known
+    _, known = opening_windows(place, start, end)
+    return find_slot(place, start, end, place.default_stay_min) is not None, known
 
 
 def _required_accessibility_items(mobility: list[str] | None) -> tuple[str, ...]:

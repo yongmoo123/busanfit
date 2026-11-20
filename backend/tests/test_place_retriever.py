@@ -13,7 +13,8 @@ from app.data.repository import RepositoryError
 from app.data.settings import SettingsError
 from app.domain.course import CandidateRetriever, CourseSettings
 from app.domain.place import AccessibilityRecord, OpenHoursRecord, PlaceRecord, WEEKDAY_KEYS
-from app.retrieval import PlaceRetriever, RetrievalSettings, load_retrieval_settings
+from app.courses.open_hours import find_slot
+from app.retrieval import PlaceRetriever, RetrievalSettings, RetrievalSettingsError, load_retrieval_settings
 from app.retrieval.retriever import FIELD_ADDRESS, FIELD_INDOOR, FIELD_OPEN_HOURS
 
 CENTER = (35.159084, 129.160279)
@@ -122,6 +123,35 @@ def test_opening_interval_must_hold_the_stay_inside_the_window(interval, expecte
     result = retrieve([place('x', hours=hours_on('fri', interval))])
     assert (ids(result) == [pid('x')]) is expected
     assert result.excluded_unknown_ids == frozenset()  # known hours: rejection, not unknown
+
+
+@pytest.mark.parametrize('start, end, expected', [
+    ('13:00:30', '14:00:30', False),   # 60 min wide, but the scheduler starts 13:01 → 14:01 > end
+    ('13:00:30', '14:00:59', False),   # still one second short after rounding
+    ('13:00:30', '14:01:00', True),    # 13:01–14:01 fits exactly
+    ('13:00:00', '14:00:30', True),    # whole-minute start is not rounded
+    ('13:59:59', '15:00:00', True),    # 14:00–15:00 fits exactly
+])
+def test_window_with_seconds_follows_find_slot_rounding(start, end, expected):
+    prof = profile(start=f'{FRI}T{start}+09:00', end=f'{FRI}T{end}+09:00')
+    result = retrieve([place('sec')], prof)
+    assert (ids(result) == [pid('sec')]) is expected
+    assert result.excluded_unknown_ids == frozenset()  # known hours: rejection, not unknown
+    window = prof.timeWindow.value
+    assert (find_slot(place('sec'), window.startAt, window.endAt, 60) is not None) is expected
+
+
+def test_unplaceable_places_do_not_take_the_top_twenty():
+    # 13:00:30–14:00:30: the 20 nearest places need 60 minutes, which find_slot cannot place
+    # after rounding the start to 13:01; the farther 30-minute places must still be returned.
+    near = [place(f'near{i}', north_m=10.0 + i, stay=60) for i in range(20)]
+    far = [place(f'far{i}', north_m=500.0 + i, stay=30) for i in range(5)]
+    prof = profile(start=f'{FRI}T13:00:30+09:00', end=f'{FRI}T14:00:30+09:00')
+    result = retrieve(near + far, prof)
+    assert ids(result) == [pid(f'far{i}') for i in range(5)]
+    window = prof.timeWindow.value
+    for candidate in result.candidates:
+        assert find_slot(candidate.place, window.startAt, window.endAt, candidate.place.default_stay_min)
 
 
 def test_closed_day_is_rejected_not_unknown():
@@ -235,21 +265,56 @@ def test_configured_excluded_ids_are_dropped_and_not_counted_as_unknown():
     assert result.excluded_unknown_ids == frozenset()
 
 
-def test_shipped_duty_free_list_is_loaded(tmp_path):
+def test_shipped_duty_free_list_is_loaded():
     loaded = load_retrieval_settings()
     assert loaded.area_centers['HAEUNDAE'] == CENTER
     assert len(loaded.excluded_place_ids) == 112
     assert all(value.startswith('tourapi-kor:') for value in loaded.excluded_place_ids)
-    # retrieval.json absent → DEC-023 default center, no exclusions
-    fallback = load_retrieval_settings(config_dir=tmp_path)
-    assert fallback.area_centers == {'HAEUNDAE': CENTER} and fallback.excluded_place_ids == frozenset()
 
 
-def test_malformed_excluded_id_is_a_setting_error(tmp_path):
-    (tmp_path / 'retrieval.json').write_text(json.dumps({'excludedPlaceIdFiles': ['x.json']}), encoding='utf-8')
-    (tmp_path / 'x.json').write_text(json.dumps({'placeIds': ['no-separator']}), encoding='utf-8')
-    with pytest.raises(ValueError):
+def write_config(directory, config, **lists):
+    if config is not None:
+        (directory / 'retrieval.json').write_text(json.dumps(config), encoding='utf-8')
+    for name, content in lists.items():
+        text = content if isinstance(content, str) else json.dumps(content)
+        (directory / f'{name}.json').write_text(text, encoding='utf-8')
+
+
+def test_missing_retrieval_config_is_an_error_not_no_exclusion(tmp_path):
+    with pytest.raises(RetrievalSettingsError, match='not found'):
         load_retrieval_settings(config_dir=tmp_path)
+
+
+def test_missing_excluded_files_key_is_an_error_not_no_exclusion(tmp_path):
+    write_config(tmp_path, {'areaCenters': {}})
+    with pytest.raises(RetrievalSettingsError, match='excludedPlaceIdFiles'):
+        load_retrieval_settings(config_dir=tmp_path)
+
+
+@pytest.mark.parametrize('config, lists', [
+    ({'excludedPlaceIdFiles': ['missing.json']}, {}),                      # list file absent
+    ({'excludedPlaceIdFiles': ['x.json']}, {'x': '{not json'}),            # unreadable JSON
+    ({'excludedPlaceIdFiles': ['x.json']}, {'x': {'ids': []}}),            # no placeIds key
+    ({'excludedPlaceIdFiles': ['x.json']}, {'x': {'placeIds': 'a:b'}}),    # placeIds not a list
+    ({'excludedPlaceIdFiles': 'x.json'}, {'x': {'placeIds': []}}),         # key not a list
+    ({'excludedPlaceIdFiles': ['x.json']}, {'x': {'placeIds': ['no-separator']}}),  # malformed ID
+])
+def test_broken_excluded_id_list_is_a_setting_error(tmp_path, config, lists):
+    write_config(tmp_path, config, **lists)
+    with pytest.raises(RetrievalSettingsError):
+        load_retrieval_settings(config_dir=tmp_path)
+
+
+def test_explicit_empty_excluded_files_means_no_exclusion(tmp_path):
+    write_config(tmp_path, {'excludedPlaceIdFiles': []})
+    loaded = load_retrieval_settings(config_dir=tmp_path)
+    assert loaded.area_centers == {'HAEUNDAE': CENTER} and loaded.excluded_place_ids == frozenset()
+
+
+def test_injected_settings_without_exclusions_keep_every_place():
+    # [가상] no-exclusion cases inject RetrievalSettings instead of relying on a missing file
+    result = retrieve([place('dutyfree', category='SHOPPING'), place('shop', category='SHOPPING')])
+    assert sorted(ids(result)) == [pid('dutyfree'), pid('shop')]
 
 
 def test_area_without_center_is_an_error_not_zero_candidates():

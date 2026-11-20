@@ -7,7 +7,9 @@
   (DEC-023 ④). DEC-023 ④ 판별 기준: 분류 코드 SH040300 (찬용 결정, 11/19) — see
   ``pipelines/duty_free_ids.py``.
 
-A broken setting raises ``ValueError``; it is never replaced by a default silently.
+A missing or broken setting raises ``RetrievalSettingsError`` (a ``ValueError``); it is never
+replaced by a default silently. In particular a missing ``retrieval.json``,
+``excludedPlaceIdFiles`` key or list file does not mean "no exclusion".
 """
 from __future__ import annotations
 
@@ -50,22 +52,54 @@ class RetrievalSettings:
             raise ValueError("excluded_place_ids must be a frozenset of strings")
 
 
+class RetrievalSettingsError(ValueError):
+    """retrieval.json or an excluded-ID list is missing or broken (never "no exclusion")."""
+
+
 def load_retrieval_settings(environ: Mapping[str, str] | None = None,
                             config_dir: Path = CONFIG_DIR) -> RetrievalSettings:
+    """Load ``retrieval.json``. A missing file, a missing ``excludedPlaceIdFiles`` key or an
+    unreadable list is an error: silently using ``[]`` would lift the 사후면세점 exclusion
+    (DEC-023 ④). An explicit ``"excludedPlaceIdFiles": []`` means "no exclusion" on purpose.
+    Tests without exclusions inject ``RetrievalSettings`` directly instead.
+    """
     path = config_dir / CONFIG_FILE
-    config = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    config = _read_json(path)
+    if not isinstance(config, dict):
+        raise RetrievalSettingsError(f"{path}: top level must be an object")
     centers = dict(DEFAULT_AREA_CENTERS)
     for area, value in config.get("areaCenters", {}).items():
         centers[area] = (value["latitude"], value["longitude"])
+    if "excludedPlaceIdFiles" not in config:
+        raise RetrievalSettingsError(f"{path}: excludedPlaceIdFiles is required (DEC-023 ④)")
+    names = config["excludedPlaceIdFiles"]
+    if not isinstance(names, list) or not all(isinstance(name, str) for name in names):
+        raise RetrievalSettingsError(f"{path}: excludedPlaceIdFiles must be a list of file names")
     excluded: set[str] = set()
-    for name in config.get("excludedPlaceIdFiles", []):
-        listed = json.loads((config_dir / name).read_text(encoding="utf-8"))["placeIds"]
+    for name in names:
+        list_path = config_dir / name
+        content = _read_json(list_path)
+        listed = content.get("placeIds") if isinstance(content, dict) else None
+        if not isinstance(listed, list) or not all(isinstance(value, str) for value in listed):
+            raise RetrievalSettingsError(f"{list_path}: placeIds must be a list of place IDs")
         for place_id in listed:
-            parse_place_id(place_id)  # a malformed ID is a broken setting, not "no exclusion"
+            try:
+                parse_place_id(place_id)  # a malformed ID is a broken setting, not "no exclusion"
+            except ValueError as error:
+                raise RetrievalSettingsError(f"{list_path}: malformed place ID {place_id!r}") from error
         excluded.update(listed)
     return RetrievalSettings(area_centers=centers, radius_m=walk_radius_m(environ),
                              max_candidates=CourseSettings().max_candidates,
                              excluded_place_ids=frozenset(excluded))
+
+
+def _read_json(path: Path) -> object:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as error:
+        raise RetrievalSettingsError(f"{path}: setting file not found") from error
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise RetrievalSettingsError(f"{path}: cannot read setting file ({error})") from error
 
 
 def _check_coordinate(value: object, low: float, high: float, name: str) -> None:

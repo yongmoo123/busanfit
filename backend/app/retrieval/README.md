@@ -5,6 +5,7 @@ FR-007·008 (#22). `domain/course.CandidateRetriever`를 구현한다. 프로필
 - `retriever.py`: `PlaceRetriever(repository, settings=None).retrieve(profile)`
 - `settings.py`: `load_retrieval_settings()` — 중심 좌표·반경·후보 상한·제외 ID 목록
 - 설정 파일: `config/retrieval.json`(권역 중심 좌표, 제외 ID 파일 목록), `config/duty-free-exclusion.proposal.json`(사후면세점 ID, `pipelines/duty_free_ids.py`가 원본에서 생성)
+- `retrieval.json`이 없거나, `excludedPlaceIdFiles` 키가 없거나, 목록 파일을 읽지 못하면(파일 없음·JSON 오류·`placeIds` 없음·ID 형식 오류) `RetrievalSettingsError`(`ValueError`)로 실패한다. "제외 없음"으로 바꾸지 않는다. 제외를 일부러 끄려면 `"excludedPlaceIdFiles": []`를 명시한다. 제외 없는 가상 테스트는 `RetrievalSettings`를 직접 주입한다.
 
 ## 하드 조건 (모두 통과해야 후보)
 | 조건 | 기준 | 정보 없음 처리 |
@@ -13,7 +14,7 @@ FR-007·008 (#22). `domain/course.CandidateRetriever`를 구현한다. 프로필
 | 제외 카테고리 | 프로필 `excludedCategories`. Repository 질의 | — |
 | 사후면세점 | 설정의 제외 ID 목록(DEC-023 ④). **DEC-023 ④ 판별 기준: 분류 코드 SH040300 (찬용 결정, 11/19)** | 집계하지 않음(확정 제외) |
 | 주소 | 비어 있지 않음 | `address` |
-| 운영시간 | 이용 시간대의 요일에, 시간대 안에서 기본 체류시간(`default_stay_min`)만큼 머물 수 있는 영업 구간이 있음. 자정 넘김·`24:00`·전날 밤 영업은 `courses/open_hours.opening_windows`와 같은 방식으로 읽음 | `open_hours` NULL 또는 그 요일 키 없음 → `openHours` (DEC-023 ③, 상시 영업으로 보지 않음) |
+| 운영시간 | 이용 시간대의 요일에, 시간대 안에서 기본 체류시간(`default_stay_min`)만큼 머물 수 있는 영업 구간이 있음. 판정은 스케줄러와 같은 `courses/open_hours.find_slot`을 그대로 쓴다(자정 넘김·`24:00`·전날 밤 영업, 시작 시각에 초가 있으면 다음 분으로 올림) | `open_hours` NULL 또는 그 요일 키 없음 → `openHours` (DEC-023 ③, 상시 영업으로 보지 않음) |
 | 이동제약 | WHEELCHAIR → `wheelchair`, STROLLER → `stroller`, INJURY → `wheelchair`(DEC-016 ③). `true`만 통과, `false`는 제외. **`grade`는 보지 않음**(DEC-015) | null 또는 무장애 행 없음 → `mobility.wheelchair`/`mobility.stroller` |
 | 실내·실외 HARD | `indoor`가 요청과 같음 | `indoorPreference` |
 
