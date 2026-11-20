@@ -1,0 +1,30 @@
+.suggestion-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.suggestion-chip {
+  max-width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #548376;
+  border-radius: 20px;
+  background: #edf5f1;
+  color: #214f44;
+  font: inherit;
+  line-height: 1.5;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.suggestion-chip:focus-visible {
+  outline: 3px solid #245f53;
+  outline-offset: 3px;
+}
+
+.suggestion-chip:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
