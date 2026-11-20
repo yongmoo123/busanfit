@@ -24,3 +24,5 @@ Thumbs.db
 *.pem
 *.key
 credentials*.json
+# 팀 공유 DB와 안내 파일 (DEC-005, DEC-031)
+data/share/
