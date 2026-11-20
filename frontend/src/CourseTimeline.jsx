@@ -1,5 +1,6 @@
 import { useEffect, useId, useState } from 'react'
 import CourseMap from './CourseMap.jsx'
+import SuggestionChips from './SuggestionChips.jsx'
 import PlaceDetail from './PlaceDetail.jsx'
 import { getPlaceDetail } from './courseApi.js'
 import courseExample from './mocks/04-course.success.response.json'
@@ -55,7 +56,9 @@ function ServerPlaceDetail({ item, isMock }) {
   return <PlaceDetail detail={detail} courseItem={item} isMock={isMock} />
 }
 
-export default function CourseTimeline({ courseResponse, isMock = !courseResponse }) {
+export default function CourseTimeline({
+  courseResponse, isMock = !courseResponse, onEditSuggestion, suggestionsDisabled = false,
+}) {
   const [selectedItemId, setSelectedItemId] = useState(null)
   const detailId = useId()
 
@@ -157,6 +160,14 @@ export default function CourseTimeline({ courseResponse, isMock = !courseRespons
       </div>
 
       <CourseMap items={course.items} isMock={isMock} />
+
+      {onEditSuggestion && (
+        <SuggestionChips
+          suggestions={(response.suggestions ?? []).filter((suggestion) => suggestion.type === 'EDIT_PROFILE')}
+          disabled={suggestionsDisabled}
+          onSelect={onEditSuggestion}
+        />
+      )}
 
       {warnings.map((warning) => (
         <p key={warning.code}>{warning.message}</p>

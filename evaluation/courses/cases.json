@@ -1,0 +1,139 @@
+{
+  "description": "코스 시나리오 평가셋 초안 (AI-REQ-01 DB 미존재 장소 0건, AI-REQ-05 하드 제약 위반 0건, AC-010·AC-011). 입력은 조건 프로필을 직접 넣어 AI 추출과 분리한다. 실행은 실제 해운대 적재 DB로 한다.",
+  "version": "draft-2026-11-16",
+  "status": "초안 — 김영무·이찬용 검토 전",
+  "referenceNow": "2026-11-12T10:00:00+09:00",
+  "referenceNowNote": "조건 추출 평가셋과 같은 기준 시각. 방문일은 2026-11-14(토)·2026-11-15(일)·2026-11-16(월).",
+  "conventions": [
+    "profile은 모든 항목이 UNSET인 빈 프로필에 적힌 항목만 덮어쓴 것이다. 카드 PUT으로 저장한 뒤 POST /api/courses를 부른다.",
+    "모든 시나리오는 해운대·도보(DEC-001·008), 반경 1.5 km(DEC-001), 중심 해운대해수욕장(DEC-023)이다.",
+    "공통 검사(commonChecks)는 모든 SUCCESS 응답에 적용한다. evaluation/courses/audit.py(PR #50)의 검사와 같은 내용이며, DEC-023 검사 2개를 추가한다.",
+    "expected.outcome이 SUCCESS_OR_INSUFFICIENT인 시나리오는 어느 쪽이든 정답이다. 단 INSUFFICIENT_PLACES일 때 조건을 완화한 코스를 몰래 내면 실패다.",
+    "requiresSupport에 적힌 항목이 capabilities에서 꺼져 있으면 그 시나리오는 EXCLUDED로 기록하고 위반 0건 집계에서 뺀다. 지원 여부를 바꿔서 통과시키지 않는다.",
+    "실제 데이터로 실행하기 전에는 result를 채우지 않는다. 가상 데이터 실행(#50 synthetic)은 참고로만 기록한다."
+  ],
+  "commonChecks": [
+    "모든 장소 ID가 DB에 존재 (AI-REQ-01)",
+    "장소 2~6곳, 순서·구간 연결 일치",
+    "모든 방문이 시간창 안, 체류 중 매 분이 영업시간 안",
+    "영업시간 구조화 값이 없는(open_hours NULL) 장소 미포함 (DEC-023 3항)",
+    "사후면세점 미포함 (DEC-023 4항)",
+    "중심에서 1.5 km 이내",
+    "제외 카테고리 미포함",
+    "이동제약 항목별 값이 true인 장소만 (DEC-015)",
+    "부상이면 구간당 도보 10분 이하 (DEC-016)",
+    "실내 HARD면 실내 장소만",
+    "가격 UNKNOWN 유지 (DEC-014)",
+    "validation.status PASSED는 확인하지 못한 하드 조건이 없을 때만, routeAccessibility는 UNVERIFIED (DEC-016·021)",
+    "추천 이유·출처: 장소마다 이유 1~2문장, 출처가 sources 목록에 있음 (FR-012)",
+    "응답시간 측정: 15초 이내가 시나리오의 90% 이상 (AC-011, NFR-001)"
+  ],
+  "cases": [
+    {
+      "id": "CS-01", "category": "일반", "requirements": ["FR-009", "AI-REQ-01", "AI-REQ-05"], "decisions": ["DEC-001"],
+      "profile": {
+        "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+        "timeWindow": {"value": {"startAt": "2026-11-14T13:00:00+09:00", "endAt": "2026-11-14T17:00:00+09:00"}, "source": "USER", "strength": "HARD"}
+      },
+      "expected": {"outcome": "SUCCESS"},
+      "notes": "기본 시나리오. 토요일 오후 4시간.",
+      "result": null
+    },
+    {
+      "id": "CS-02", "category": "일반", "requirements": ["FR-009", "AI-REQ-05"], "decisions": ["DEC-023"],
+      "profile": {
+        "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+        "timeWindow": {"value": {"startAt": "2026-11-14T18:00:00+09:00", "endAt": "2026-11-14T21:00:00+09:00"}, "source": "USER", "strength": "HARD"}
+      },
+      "expected": {"outcome": "SUCCESS"},
+      "notes": "저녁 시간대. 마지막 주문 시각을 마감으로 쓰는 규칙(DEC-023 5항)이 마감 직전 방문을 막는지 본다.",
+      "result": null
+    },
+    {
+      "id": "CS-03", "category": "휠체어", "requirements": ["FR-008", "FR-009", "AI-REQ-05", "AC-004"], "decisions": ["DEC-015"],
+      "profile": {
+        "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+        "timeWindow": {"value": {"startAt": "2026-11-15T11:00:00+09:00", "endAt": "2026-11-15T15:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+        "mobility": {"value": ["WHEELCHAIR"], "source": "USER", "strength": "HARD"}
+      },
+      "expected": {"outcome": "SUCCESS_OR_INSUFFICIENT", "extraChecks": ["wheelchair 정보가 없는 장소는 excludedUnknown에 집계"]},
+      "notes": "무장애 정보가 적으면 INSUFFICIENT_PLACES가 정상일 수 있다. 정보 없음 장소를 넣어 통과시키면 실패.",
+      "result": null
+    },
+    {
+      "id": "CS-04", "category": "유모차", "requirements": ["FR-008", "FR-018", "AI-REQ-05"], "decisions": ["DEC-002", "DEC-015", "DEC-020"],
+      "profile": {
+        "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+        "timeWindow": {"value": {"startAt": "2026-11-15T10:00:00+09:00", "endAt": "2026-11-15T14:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+        "companions": {"value": {"type": "FAMILY", "count": 3, "hasInfant": true}, "source": "USER", "strength": "SOFT"}
+      },
+      "expected": {"outcome": "SUCCESS_OR_INSUFFICIENT", "savedProfile": {"mobility": {"value": ["STROLLER"], "source": "DEFAULT", "strength": "HARD"}}},
+      "notes": "이동제약은 넣지 않는다. 서버가 유모차를 DEFAULT로 적용하고 그 조건으로 검사해야 한다.",
+      "result": null
+    },
+    {
+      "id": "CS-05", "category": "부상", "requirements": ["FR-008", "FR-009", "AI-REQ-05"], "decisions": ["DEC-016"],
+      "profile": {
+        "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+        "timeWindow": {"value": {"startAt": "2026-11-14T14:00:00+09:00", "endAt": "2026-11-14T17:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+        "mobility": {"value": ["INJURY"], "source": "USER", "strength": "HARD"}
+      },
+      "expected": {"outcome": "SUCCESS_OR_INSUFFICIENT", "extraChecks": ["보행 속도 3 km/h로 계산", "계단 회피 대리 판정(wheelchair true) 적용", "부상 규칙 안내 경고"]},
+      "notes": "[가상] 부상. 장소 수를 줄이고 체류를 늘리는 쪽이 우선이다(DEC-016).",
+      "result": null
+    },
+    {
+      "id": "CS-06", "category": "실내", "requirements": ["FR-007", "FR-009", "AI-REQ-05"], "decisions": [],
+      "requiresSupport": ["indoorPreference"],
+      "profile": {
+        "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+        "timeWindow": {"value": {"startAt": "2026-11-16T12:00:00+09:00", "endAt": "2026-11-16T16:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+        "indoorPreference": {"value": "INDOOR", "source": "USER", "strength": "HARD"}
+      },
+      "expected": {"outcome": "SUCCESS_OR_INSUFFICIENT"},
+      "notes": "\"꼭 실내로\"에 해당. 실내 여부가 null인 장소를 실내로 보지 않는다. 스프린트 2에 indoorPreference를 열지 않으면 EXCLUDED.",
+      "result": null
+    },
+    {
+      "id": "CS-07", "category": "제외 카테고리", "requirements": ["FR-007", "FR-009", "AI-REQ-05"], "decisions": ["DEC-013"],
+      "profile": {
+        "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+        "timeWindow": {"value": {"startAt": "2026-11-14T13:00:00+09:00", "endAt": "2026-11-14T18:00:00+09:00"}, "source": "USER", "strength": "HARD"},
+        "excludedCategories": {"value": ["CAFE", "FOOD"], "source": "USER", "strength": "HARD"}
+      },
+      "expected": {"outcome": "SUCCESS_OR_INSUFFICIENT"},
+      "notes": "카페·음식점을 뺀 나머지(전시·관광지·공원·쇼핑)로 구성되는지 본다. 사후면세점은 이미 후보에서 빠져 있다.",
+      "result": null
+    },
+    {
+      "id": "CS-08", "category": "짧은 일정", "requirements": ["FR-009", "AI-REQ-05"], "decisions": [],
+      "profile": {
+        "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+        "timeWindow": {"value": {"startAt": "2026-11-14T15:00:00+09:00", "endAt": "2026-11-14T16:30:00+09:00"}, "source": "USER", "strength": "HARD"}
+      },
+      "expected": {"outcome": "SUCCESS_OR_INSUFFICIENT", "extraChecks": ["SUCCESS면 장소 2곳 이상"]},
+      "notes": "1시간 30분. 최소 2곳 규칙과 체류·이동시간이 맞물리는 경계.",
+      "result": null
+    },
+    {
+      "id": "CS-09", "category": "긴 일정", "requirements": ["FR-009", "AI-REQ-05", "NFR-001"], "decisions": [],
+      "profile": {
+        "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+        "timeWindow": {"value": {"startAt": "2026-11-15T10:00:00+09:00", "endAt": "2026-11-15T19:00:00+09:00"}, "source": "USER", "strength": "HARD"}
+      },
+      "expected": {"outcome": "SUCCESS", "extraChecks": ["장소 6곳 이하", "응답시간 15초 이내"]},
+      "notes": "9시간. 최대 6곳 규칙과 후보가 많을 때의 응답시간을 본다.",
+      "result": null
+    },
+    {
+      "id": "CS-10", "category": "영업 외 시간", "requirements": ["FR-009", "AI-REQ-05"], "decisions": ["DEC-021", "DEC-023"],
+      "profile": {
+        "area": {"value": "HAEUNDAE", "source": "USER", "strength": "HARD"},
+        "timeWindow": {"value": {"startAt": "2026-11-16T06:00:00+09:00", "endAt": "2026-11-16T08:00:00+09:00"}, "source": "USER", "strength": "HARD"}
+      },
+      "expected": {"outcome": "SUCCESS_OR_INSUFFICIENT", "mustNot": ["영업시간 밖 방문", "영업시간 정보 없는 장소를 상시 영업으로 포함"]},
+      "notes": "월요일 이른 아침. 상시 개방 장소(해변·공원)만 가능하다. 후보가 부족하면 INSUFFICIENT_PLACES가 정답이다.",
+      "result": null
+    }
+  ]
+}
