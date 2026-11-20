@@ -1,4 +1,4 @@
-"""무장애 문장 → accessibility 항목 판정과 적재 — FR-008, DEC-026 초안 (제안, 세민 확인 대기).
+"""무장애 문장 → accessibility 항목 판정과 적재 — FR-008, DEC-026 확정 (11/19 PM 확인, #58).
 
     python -m pipelines.accessibility_judge load   [--db data/haeundae_sample.sqlite3]
     python -m pipelines.accessibility_judge report [--db ...] [--out data/processed/accessibility_judgement.json]

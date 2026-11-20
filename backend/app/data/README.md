@@ -54,7 +54,7 @@ cd backend; ../.venv/Scripts/python.exe -c "from app.data import db; from app.da
 
 **(e) 이용조건과 주의**
 - 데이터 이용허락범위: 제한 없음(공공데이터포털 기준, 국문 관광정보·무장애 여행 정보 모두). 출처 표시: 한국관광공사. DB 파일은 용량과 재현성 때문에 git에 커밋하지 않음.
-- 무장애 값은 DEC-026 초안 규칙(#64) 기준이라 11/20 확정 후 바뀔 수 있음. grade는 모두 UNKNOWN.
+- 무장애 값은 DEC-026 확정 규칙(#64 표현 목록, 11/19 PM 확인, #58) 기준. grade는 #58 병합 후 DEC-026 :389 규칙으로 계산 예정, 지금은 UNKNOWN.
 
 ## 반경 검색 (작업 D)
 - `SqlitePlaceRepository(conn)` (`sqlite_repository.py`): `db.connect()`로 연 연결을 받아 읽기만 합니다. 연결은 호출한 쪽이 닫습니다.

@@ -1,4 +1,4 @@
-"""무장애 표현 규칙 판정·적재 — FR-008, DEC-026 초안 (제안, 세민 확인 대기). 장소·문장은 가상."""
+"""무장애 표현 규칙 판정·적재 — FR-008, DEC-026 확정 (11/19 PM 확인, #58). 장소·문장은 가상."""
 import copy
 import json
 import sqlite3
@@ -16,8 +16,8 @@ def values(item):
     return aj.judge(item, RULES)["values"]
 
 
-def test_rules_file_is_marked_as_proposal():
-    assert RULES["status"] == "제안, 세민 확인 대기"
+def test_rules_file_is_marked_as_confirmed():
+    assert RULES["status"] == "확정 (DEC-026, 11/19 PM 확인, #58)"
     assert RULES["grade"] == {"value": "UNKNOWN", "note": "미산정(#58 등급 규칙 정리 전)"}
 
 

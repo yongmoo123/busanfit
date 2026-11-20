@@ -158,7 +158,7 @@ $env:BUSANFIT_DB_PATH = "data/haeundae_sample.sqlite3"     # PowerShell (backend
 
 ## 무장애 원본 수집 (FR-008, 2026-11-19)
 
-`accessibility_collect.py`는 해운대 대상 275곳에 `detailWithTour2`를 한 번씩 호출해 원본을 저장하고, 응답 문장을 **판정 없이** 정리합니다. DB의 `accessibility`(wheelchair·stroller·elevator·accessible_toilet)로 바꾸는 판정은 아래 "무장애 판정과 적재"(DEC-026 초안)를 봅니다.
+`accessibility_collect.py`는 해운대 대상 275곳에 `detailWithTour2`를 한 번씩 호출해 원본을 저장하고, 응답 문장을 **판정 없이** 정리합니다. DB의 `accessibility`(wheelchair·stroller·elevator·accessible_toilet)로 바꾸는 판정은 아래 "무장애 판정과 적재"(DEC-026 확정)를 봅니다.
 
 ```text
 # 처음 5곳만 (contentid 짝 확인)
@@ -219,11 +219,11 @@ $env:BUSANFIT_DB_PATH = "data/haeundae_sample.sqlite3"     # PowerShell (backend
 | 일일 호출 한도 | 상세기능(엔드포인트)별 1000회 (개발계정 기준). 서비스 전체 합산 한도는 확인하지 못함 |
 | 참고 | 장소별 응답 필드 `cpyrhtDivCd`(Swagger 설명 "저작권 유형")가 있음 |
 
-## 무장애 판정과 적재 (FR-008, DEC-026 초안)
+## 무장애 판정과 적재 (FR-008, DEC-026 확정)
 
-> **상태: 제안, 세민 확인 대기.** 표현 목록은 DEC-026 확정 전 초안입니다. 확정되면 `accessibility_rules.json`만 고치고 `load`를 다시 실행합니다.
+> **상태: 확정 (DEC-026, 11/19 PM 확인, #58).** 표현 목록은 PR #64 초안 그대로 확정되었습니다(#58 `DECISIONS.md` "표현 목록 확정 (11/19, PR #64 초안 그대로 PM 확인)"). 목록을 바꿀 때는 `accessibility_rules.json`만 고치고 `load`를 다시 실행합니다.
 >
-> **grade는 #58 정리 전까지 UNKNOWN, 이동제약 판정은 항목값으로만 함(DEC-015).**
+> **grade는 #58 병합 후 DEC-026 :389 규칙으로 계산 예정, 지금은 UNKNOWN.** 이동제약 판정은 항목값으로만 함(DEC-015).
 
 ```text
 # 판정 결과를 data/haeundae_sample.sqlite3의 accessibility에 적재 (멱등)
@@ -243,7 +243,7 @@ $env:BUSANFIT_DB_PATH = "data/haeundae_sample.sqlite3"     # PowerShell (backend
      - **R4-manual** `handicapetc`의 "전동휠체어 … 불가" 조각은 자동 판정하지 않고 원문·장소명을 raw와 보고서에 남김.
   5. TourAPI `wheelchair`·`stroller` 필드(대여 정보)는 판정에 쓰지 않음(원문은 raw에 남김).
   6. 응답이 비었거나 어떤 규칙에도 안 맞으면 **null(정보 없음)**. false로 채우지 않음.
-  7. grade는 계산하지 않음: 모든 행 `UNKNOWN`, raw에 `"grade_note": "미산정(#58 등급 규칙 정리 전)"`.
+  7. grade는 #58 병합 후 DEC-026 :389 규칙으로 계산 예정, 지금은 UNKNOWN: 모든 행 `UNKNOWN`, raw에 `"grade_note": "미산정(#58 등급 규칙 정리 전)"`.
   8. **장소별 예외 `overrides`**: 규칙 파일에 장소·항목·값·근거 원문(`evidence`)을 적음. 근거 원문이 해당 필드에 그대로 있을 때만 적용하고, 없으면 적용하지 않고 보고서 `override_missing`에 남김. 적용 내역은 raw `overrides`에 기록.
      - 해운대 블루라인파크(2672393): wheelchair=false. 근거 `handicapetc` "* 전동휠체어 탑승 불가* 수동휠체어는 도움을 받아 휠체어를 접어서 탑승가능". stroller·accessible_toilet은 자동 판정 그대로.
 - `load`
