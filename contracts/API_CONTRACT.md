@@ -226,3 +226,5 @@ GET /api/places/{placeId}를 기존 PlaceResponse(place/sources/warnings/request
 ## FR-018 제안 검증 상태 (2026-11-17, 이슈 #27)
 
 동행 카테고리 가중치와 실내 선호 합산은 미승인 제안 설정으로 별도 가상 앱에서만 검증했다. 일반 코스 생성은 기존 점수 함수를 유지하며 외부 JSON·capabilities·API 동작에 가중치를 활성화하지 않았다. 하드 동행은 기존 미지원 처리이고 동행 점수가 하드 제약을 완화하지 않는다. 분위기·야경·가성비·인원 적합성 추론은 하지 않으며 PM 확인과 별도 활성화 변경 전에는 일반 경로에 주입하지 않는다.
+
+2026-11-20 연결 준비: 별도 준비 함수에서 DEC-029 APPROVED/true scorer와 #65 검색기·외부 COMP-06을 조합한다. 검색/검증 반경은 같은 값을 전달하며, 기존 외부 API JSON·revision·일반 capabilities는 바꾸지 않는다. 평가용 TestClient 앱만 기존 지원 필드를 사용한다. 일반 활성화·실제 DB 인수·#70 활성화는 수행하지 않는다. [실행기와 선행 입력](../evaluation/courses/DATABASE_RUN.md).
