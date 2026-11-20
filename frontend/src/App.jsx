@@ -533,6 +533,7 @@ function App() {
     }
 
     const requestedRevision = savedProfile.profileRevision
+    const isInjuryCourse = savedProfile.profile?.mobility?.value?.includes('INJURY') ?? false
     const controller = new AbortController()
     courseRequestRef.current = controller
     setIsCreatingCourse(true)
@@ -560,6 +561,7 @@ function App() {
             : '저장한 조건으로 코스를 만들었어요.',
           courseResponse: response,
           requestedRevision,
+          isInjuryCourse,
           isMock: isDemo,
         },
       ])
@@ -600,6 +602,7 @@ function App() {
         role: 'assistant',
         content: '가상 코스 결과를 확인해 보세요.',
         showCoursePlaceholder: true,
+        isInjuryCourse: (messages.findLast((item) => item.profile)?.profile ?? session?.profile)?.mobility?.value?.includes('INJURY') ?? false,
         isMock: true,
       },
     ])
@@ -744,6 +747,7 @@ function App() {
                       {(message.showCoursePlaceholder || message.courseResponse) && (
                         <CourseTimeline
                           courseResponse={message.courseResponse}
+                          isInjury={message.isInjuryCourse ?? false}
                           isMock={message.isMock}
                           onEditSuggestion={message.courseResponse
                             ? (suggestion) => openEditor(message.id, suggestion.field)

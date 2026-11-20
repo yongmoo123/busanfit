@@ -57,7 +57,7 @@ function ServerPlaceDetail({ item, isMock }) {
 }
 
 export default function CourseTimeline({
-  courseResponse, isMock = !courseResponse, onEditSuggestion, suggestionsDisabled = false,
+  courseResponse, isMock = !courseResponse, onEditSuggestion, suggestionsDisabled = false, isInjury = false,
 }) {
   const [selectedItemId, setSelectedItemId] = useState(null)
   const detailId = useId()
@@ -73,6 +73,11 @@ export default function CourseTimeline({
     return (
       <section className="condition-card" aria-label="후보 부족 안내">
         <h3>방문할 장소가 부족해요</h3>
+        {isInjury && (
+          <p className="chat-warning">
+            이동이 힘들면 택시·대중교통 이용을 추천해요. 이 코스의 이동시간은 도보 기준이에요.
+          </p>
+        )}
         {isMock && <p>가상 응답</p>}
         {warnings.map((warning) => (
           <p key={warning.code}>{warning.message}</p>
@@ -90,6 +95,11 @@ export default function CourseTimeline({
   return (
     <section className="condition-card" aria-label={title}>
       <h3>{title}</h3>
+      {isInjury && (
+        <p className="chat-warning">
+          이동이 힘들면 택시·대중교통 이용을 추천해요. 이 코스의 이동시간은 도보 기준이에요.
+        </p>
+      )}
 
       <ol>
         {course.items.map((item) => {
