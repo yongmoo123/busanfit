@@ -1,0 +1,18 @@
+{
+  "runAt": "2026-11-18T23:22:04.095090+09:00",
+  "model": "gemini-3.5-flash-lite",
+  "syntheticOnly": true,
+  "attempts": 2,
+  "failure": null,
+  "realModelResponseValidated": true,
+  "fallbackUsed": false,
+  "elapsedMs": 19625,
+  "checks": {
+    "area": true,
+    "transport": true,
+    "timeWindow": true,
+    "companions": true
+  },
+  "basisRevision": "4c536f12d4367fe669625d09be9cddbbca0ed721",
+  "workingTreeModified": true
+}

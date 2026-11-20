@@ -1,7 +1,7 @@
 {
   "version": "draft-2026-11-17",
-  "status": "PROPOSAL",
-  "pmApproved": false,
+  "status": "APPROVED",
+  "pmApproved": true,
   "indoorPreferenceWeight": 2,
   "companionCategoryWeight": 1,
   "categoryWeights": {
