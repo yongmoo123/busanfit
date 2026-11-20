@@ -1,4 +1,4 @@
-"""Pure draft scores, settings validation and ordinary-path isolation."""
+"""DEC-029 scores, approval metadata validation and ordinary-path isolation."""
 from copy import deepcopy
 from dataclasses import FrozenInstanceError, replace
 import json
@@ -25,7 +25,7 @@ def profile(kind=None, *, count=3, infant=False, strength='SOFT'):
 @pytest.mark.parametrize('kind,category,expected', [('COUPLE', 'CAFE', 3), ('FAMILY', 'EXHIBITION', 3),
     ('FAMILY', 'ATTRACTION', 3), ('FAMILY', 'PARK', 3), ('FRIENDS', 'ATTRACTION', 3),
     ('FRIENDS', 'PARK', 2), ('SOLO', 'CAFE', 0), ('OTHER', 'EXHIBITION', 0), (None, 'CAFE', 0)])
-def test_explicit_draft_table_scores(kind, category, expected):
+def test_explicit_approved_table_scores(kind, category, expected):
     assert ProposalCompanionScorer(load_companion_proposal())(synthetic_place('x', category=category), profile(kind)) == expected
 
 
@@ -81,16 +81,53 @@ def test_incomplete_or_unknown_mapping_is_not_silently_filled(mutation):
     with pytest.raises(ValueError): CompanionProposal('test', 2, 1, values)
 
 
-@pytest.mark.parametrize('mutation', ['approved', 'status', 'missing-key', 'extra-key'])
-def test_loader_rejects_approval_relabeling_and_invalid_shape(tmp_path, mutation):
+def test_default_settings_record_dec029_approval():
     data = json.loads(PROPOSAL_PATH.read_text(encoding='utf-8'))
-    if mutation == 'approved': data['pmApproved'] = True
-    if mutation == 'status': data['status'] = 'APPROVED'
+    assert data['version'] == 'draft-2026-11-17'
+    assert data['status'] == 'APPROVED'
+    assert data['pmApproved'] is True
+    assert load_companion_proposal().version == data['version']
+
+
+@pytest.mark.parametrize('status,approved', [('PROPOSAL', False), ('APPROVED', True)])
+def test_loader_accepts_consistent_draft_and_approved_settings(tmp_path, status, approved):
+    data = json.loads(PROPOSAL_PATH.read_text(encoding='utf-8'))
+    data.update(status=status, pmApproved=approved)
+    path = tmp_path / 'weights.json'
+    path.write_text(json.dumps(data), encoding='utf-8')
+    scorer = ProposalCompanionScorer(load_companion_proposal(path))
+    assert scorer(synthetic_place('x', category='CAFE'), profile('COUPLE')) == 3
+
+
+@pytest.mark.parametrize('status,approved', [
+    ('PROPOSAL', True), ('APPROVED', False), ('UNKNOWN', True),
+    ('PROPOSAL', 0), ('APPROVED', 1), ('APPROVED', 'true'),
+    ('PROPOSAL', None), ('APPROVED', None),
+])
+def test_loader_rejects_inconsistent_or_nonboolean_approval(tmp_path, status, approved):
+    data = json.loads(PROPOSAL_PATH.read_text(encoding='utf-8'))
+    data.update(status=status, pmApproved=approved)
+    path = tmp_path / 'weights.json'
+    path.write_text(json.dumps(data), encoding='utf-8')
+    with pytest.raises(ValueError, match='approval metadata'):
+        load_companion_proposal(path)
+
+
+@pytest.mark.parametrize('mutation', ['missing-key', 'extra-key'])
+def test_loader_rejects_invalid_shape(tmp_path, mutation):
+    data = json.loads(PROPOSAL_PATH.read_text(encoding='utf-8'))
     if mutation == 'missing-key': del data['categoryWeights']
     if mutation == 'extra-key': data['activate'] = True
     path = tmp_path / 'proposal.json'
     path.write_text(json.dumps(data), encoding='utf-8')
     with pytest.raises(ValueError): load_companion_proposal(path)
+
+
+def test_unset_companion_is_neutral_even_when_indoor_preference_scores():
+    value = profile()
+    value.indoorPreference.value, value.indoorPreference.source = 'INDOOR', 'USER'
+    parts = ProposalCompanionScorer(load_companion_proposal()).breakdown(synthetic_place('x'), value)
+    assert (parts.indoor, parts.companion_category, parts.total) == (2, 0, 2)
 
 
 @pytest.mark.parametrize('text', ['{"version":"a","version":"b"}', '{"version":NaN}', '[]', 'null'])

@@ -1,9 +1,11 @@
 """Validated AI extraction followed by deterministic, conservative fallback."""
 from datetime import timedelta, timezone
 from dataclasses import dataclass, field
-from typing import Literal, Protocol
+from typing import Generic, Literal, Protocol, TypeVar
 from pydantic import Field, StrictBool, StrictInt, model_validator
-from app.api.profile_models import Profile, ProfileField
+from app.api.profile_models import (
+    Area, Budget, Category, Condition, Profile, ProfileField, TimeWindow,
+)
 from app.api.session_models import ContractModel
 
 
@@ -40,8 +42,25 @@ class Hints(ContractModel):
     hasChild: StrictBool | None = None
 
 
+T = TypeVar('T')
+
+
+class HardExtractionCondition(Condition[T], Generic[T]):
+    # These fields are HARD even when null/UNSET. Encode the existing rule in
+    # the provider schema instead of relying only on a post-response validator.
+    strength: Literal['HARD']
+
+
+class ExtractionProfile(Profile):
+    area: HardExtractionCondition[Area]
+    timeWindow: HardExtractionCondition[TimeWindow]
+    mobility: HardExtractionCondition[list[Literal['WHEELCHAIR', 'STROLLER', 'INJURY']]]
+    budget: HardExtractionCondition[Budget]
+    excludedCategories: HardExtractionCondition[list[Category]]
+
+
 class ExtractionOutput(ContractModel):
-    profile: Profile
+    profile: ExtractionProfile
     unconfirmedFields: list[ProfileField] = Field(default_factory=list)
     companionHints: Hints = Field(default_factory=Hints)
 
