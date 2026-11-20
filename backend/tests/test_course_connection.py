@@ -148,9 +148,14 @@ def test_no_fake_or_implicit_travel_factory():
         with pytest.raises(ValueError): runner.load_travel_provider(value)
 
 
-def test_missing_pr65_is_an_explicit_dependency_error(stored):
-    if importlib.util.find_spec('app.retrieval.retriever') is not None:
-        pytest.skip('dependency is present in this combined validation tree')
+def test_missing_pr65_is_an_explicit_dependency_error(stored, monkeypatch):
+    import builtins
+    original = builtins.__import__
+    def without_retriever(name, *args, **kwargs):
+        if name == 'app.retrieval.retriever':
+            raise ModuleNotFoundError('synthetic missing dependency', name=name)
+        return original(name, *args, **kwargs)
+    monkeypatch.setattr(builtins, '__import__', without_retriever)
     with pytest.raises(CourseConnectionError, match='PR #65'):
         prepare_course_connection(stored[0], travel_provider=FakeTravel())
 
@@ -168,14 +173,16 @@ def test_cli_refuses_real_mode_without_comp06_and_writes_no_success_report(tmp_p
 
 
 def test_preparation_keeps_ordinary_app_closed(stored):
-    with TestClient(create_app()) as client:
+    app = create_app()
+    with TestClient(app) as client:
         caps = client.post('/api/sessions', json={}).json()['capabilities']
         assert caps['supportedAreas'] == [] and not caps['supportsUnknownAccessibilityInclusion']
+        assert app.state.course_service is None
 
 
 @pytest.mark.parametrize('radius', [1500, 2000])
 def test_actual_pr65_retrieval_and_shared_radius_with_fixture_db(stored, radius):
-    settings_module = pytest.importorskip('app.retrieval.settings', reason='PR #65 not yet in develop')
+    from app.retrieval import settings as settings_module
     settings = settings_module.RetrievalSettings({'HAEUNDAE': runner.EVALUATION_CENTER}, radius)
     connection = prepare_course_connection(stored[0], travel_provider=FakeTravel(), retrieval_settings=settings)
     assert connection.settings.radius_meters == radius
@@ -192,7 +199,7 @@ def test_actual_pr65_retrieval_and_shared_radius_with_fixture_db(stored, radius)
 
 @pytest.mark.parametrize('radius,expected', [(1500, 'INSUFFICIENT_PLACES'), (2000, 'SUCCESS')])
 def test_search_and_validator_agree_for_fixture_places_between_1500_and_2000_m(stored, radius, expected):
-    settings_module = pytest.importorskip('app.retrieval.settings', reason='PR #65 not yet in develop')
+    from app.retrieval import settings as settings_module
     with connect(stored[0]) as conn:
         conn.execute('UPDATE places SET latitude = 35.175, longitude = 129.16')
     conn.close()
@@ -232,3 +239,18 @@ def test_official_evaluation_accepts_and_records_approved_scope(stored, tmp_path
     report = runner.evaluate_database(fixture_connection(stored), dataset(tmp_path), synthetic=True)
     assert report['automatedChecksPassed'] and report['radiusMeters'] == 1500
     assert report['evaluationCenter'] == {'latitude': 35.159084, 'longitude': 129.160279}
+
+
+def test_merged_pr65_default_settings_and_four_mode_http_flow(stored, tmp_path, monkeypatch):
+    from app.retrieval.retriever import PlaceRetriever
+    monkeypatch.delenv('BUSANFIT_WALK_RADIUS_M', raising=False)
+    connection = prepare_course_connection(stored[0], travel_provider=FakeTravel())
+    assert isinstance(connection.service.retriever, PlaceRetriever)
+    assert len(connection.retrieval_settings.excluded_place_ids) == 112
+    assert connection.retrieval_settings.radius_m == connection.settings.radius_meters == 1500
+    assert connection.retrieval_settings.area_centers['HAEUNDAE'] == runner.EVALUATION_CENTER
+    report = runner.evaluate_database(connection, dataset(tmp_path), synthetic=True)
+    assert report['automatedChecksPassed'] and report['executedScenarios'] == 4
+    assert report['excludedScenarios'] == 1
+    assert report['hardViolations'] == report['missingPlaceIds'] == 0
+    assert report['syntheticOnly'] and not report['realDataVerified'] and not report['realTravelVerified']

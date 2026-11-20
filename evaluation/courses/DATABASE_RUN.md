@@ -4,7 +4,7 @@
 
 ## 선행 입력
 
-- PR #65의 `app.retrieval`과 `config/retrieval.json`·사후면세점 제외 파일. 이 브랜치에서 #65를 복제하거나 병합하지 않는다. 없으면 연결 준비가 명확히 실패한다.
+- PR #65의 `app.retrieval`과 `config/retrieval.json`·사후면세점 제외 파일은 최신 develop `aa1c715` 반영으로 이 브랜치에 포함됐다. 검색기를 별도 복제하거나 임시 경로로 주입하지 않는다. 검색기 의존성 누락 오류는 import 장애 주입으로 계속 검사한다.
 - PR #53의 `evaluation/courses/cases.json`(CS-01~10). 이 브랜치에서 평가셋의 기대 결과를 바꾸거나 복제하지 않는다. `--cases`로 별도 파일 경로도 지정할 수 있다. 초안의 방문 날짜를 실행일로 자동 변경하지 않는다.
 - 공유 DB 파일 및 SHA-256. 빈 DB를 자동 생성하지 않는다. 연결은 읽기 전용이고 조회마다 별도 연결을 열어 worker thread 간 연결을 공유하지 않는다.
 - 찬용 담당 COMP-06: `TravelTimeProvider.estimate(origin, destination, *, injury)`가 `TravelEstimate(minutes)` 또는 계산 불가 시 None을 반환한다. 오류는 예외로 전달한다. 계산식·일반/부상 속도·반올림·보정은 찬용과 합의할 후속이다. 이번 변경은 계산기를 구현하지 않으며 FakeTravel로 자동 대체하지 않는다.
@@ -49,7 +49,7 @@ $env:BUSANFIT_DB_PATH = '<공유 DB 절대 경로>'
 
 ## 남은 작업
 
-- #65·#53 통합 및 찬용 계산기 구현/계약 확인.
+- #65 검색기는 develop 반영 완료. #53 평가셋 통합 및 찬용 계산기 구현/계약 확인은 후속이다.
 - 공유 DB 수령·SHA 확인 후 CS-01~10 실제 실행.
 - 실제 데이터·이동시간·성능·PC/모바일 검증과 활성화 승인. 이번 작업에서 활성화·병합하지 않는다.
 
@@ -68,3 +68,12 @@ $env:BUSANFIT_DB_PATH = '<공유 DB 절대 경로>'
 - 약 1668m 장소·2000m 연결 설정이 공식 평가에서 오통과했던 원래 음성 대조를 다시 실행해, 이제 1500m 불일치로 거절됨을 확인했다.
 - 승인된 중심·1500m에서 #53 원본 CS-01~10 가상 실행은 **9개 자동 검사 통과·실내 미지원 1개 제외**를 유지했다. 실제 데이터 인수가 아니며 입력 result는 변경하지 않았다.
 - 계약·참고 문서 동기화·diff 검사 PASS. DB·계산기 대기, 일반 비활성·미병합 상태는 유지한다.
+
+### 최신 develop 반영 및 #65 연결 확인 (2026-11-20)
+
+- 사용자 요청으로 develop `aa1c715`를 #72 작업 브랜치에 충돌 없이 반영했다. 이는 #72 PR을 develop에 병합하거나 일반 서비스를 활성화하는 작업이 아니다.
+- 이 브랜치의 실제 PlaceRetriever·기본 retrieval.json·사후면세점 제외 ID 112개·ConnectionPerCallRepository를 사용하고, SQLite 행과 이동시간만 명시적 가상 fixture/FakeTravel로 검증했다. 이전 임시 조합 폴더를 사용하지 않았다.
+- `pytest -q -rs backend/tests/test_course_connection.py backend/tests/test_place_retriever.py backend/tests/test_place_retriever_haeundae.py`: **94 passed, 4 skipped, 1 warning**. 실제 해운대 DB가 없어 해당 4개만 skip했다. 실제 #65 연결 검사는 skip 없이 실행했고, 누락 의존성 오류 검사도 장애 주입으로 실행했다.
+- 전체 pytest: **1315 passed, 4 skipped, 1 warning**. 계약 6 operations·31 schemas·20 examples·15 정책 사례, 참고 문서 JSON 동기화·diff 검사 PASS.
+- #53 `5a579ea`의 외부 원본 CS-01~10을 읽어 현재 브랜치의 기본 검색 설정과 가상 SQLite/FakeTravel로 실행: **9개 자동 검사 통과·실내 미지원 1개 EXCLUDED**, 하드 위반·미존재 장소 0건(가상). 사례 파일을 복제하거나 결과 null을 바꾸지 않았다.
+- 실제 공유 DB·찬용 COMP-06·PC/모바일·응답시간 인수는 미완료다. 일반 create_app은 CourseService 미연결·지원 비활성을 유지하는 검사도 통과했다. 실제 키·모델 API·유료 전환·배포·PR 병합은 수행하지 않았다.

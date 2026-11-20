@@ -198,7 +198,10 @@ function saveError(error) {
   }
 }
 
-export default function ProfileEditor({ initialProfile, isMock, canSave, sessionError, capabilities, onSave, onRestart, onClose }) {
+export default function ProfileEditor({
+  initialProfile, isMock, canSave, sessionError, capabilities, onSave, onRestart, onClose,
+  focusField, regenerateOnSave = false,
+}) {
   const titleId = useId()
   const [profile, setProfile] = useState(() => structuredClone(initialProfile))
   const [tags, setTags] = useState(() => initialProfile.preferenceTags.value?.join(', ') ?? '')
@@ -208,6 +211,14 @@ export default function ProfileEditor({ initialProfile, isMock, canSave, session
   const savingRef = useRef(false)
   const areaInputRef = useRef(null)
   const formRef = useRef(null)
+
+  useEffect(() => {
+    if (!focusField) return
+    const group = [...(formRef.current?.querySelectorAll('[data-profile-field]') ?? [])]
+      .find((element) => element.dataset.profileField === focusField)
+    group?.scrollIntoView({ block: 'center' })
+    group?.querySelector('select, input, button')?.focus({ preventScroll: true })
+  }, [focusField])
 
   useEffect(() => {
     const first = feedback?.details?.[0]?.field?.split('.')[0]
@@ -307,7 +318,13 @@ export default function ProfileEditor({ initialProfile, isMock, canSave, session
       setProfile(result.profile)
       setTags(result.profile.preferenceTags.value?.join(', ') ?? '')
       setDirty(false)
-      setFeedback({ message: isMock ? '가상 응답 · 여행 조건을 저장했어요.' : '여행 조건을 저장했어요.', result })
+      setFeedback({
+        message: isMock ? '가상 응답 · 여행 조건을 저장했어요.'
+          : regenerateOnSave && result.status === 'READY'
+            ? '여행 조건을 저장했어요. 코스가 생성되지 않았다면 저장한 조건으로 다시 만들어 주세요.'
+            : '여행 조건을 저장했어요.',
+        result,
+      })
     } catch (error) {
       setFeedback({ ...saveError(error), error: true })
     } finally {
@@ -427,7 +444,10 @@ export default function ProfileEditor({ initialProfile, isMock, canSave, session
           )}
           {!feedback?.restart && (!feedback?.result || dirty) && (
             <button className="primary-button" type="submit" disabled={!canSave || !dirty || isSaving}>
-              {isSaving ? '저장 중…' : isMock ? '가상으로 저장' : '조건 저장 (실제 API)'}
+              {isSaving
+                ? regenerateOnSave ? '저장 후 코스 만드는 중…' : '저장 중…'
+                : regenerateOnSave ? '저장하고 코스 다시 만들기'
+                  : isMock ? '가상으로 저장' : '조건 저장 (실제 API)'}
             </button>
           )}
           <button type="button" className="profile-secondary" onClick={onClose} disabled={isSaving}>닫기</button>

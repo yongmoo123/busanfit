@@ -1,0 +1,105 @@
+.unknown-preview {
+  box-sizing: border-box;
+  width: min(100%, 720px);
+  height: 100dvh;
+  margin-inline: auto;
+  padding: 24px 16px;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  color: #233e38;
+  font-family: inherit;
+}
+
+.unknown-preview h1 {
+  font-size: 1.4rem;
+}
+.unknown-preview h2 {
+  font-size: 1.1rem;
+}
+.unknown-preview p {
+  line-height: 1.65;
+}
+.unknown-scenario {
+  display: grid;
+  gap: 8px;
+}
+.unknown-scenario select {
+  width: 100%;
+  min-width: 0;
+  padding: 10px;
+  font: inherit;
+}
+
+.unknown-preview-card {
+  margin-block: 20px;
+  padding: 20px;
+  border: 1px solid #d5dfdb;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.unknown-preview-places {
+  padding-left: 20px;
+}
+.unknown-preview-places li {
+  margin-block: 16px;
+}
+.unknown-place-warning {
+  color: #674500;
+  background: #fff2cc;
+  padding: 12px;
+  border-radius: 8px;
+}
+.unknown-confirmation {
+  box-sizing: border-box;
+  width: min(480px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  border: 1px solid #a1b8af;
+  border-radius: 16px;
+  padding: 24px;
+  color: #233e38;
+}
+.unknown-confirmation::backdrop {
+  background: rgb(0 0 0 / 40%);
+}
+.unknown-confirmation p {
+  line-height: 1.65;
+}
+.unknown-acknowledgement {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.6;
+}
+.unknown-acknowledgement input {
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+.unknown-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+.unknown-actions button, .unknown-reset {
+  padding: 10px 14px;
+  border: 1px solid #548376;
+  border-radius: 10px;
+  background: #edf5f1;
+  color: #214f44;
+  font: inherit;
+  cursor: pointer;
+}
+.unknown-actions button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.unknown-preview :focus-visible, .unknown-confirmation :focus-visible {
+  outline: 3px solid #245f53;
+  outline-offset: 3px;
+}
+
+.unknown-preview-places .unknown-place-warning {
+  margin-inline-start: -20px;
+}

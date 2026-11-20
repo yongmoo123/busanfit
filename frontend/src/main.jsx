@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import UnknownSuggestionsPreview from './UnknownSuggestionsPreview.jsx'
 import PlaceDetail from './PlaceDetail.jsx'
 import PlaceDetailApiPreview from './PlaceDetailApiPreview.jsx'
 import placeDetailMock from './mocks/05-place.response.json'
@@ -17,7 +18,9 @@ const qa = import.meta.env.DEV
 
 let page = <App />
 
-if (qa === 'place-detail-api') {
+if (qa === 'unknown-suggestions') {
+  page = <UnknownSuggestionsPreview />
+} else if (qa === 'place-detail-api') {
   page = <PlaceDetailApiPreview />
 } else if (qa === 'place-detail') {
   page = (
