@@ -32,7 +32,8 @@ class OpenHoursRecord:
     ``None``. ``text`` present but ``parsed`` ``None`` means "known to the user, unverified for
     HARD checks".
 
-    Shape of ``parsed`` — 이찬용 제안(임시), 김영무 확인 대기 (PR #15 review, issue #7 가정 6)::
+    Shape of ``parsed`` — agreed by 이찬용·김영무 (PR #15, ``07ad02c``; issue #7 가정 6). The
+    agreement covers this structure only, not parsing accuracy, holidays or actual opening::
 
         {"mon": [{"open": "09:00", "close": "18:00"}], "tue": [], ...}
 
@@ -53,11 +54,11 @@ class OpenHoursRecord:
 
 
 def validate_open_hours(parsed: object) -> None:
-    """Raise ``ValueError`` if ``parsed`` does not follow the proposed shape above.
+    """Raise ``ValueError`` if ``parsed`` does not follow the agreed shape above.
 
     Checks only: day keys, ``"HH:mm"`` format (00:00–23:59, and ``"24:00"`` for ``close`` only),
     ``open != close``, and that the object is not empty (all-unknown must be ``None``).
-    No overlap check and no "open at time t" logic (not agreed yet).
+    No overlap check and no "open at time t" logic (course engine's responsibility, PR #15).
     """
     if not isinstance(parsed, Mapping):
         raise ValueError("open_hours must be an object keyed by weekday")

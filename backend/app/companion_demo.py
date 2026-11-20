@@ -27,7 +27,7 @@ def create_demo(*, proposal=False):
         extractor=AIConditionExtractor(AIService(UnconfiguredProvider()), ChatRuleParser()),
         explanation_generator=ExplanationGenerator(AIService(SyntheticExplanationProvider()), repo),
         profile_support=ProfileSupport(True, frozenset(INITIAL_FIELDS), True))
-    app.title = 'BusanFit — 가상 동행 가중치 ' + ('미승인 제안 검증 전용' if proposal else '기존 점수 기준선')
+    app.title = 'BusanFit — 가상 동행 가중치 ' + ('DEC-029 승인 표 검증 전용' if proposal else '기존 점수 기준선')
     return app
 
 

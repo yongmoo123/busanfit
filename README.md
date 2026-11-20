@@ -41,7 +41,7 @@ deployment/           공동 — 원본 배포 초안의 구현 예정 위치
 각 영역 README는 구현 책임과 다음 작업을 설명합니다. 영역별 서버를 따로 띄우지 않고 하나의 FastAPI 앱 안에서 통합합니다.
 
 원본 DOCX 대조 결과는 [원본 검토](docs/ORIGINAL_REVIEW.md), 12개 컴포넌트의 위치는 [컴포넌트 연결표](docs/COMPONENT_MAP.md), 전체 요구사항은 [요구사항 등록부](docs/REQUIREMENTS.md)에 있습니다.
-기준 설계는 React SPA·FastAPI·PostgreSQL+PostGIS입니다(SRS 2.3, SDD 2장). 계획서의 Next.js·SQLite는 대안으로 구분합니다.
+기준 설계는 React SPA·FastAPI·SQLite입니다(SDD 2장, DB는 DEC-005로 PostgreSQL+PostGIS에서 변경). 계획서의 Next.js는 대안으로 구분합니다.
 
 ## 시작하기
 
