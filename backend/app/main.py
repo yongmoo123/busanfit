@@ -1,6 +1,6 @@
 """Single-worker API with ephemeral sessions."""
 import asyncio
-from contextlib import asynccontextmanager, suppress
+from contextlib import AsyncExitStack, asynccontextmanager, suppress
 from fastapi import FastAPI
 
 from app.api.errors import install_error_handlers
@@ -13,6 +13,7 @@ from app.application.extraction import build_extractor
 from app.api.chat import router as chat_router
 from app.api.courses import router as course_router
 from app.api.places import router as place_router
+from app.ai.service import AIService
 
 
 def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1, extractor=None,
@@ -27,14 +28,19 @@ def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1
             while True:
                 await asyncio.sleep(cleanup_interval)
                 sessions.purge_expired()
-        task = asyncio.create_task(cleanup())
-        try:
-            yield
-        finally:
-            task.cancel()
-            with suppress(asyncio.CancelledError):
-                await task
-            sessions.clear()
+        async with AsyncExitStack() as resources:
+            for component in (condition_extractor, explanation_generator):
+                ai = getattr(component, 'ai', None)
+                if isinstance(ai, AIService):
+                    await resources.enter_async_context(ai.session())
+            task = asyncio.create_task(cleanup())
+            try:
+                yield
+            finally:
+                task.cancel()
+                with suppress(asyncio.CancelledError):
+                    await task
+                sessions.clear()
 
     app = FastAPI(
         title="BusanFit — 세션·조건 API",
