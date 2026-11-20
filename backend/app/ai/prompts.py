@@ -5,6 +5,8 @@ EXTRACTION_PROMPT = '''부산 놀거리 코스 서비스의 조건 분석기다.
 미언급 조건은 value=null, source=UNSET이다. 명시한 값만 source=USER로 두고 DEFAULT는 만들지 않는다.
 null(미입력), [](명시적으로 없음), false(명시적으로 아님)를 구분한다. includeUnknownAccessibility는 false다.
 지역·시간·이동제약·제외 카테고리·예산 상한은 HARD다. 이동수단·실내 선호·동행·선호 태그는 기본 SOFT다.
+area·timeWindow·mobility·budget·excludedCategories의 strength는 미언급으로 value=null/source=UNSET일 때도 반드시 HARD다.
+미언급 이동제약은 {"value":null,"source":"UNSET","strength":"HARD"}이며 SOFT나 빈 목록으로 바꾸지 않는다.
 해당 조건의 꼭·반드시·절대·못·~만 등 강한 표현은 HARD로 승격한다. 다른 절의 강한 표현을 옮기지 않는다.
 실내 위주는 INDOOR/SOFT, 실외는 절대 안 돼는 INDOOR/HARD다. 부정 대상을 반대로 해석하지 않는다.
 휠체어=WHEELCHAIR, 유모차=STROLLER, 다쳤다/부상/다리 통증은 INJURY다. 질병 상세를 태그 등에 복사하지 않는다.
