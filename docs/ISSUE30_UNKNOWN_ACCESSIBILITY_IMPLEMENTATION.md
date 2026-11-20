@@ -14,7 +14,7 @@
 
 ## 일반 서비스는 아직 비활성
 
-일반 create_app()은 `supportsUnknownAccessibilityInclusion=false`이며 PUT true를 422로 거절한다. ProfileSupport에 `unknown_accessibility_verified=False`를 추가했다. 검증용 root에서 검색 연결·mobility 검증·해당 검증 증거를 모두 명시해야 지원을 켤 수 있다. 기본값·환경변수로 자동 켜지지 않는다. 실제 DB·화면·최종 정책 합의 전에는 일반 root에서 설정하지 않는다.
+일반 create_app()은 `supportsUnknownAccessibilityInclusion=false`이며 PUT true를 422로 거절한다. ProfileSupport에 `unknown_accessibility_verified=False`를 추가했다. 검증용 root에서 검색 연결·mobility 검증·해당 검증 증거를 모두 명시해야 지원을 켤 수 있다. 기본값·환경변수로 자동 켜지지 않는다. 실제 DB·화면 통합 검증 전에는 일반 root에서 설정하지 않는다.
 
 이 구현은 단순히 capabilities 값만 true로 만드는 작업이 아니다. 검색기 포트 생산자·서버·독립 Validator·표시·동의 흐름까지 통합 검증해야 일반 활성화할 수 있다. 프론트 #68은 기존 EDIT_PROFILE 전용이며 별도 분기와 CONDITIONAL 표시가 필요하다.
 
@@ -35,15 +35,19 @@ unknown_accessibility_candidates: tuple[PlaceCandidate, ...] = ()
 - 기존 ordinary 후보가 우선이며 후보 풀을 확장해도 코스가 반드시 늘어난다고 보장하지 않는다. 과다 후보에는 CANDIDATE_LIMIT 안내.
 - 실제 검색기에서 이 새 필드를 채우는 연결과 실제 DB 검증은 아직 남아 있다. 지금은 가상 포트로 서버 동작을 검증한다.
 
-## 진호와 추가 합의할 것 — 이번에 확정하지 않음
+## 프론트 리뷰·PM 확인 반영 (2026-11-20)
 
-| 항목 | 현재 보존한 동작 | 카톡에서 제안한 변경 |
-|---|---|---|
-| 후보 부족 화면 | INSUFFICIENT_PLACES는 suggestions=[] | 포함 칩 1개 표시 |
-| 칩 3개 배분 | 기존 기본값 칩 유지, 빈 슬롯에만 새 칩 추가 | 기본값 최대 2개 + 포함 칩 1개 예약 |
-| 이동제약 변경 후 동의 | 기존 boolean 저장 규칙 유지, 자동 초기화 없음 | 변경 시 flag=false 및 재동의 |
+진호의 PR #70 리뷰와 사용자가 전달한 PM 확인에 따라 다음 세 정책을 계약·서버·테스트에 반영했다. DECISIONS.md는 변경하지 않았다.
 
-일반 활성화 전에 합의 결과를 계약·서버·UI·테스트에 반영해야 한다. 이 구현의 테스트는 미합의 정책을 채택하는 대신 기존 동작 보존을 확인한다. 이동제약 자동 초기화를 아직 하지 않는다는 사실을 일반 서비스 배포 허가로 해석하지 않는다. 지원 서버는 합의·통합 검증 전 가상 테스트용이다.
+| 항목 | 확인된 동작 |
+|---|---|
+| 후보 부족 화면 | 포함 가능한 미확인 접근성 후보가 있으면 INSUFFICIENT_PLACES에서도 포함 칩 1개 반환. 기본값 칩은 반환하지 않음 |
+| 칩 3개 배분 | 포함 칩이 있으면 기존 순서의 기본값 최대 2개 + 포함 칩 1개. 포함 칩이 없으면 성공 응답의 기존 기본값 최대 3개 유지 |
+| 이동제약 변경 후 동의 | 카드·채팅·영유아 유모차 기본값 추가/제거 정규화 후 실제 값 변경 시 false 초기화·재동의. 같은 요청의 true보다 초기화 우선 |
+
+이동제약은 순서 없는 값 집합으로 비교하되 null(미입력)과 [](명시적 없음)은 구분한다. 순서나 source만 바뀌면 동의를 초기화하지 않는다. 초기화 후 반환된 최종 프로필·revision으로 별도 전체 PUT에서 재동의한다. 저장 전 확인 화면 취소는 요청하지 않는다. PUT 성공 후 POST 실패는 저장된 동의·revision을 유지하며 POST만 재시도하고, 화면 닫기를 동의 철회로 표시하지 않는다. 저장된 동의 철회는 false 전체 PUT 성공으로 처리한다.
+
+일반 서비스는 계속 비활성이며 실제 검색·UI 통합 검증 전 활성화하지 않는다. 프론트 경고는 UNKNOWN_ACCESSIBILITY_INCLUDED.placeIds를 타임라인 place.id에 연결한다. 별도 정책을 추가하거나 자연어 수정 기능 #32 전체를 구현한 것은 아니며, 기존 조건 채팅 경로에도 동일한 초기화 규칙을 적용한다.
 
 날씨(#31③)·고정 일정·자연어 수정은 이번 범위에 없다. 11/25 판단 전 착수하지 않는다.
 
@@ -62,6 +66,8 @@ git diff --check
 
 최종 코드 검증 (2026-11-19): 전체 pytest **1220 passed**, 기존 Starlette/httpx 경고 1건. 계약 검사 **6 operations·31 schemas·23 JSON examples·15 synthetic policy cases** 통과. 참고 문서 JSON 동기화와 `git diff --check` 통과. 원격 CI는 아직 실행하지 않았고, 실제 DB·프론트 통합 인수 결과가 아니다.
 
+리뷰 정책 반영 검증 (2026-11-20): 전체 pytest **1240 passed, 1 warning**. 최종 코드 정리 후 관련 테스트 **47 passed, 1 warning**도 확인했다. 후보 부족 응답의 포함 칩 유무·계약 형식, 기본값 3개와 포함 칩 자리 배분, 카드·채팅·추출기 없는 카드 경로, 유모차 기본값 추가/제거, 순서/source 변경 보존, null/[] 구분, 별도 PUT 재동의를 검증했다. 계약·참고 문서 동기화·diff 검사 통과. 실제 DB·외부 모델 호출·화면 인수는 수행하지 않았다.
+
 가상 계약 예시:
 - `contracts/examples/06-course.unknown-proposal.response.json`: 성공 코스 뒤 포함 제안.
 - `contracts/examples/06-profile.include-unknown.request.json`: 명시적 true 전체 PUT 예시.
@@ -69,7 +75,7 @@ git diff --check
 
 ## 다음 작업
 
-- [ ] 진호·PM과 세 미합의 정책 및 새 type/field 합의.
+- [x] 진호의 새 type/field·API 순서 리뷰 확인 및 사용자 전달 PM 확인에 따라 세 정책 반영(11/20).
 - [ ] 찬용과 별도 후보 풀·거리·확정 제외 규칙 보존 연결 합의, #65 develop 반영 후 adapter 구현.
 - [ ] 진호: 확인/취소·이전 칩 비활성·PUT/POST·경고 표시를 가상 응답으로 연결.
 - [ ] 실제 DB의 일반·휠체어·유모차·부상·복수 제약에서 결과·부족·null 경고·false 제외 검증.

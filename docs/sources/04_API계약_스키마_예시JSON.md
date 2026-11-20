@@ -1676,7 +1676,7 @@ JSON Schema(OpenAPI 3.1). $ref는 아래 components.schemas 이름을 가리킨�
         "additionalProperties": false
       },
       "Suggestion": {
-        "description": "FR-013/FR-014② opt-in server capability. The ordinary app remains disabled pending integration and UI policy agreement.",
+        "description": "FR-013/FR-014② opt-in server capability. The ordinary app remains disabled pending real-data and UI integration verification.",
         "oneOf": [
           {
             "type": "object",

@@ -87,7 +87,7 @@ budget/mobility/preferenceTags도 최종 프로필 모양에는 있으나 예시
 - 같은 도보 값을 다시 선택하는 명시적 수락은 POST /api/chat에 `message="도보로 이동할게요"`와 최신 `expectedProfileRevision`을 보낸다. 카드 저장 후라면 그 응답의 revision을 사용한다. 프론트는 이 문장을 사용자의 명시적 선택 때만 전송하며 경고 닫기·시간 저장에서 자동 전송하지 않는다. 409·422·503 또는 네트워크 실패를 수락 성공으로 표시하지 않고 서버 최신 status·revision을 따른다. 새 외부 필드는 추가하지 않는다.
 - 채팅에서 미지원 이동수단을 WALK로 자동 변경하거나 새 DEFAULT를 넣어 수락한 것으로 처리하지 않는다. 기존 값이 없다면 transport=null/UNSET, 기존 값이 있으면 보존한다. 사용자가 명시적으로 수락하면 그때 지원되는 값을 USER로 저장하고 해당 확인 대기를 해소한다.
 - 다른 미지원 조건까지 함께 들어온 경우에는 일반 422 규칙을 유지한다. 이동수단 예외가 지역·이동제약 등 모든 미지원 조건을 허용하는 예외는 아니다.
-- 일반 앱은 includeUnknownAccessibility=false만 허용한다. true 요청은 422. FR-013 사전 구현은 검증용 composition root에서 supportsUnknownAccessibilityInclusion을 명시적으로 켰을 때만 PUT true를 허용한다. 일반 활성화·미합의 정책은 아래 FR-013·FR-014② 항목 참조.
+- 일반 앱은 includeUnknownAccessibility=false만 허용한다. true 요청은 422. FR-013 사전 구현은 검증용 composition root에서 supportsUnknownAccessibilityInclusion을 명시적으로 켰을 때만 PUT true를 허용한다. 일반 활성화·확인된 정책은 아래 FR-013·FR-014② 항목 참조.
 - 권역/이동수단도 capabilities로 검증한다. 구현되지 않은 조건을 지원한다고 표시하지 않는다.
 - 이는 최종 SRS Must 요구사항의 삭제가 아니다. 이후 검증을 마친 기능부터 지원 범위를 넓힌다.
 
@@ -224,13 +224,15 @@ EDIT_PROFILE 칩 선택은 field에 해당하는 카드를 여는 동작이며 �
 
 ## FR-013·FR-014② 사전 구현 (일반 서비스 비활성)
 
-이 절은 프론트 합의·실데이터 연결 전 검증 가능한 서버 부분을 기술한다. 일반 create_app()의 supportsUnknownAccessibilityInclusion은 false다. 후보 검색·mobility 검증과 unknown_accessibility_verified가 모두 설정된 검증용 root에서만 true가 된다. 플래그·환경변수만으로 일반 앱을 켜지 않는다.
+이 절은 프론트 리뷰와 사용자 전달 PM 확인을 반영한 서버 부분을 기술한다. 실제 데이터 연결·화면 인수는 후속이다. 일반 create_app()의 supportsUnknownAccessibilityInclusion은 false다. 후보 검색·mobility 검증과 unknown_accessibility_verified가 모두 설정된 검증용 root에서만 true가 된다. 플래그·환경변수만으로 일반 앱을 켜지 않는다.
 
 Suggestion은 type과 field가 결합된 두 분기다. 기존 EDIT_PROFILE은 기존 ProfileField만, INCLUDE_UNKNOWN_ACCESSIBILITY는 field=includeUnknownAccessibility만 허용하며 두 타입을 서로 바꿔 쓰면 검증 실패다. 새 action의 id는 include-unknown-accessibility, label은 '접근성 정보가 없는 장소도 포함해서 다시 만들까요?'다. id는 수락 토큰이 아니며 POST에 전송하지 않는다.
 
-표시 조건: 지원 capability=true, includeUnknownAccessibility=false, 활성 HARD 이동제약이 있고, 다른 후보 하드 검사를 통과하며 필요한 접근성 항목 null 때문에만 제외된 후보가 있을 때. 집계 count나 fields 합집합만으로 자격을 추정하지 않는다. Repository 사실과 거리 증거를 재확인한다. 일반 기본값 칩 다음의 빈 슬롯에만 추가하고 기존 3개를 밀어내지 않는다. 후보 부족 응답은 기존 suggestions=[]를 유지한다. 슬롯 예약·후보 부족 칩 노출·이동제약 변경 시 동의 자동 초기화는 미합의이며 현재 구현하지 않는다.
+표시 조건: 지원 capability=true, includeUnknownAccessibility=false, 활성 HARD 이동제약이 있고, 다른 후보 하드 검사를 통과하며 필요한 접근성 항목 null 때문에만 제외된 후보가 있을 때. 집계 count나 fields 합집합만으로 자격을 추정하지 않는다. Repository 사실과 거리 증거를 재확인한다. 2026-11-20 사용자 전달 PM 확인 및 프론트 리뷰에 따라, 포함 칩이 있으면 기존 순서의 기본값 칩 최대 2개 다음에 포함 칩 1개를 반환한다(총 3개 이하). INSUFFICIENT_PLACES/course=null에서도 자격이 있으면 포함 칩 1개를 반환하며, 기본값 칩은 반환하지 않는다. 포함 칩이 없으면 성공 응답의 기존 기본값 칩 최대 3개를 유지한다. FR-014① 절의 후보 부족 suggestions=[] 설명은 포함 제안이 없는 경우에 해당한다.
 
-수락 순서: 확인 화면에서 명시적으로 선택 → 최신 저장 프로필의 includeUnknownAccessibility만 true로 바꿔 전체 PUT /api/sessions/{id}/profile(expectedProfileRevision 포함) → READY 응답의 새 profileRevision으로 POST /api/courses. POST body는 기존 sessionId·profileRevision만 사용한다. mobility source·strength·value 등 다른 조건은 보존한다. 취소는 요청 없음, PUT 실패·NEEDS_INPUT은 POST 없음. PUT 성공 후 POST 실패 시 저장한 동의·revision은 유지하고 POST만 재시도한다. 일반 미지원 서버의 PUT true는 422 UNSUPPORTED_CONSTRAINT이고 revision이 증가하지 않는다. 409/410·세션 폐기·TTL·동시성 처리 규칙은 기존과 같다. AI 추출로 동의를 만들지 않는다.
+동의 초기화: 카드 전체 PUT·채팅 수정·영유아 동반에 따른 유모차 기본값 추가/제거 모두, 정규화가 끝난 mobility.value를 직전 저장 값과 비교한다. 값 집합이 바뀌면 includeUnknownAccessibility=false로 저장·응답하며 재동의를 받는다. 같은 요청에 true를 함께 보내도 값 변경 시 초기화가 우선한다. 목록 순서·source만 바뀌면 기존 true 동의를 초기화하지 않는다. null(미입력)과 [](명시적 없음)은 구분한다. 초기화 후 반환된 프로필·새 revision으로 별도 PUT에서 명시적으로 재동의한다. 사용자가 false로 저장한 취소는 값 변경이 없어도 유지하며 AI 추출로 동의를 만들지 않는다.
+
+수락 순서: 확인 화면에서 명시적으로 선택 → 최신 저장 프로필의 includeUnknownAccessibility만 true로 바꿔 전체 PUT /api/sessions/{id}/profile(expectedProfileRevision 포함) → READY 응답의 새 profileRevision으로 POST /api/courses. POST body는 기존 sessionId·profileRevision만 사용한다. mobility source·strength·value 등 다른 조건은 보존한다. 저장 전 확인 화면 취소는 요청 없음, PUT 실패·NEEDS_INPUT은 POST 없음. PUT 성공 후 POST 실패 시 저장한 동의·revision은 유지하고 POST만 재시도한다. 화면을 닫는 것만으로 이미 저장된 동의가 취소되었다고 표시하지 않는다. 저장된 동의를 철회하려면 최신 revision으로 false 전체 PUT을 별도로 성공시켜야 한다. 일반 미지원 서버의 PUT true는 422 UNSUPPORTED_CONSTRAINT이고 revision이 증가하지 않는다. 409/410·세션 폐기·TTL·동시성 처리 규칙은 기존과 같다. AI 추출로 동의를 만들지 않는다.
 
 동의 후에도 필요한 항목 false와 주소·운영시간·반경·제외 카테고리·이동시간·시간창 등 다른 위반은 거절한다. 장소 접근성 null을 true로 바꾸거나 mobility를 SOFT/[]로 변경하지 않는다. INJURY의 wheelchair 대리 지표와 구간 도보 상한도 유지한다.
 

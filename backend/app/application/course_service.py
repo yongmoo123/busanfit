@@ -156,26 +156,26 @@ class CourseService:
                 warnings.append(warning('UNKNOWN_ACCESSIBILITY_INCLUDED',
                     '접근성 정보를 확인하지 못한 장소가 포함되어 있어요. 이용 가능 여부를 방문 전에 확인해 주세요.', included_ids))
         suggestions = build_default_suggestions(profile, capabilities) if course is not None else []
-        # Preserve current cap/order and insufficient-response behavior until
-        # the three pending UI policies are agreed. Never evict a default chip.
-        if course is not None and len(suggestions) < 3:
+        # FR-013/014ii: inclusion reserves one slot, including insufficient results.
+        if capabilities.supportsUnknownAccessibilityInclusion and not profile.includeUnknownAccessibility:
             still_eligible = False
-            if capabilities.supportsUnknownAccessibilityInclusion and not profile.includeUnknownAccessibility:
-                for place_id, distance in eligible.items():
-                    record = self.repository.get_place(place_id)
-                    if record is None:
-                        unknown_reasons.pop(place_id, None)
-                        continue
-                    if record.id != place_id:
-                        raise ValueError('repository ID mismatch')
-                    failures = candidate_violations(PlaceCandidate(record, distance), profile, self.settings)
-                    if failures and all(v.code == 'ACCESSIBILITY_UNKNOWN' for v in failures):
-                        still_eligible = True
-                    elif failures and all(v.unknown for v in failures):
-                        unknown_reasons[place_id] = {f for v in failures for f in v.fields}
-                    else:
-                        unknown_reasons.pop(place_id, None)
-            suggestions.extend(build_unknown_accessibility_suggestions(profile, capabilities, eligible=still_eligible))
+            for place_id, distance in eligible.items():
+                record = self.repository.get_place(place_id)
+                if record is None:
+                    unknown_reasons.pop(place_id, None)
+                    continue
+                if record.id != place_id:
+                    raise ValueError('repository ID mismatch')
+                failures = candidate_violations(PlaceCandidate(record, distance), profile, self.settings)
+                if failures and all(v.code == 'ACCESSIBILITY_UNKNOWN' for v in failures):
+                    still_eligible = True
+                elif failures and all(v.unknown for v in failures):
+                    unknown_reasons[place_id] = {f for v in failures for f in v.fields}
+                else:
+                    unknown_reasons.pop(place_id, None)
+            inclusion = build_unknown_accessibility_suggestions(profile, capabilities, eligible=still_eligible)
+            if inclusion:
+                suggestions = suggestions[:2] + inclusion
         return CourseResult(course, warnings,
             {'count': len(unknown_reasons), 'fields': sorted(set().union(*unknown_reasons.values()))}, attempts,
             suggestions)

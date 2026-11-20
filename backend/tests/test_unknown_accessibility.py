@@ -10,7 +10,7 @@ from pydantic import ValidationError
 from app.api.course_models import Suggestion
 from app.api.profile_models import Profile
 from app.application.course_service import CourseService
-from app.application.extraction import blank_profile
+from app.application.extraction import Analysis, blank_profile
 from app.application.profile_support import INITIAL_FIELDS, ProfileSupport, build_profile_capabilities
 from app.application.suggestions import build_unknown_accessibility_suggestions
 from app.courses.fakes import FakeRepository, FakeRetriever, FakeTravel, synthetic_place
@@ -74,7 +74,8 @@ def test_proposal_requires_actual_accessibility_only_candidates_without_mutation
 def test_consented_unknown_is_conditional_and_null_is_preserved(modes):
     service, _ = setup(known=[synthetic_place('a')])
     denied = generate(service, profile(modes))
-    assert denied.course is None and denied.suggestions == []  # Pending UI policy remains unchanged.
+    assert denied.course is None
+    assert [s.type for s in denied.suggestions] == ['INCLUDE_UNKNOWN_ACCESSIBILITY']
     result = generate(service, profile(modes, True))
     assert result.course.validation.status == 'CONDITIONAL'
     assert result.course.validation.routeAccessibility == 'UNVERIFIED'
@@ -132,6 +133,22 @@ def test_generic_excluded_count_alone_does_not_generate_inclusion_action():
     assert not any(s.type == 'INCLUDE_UNKNOWN_ACCESSIBILITY' for s in generate(service, profile()).suggestions)
 
 
+@pytest.mark.parametrize('eligible', [False, True])
+def test_insufficient_http_response_only_offers_eligible_inclusion(eligible):
+    service, _ = setup(known=[synthetic_place('a')], unknown=None if eligible else [])
+    with TestClient(create_app(course_service=service, profile_support=support())) as client:
+        sid = client.post('/api/sessions', json={}).json()['sessionId']
+        saved = client.put(f'/api/sessions/{sid}/profile',
+            json={'profile': profile().model_dump(mode='json'), 'expectedProfileRevision': 0})
+        assert saved.status_code == 200
+        response = client.post('/api/courses', json={'sessionId': sid, 'profileRevision': 1})
+        assert response.status_code == 200, response.text
+        body = response.json()
+        CONTRACT['check'](body, CONTRACT['schemas']['CourseResponse'])
+        assert body['status'] == 'INSUFFICIENT_PLACES' and body['course'] is None
+        assert [s['type'] for s in body['suggestions']] == (['INCLUDE_UNKNOWN_ACCESSIBILITY'] if eligible else [])
+
+
 def test_eligibility_is_rechecked_after_course_source_assembly():
     service, repo = setup()
     original = repo.get_sources
@@ -167,13 +184,15 @@ def test_inclusion_keeps_candidate_cap_and_injury_walking_limit():
     assert any(w['code'] == 'CANDIDATE_LIMIT' for w in result.warnings)
 
 
-def test_three_existing_default_slots_are_preserved_pending_agreement():
+def test_inclusion_reserves_third_slot_after_two_default_chips():
     service, _ = setup()
     value = profile()
     for name in ('area', 'timeWindow'):
         getattr(value, name).source = 'DEFAULT'
     result = generate(service, value)
-    assert [s.field for s in result.suggestions] == ['area', 'transport', 'timeWindow']
+    assert [s.field for s in result.suggestions] == ['area', 'transport', 'includeUnknownAccessibility']
+    service, _ = setup(unknown=[])
+    assert [s.field for s in generate(service, value).suggestions] == ['area', 'transport', 'timeWindow']
 
 
 def test_confirmed_places_stay_passed_even_with_flag_true_and_ordinary_mode_needs_no_consent():
@@ -286,3 +305,84 @@ def test_ordinary_root_remains_disabled_and_rejects_true_without_revision_change
 def test_new_pool_is_an_optional_typed_port_extension():
     assert RetrievalResult(()).unknown_accessibility_candidates == ()
     with pytest.raises(ValueError): RetrievalResult((), unknown_accessibility_candidates=['bad'])
+
+
+@pytest.mark.parametrize('channel', ['card', 'chat', 'card-without-extractor'])
+@pytest.mark.parametrize('change', ['add', 'remove', 'reorder', 'source'])
+def test_mobility_consent_reset_is_shared_by_card_and_chat(channel, change):
+    modes = ('WHEELCHAIR', 'STROLLER') if change in ('remove', 'reorder') else ('STROLLER',)
+    old = profile(modes, True).model_dump(mode='json')
+    old['transport'] = {'value': 'WALK', 'source': 'USER', 'strength': 'SOFT'}
+    if change == 'source':
+        old['mobility']['source'] = 'DEFAULT'
+    incoming = profile((), True).model_dump(mode='json')
+    incoming['mobility']['value'] = {
+        'add': ['STROLLER', 'INJURY'], 'remove': [],
+        'reorder': ['STROLLER', 'WHEELCHAIR'], 'source': ['STROLLER'],
+    }[change]
+    analysis = Analysis(blank_profile())
+    analysis.profile['mobility'] = incoming['mobility']
+    class Extractor:
+        async def extract(self, message): return analysis
+    app = create_app(extractor=Extractor(), profile_support=support())
+    if channel == 'card-without-extractor':
+        app.state.extractor = None
+    with TestClient(app) as client:
+        sid = client.post('/api/sessions', json={}).json()['sessionId']
+        app.state.sessions.commit_profile(sid, 0, profile=old, history=[])
+        if channel == 'chat':
+            response = client.post('/api/chat', json={'sessionId': sid, 'expectedProfileRevision': 1,
+                                                      'message': '[가상] 이동제약 수정'})
+        else:
+            # Echoing true cannot carry previous consent across a value change.
+            response = client.put(f'/api/sessions/{sid}/profile',
+                json={'profile': old | {'mobility': incoming['mobility']}, 'expectedProfileRevision': 1})
+        assert response.status_code == 200, response.text
+        expected = change in ('reorder', 'source')
+        assert response.json()['profile']['includeUnknownAccessibility'] is expected
+        assert app.state.sessions.check_current(sid, 2).profile['includeUnknownAccessibility'] is expected
+
+
+@pytest.mark.parametrize('channel', ['card', 'chat'])
+@pytest.mark.parametrize('had_infant', [False, True])
+def test_infant_default_addition_and_removal_reset_consent_after_normalization(channel, had_infant):
+    old = profile((), True).model_dump(mode='json')
+    old['mobility'] = {'value': ['STROLLER'] if had_infant else None,
+                       'source': 'DEFAULT' if had_infant else 'UNSET', 'strength': 'HARD'}
+    old['transport'] = {'value': 'WALK', 'source': 'USER', 'strength': 'SOFT'}
+    old['companions'] = {'value': {'type': 'FAMILY', 'count': 3, 'hasInfant': had_infant},
+                          'source': 'USER', 'strength': 'SOFT'}
+    companions = {**old['companions'], 'value': {**old['companions']['value'], 'hasInfant': not had_infant}}
+    analysis = Analysis(blank_profile())
+    analysis.profile['companions'] = companions
+    class Extractor:
+        async def extract(self, message): return analysis
+    app = create_app(extractor=Extractor(), profile_support=support())
+    with TestClient(app) as client:
+        sid = client.post('/api/sessions', json={}).json()['sessionId']
+        app.state.sessions.commit_profile(sid, 0, profile=old, history=[])
+        if channel == 'chat':
+            result = client.post('/api/chat', json={'sessionId': sid, 'expectedProfileRevision': 1,
+                                                  'message': '[가상] 영유아 동반 변경'})
+        else:
+            result = client.put(f'/api/sessions/{sid}/profile',
+                json={'profile': old | {'companions': companions}, 'expectedProfileRevision': 1})
+        assert result.status_code == 200, result.text
+        saved = result.json()['profile']
+        assert saved['mobility']['value'] == (None if had_infant else ['STROLLER'])
+        assert saved['includeUnknownAccessibility'] is False
+        # Re-consent is a separate PUT against the returned normalized profile/revision.
+        consent = client.put(f'/api/sessions/{sid}/profile',
+            json={'profile': saved | {'includeUnknownAccessibility': True}, 'expectedProfileRevision': 2})
+        assert consent.status_code == 200, consent.text
+        assert consent.json()['profile']['includeUnknownAccessibility'] is True
+
+
+@pytest.mark.parametrize('before,after', [(None, []), ([], None)])
+def test_unset_and_explicit_no_mobility_are_distinct_for_consent(before, after):
+    from app.application.condition_policy import reset_changed_mobility_consent
+    previous = profile(consent=True).model_dump(mode='json')
+    previous['mobility']['value'] = before
+    value = profile(consent=True)
+    value.mobility.value = after
+    assert reset_changed_mobility_consent(value, previous).includeUnknownAccessibility is False

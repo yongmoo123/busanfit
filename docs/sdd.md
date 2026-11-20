@@ -398,7 +398,7 @@ COMP-02/03의 application/condition_policy.py는 부분 추출을 기존 프로�
 
 ## FR-013·FR-014② 서버 사전 구현 (2026-11-19)
 
-새 Suggestion 타입 INCLUDE_UNKNOWN_ACCESSIBILITY는 명시적 확인 화면용이며 프로필을 자동 변경하지 않는다. 지원을 켠 검증용 서버에서 전체 PUT으로 includeUnknownAccessibility를 저장하고 반환된 revision으로 기존 POST courses를 호출한다. 검색기의 별도 미확인 접근성 후보 풀은 거리·Repository 사실로 재검사하며 null만 명시적 동의 시 허용한다. 독립 Validator는 미확인을 별도 기록해 PASSED 대신 CONDITIONAL로 반환하고 최종 포함 장소 ID 경고를 생성한다. false·다른 하드 위반·시간/부상 규칙은 유지한다. 일반 앱은 계속 비활성이며 후보 부족 칩·3개 슬롯 배분·동의 초기화와 #22 실제 검색기 포트 연결은 후속이다. [구현 범위와 연결 계약](ISSUE30_UNKNOWN_ACCESSIBILITY_IMPLEMENTATION.md).
+새 Suggestion 타입 INCLUDE_UNKNOWN_ACCESSIBILITY는 명시적 확인 화면용이며 프로필을 자동 변경하지 않는다. 지원을 켠 검증용 서버에서 전체 PUT으로 includeUnknownAccessibility를 저장하고 반환된 revision으로 기존 POST courses를 호출한다. 검색기의 별도 미확인 접근성 후보 풀은 거리·Repository 사실로 재검사하며 null만 명시적 동의 시 허용한다. 독립 Validator는 미확인을 별도 기록해 PASSED 대신 CONDITIONAL로 반환하고 최종 포함 장소 ID 경고를 생성한다. false·다른 하드 위반·시간/부상 규칙은 유지한다. 11/20 프론트 리뷰와 사용자 전달 PM 확인에 따라 후보 부족 포함 칩·기본값 2개+포함 1개 배분·정규화 후 실제 이동제약 값 변경 시 동의 초기화를 반영했다. 카드·채팅·영유아 기본값 경로에 공통 적용하며 순서/source만 바뀌면 동의를 유지한다. 일반 앱은 계속 비활성이며 #22 실제 검색기 포트·UI 연결 및 통합 인수는 후속이다. [구현 범위와 연결 계약](ISSUE30_UNKNOWN_ACCESSIBILITY_IMPLEMENTATION.md).
 
 
 ## FR-018 구현 추적 (2026-11-17, 이슈 #27)
