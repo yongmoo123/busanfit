@@ -26,7 +26,7 @@ $env:BUSANFIT_DB_PATH = (Resolve-Path data/share/busanfit_v3.sqlite3).Path
 # macOS/Linux, 저장소 루트
 export BUSANFIT_DB_PATH="$(pwd)/data/share/busanfit_v3.sqlite3"
 ```
-- 권역을 앱에서 켜는 코드(`supportedAreas` 등)는 v3와 별도입니다(김영무 확인 대기). 지금 API는 v3를 연결해도 해운대만 받습니다.
+- 권역 켜기(#36, 김영무 합의): `supportedAreas`는 `config/retrieval.json` `areaCenters`의 4개 권역(HAEUNDAE·SEOMYEON·GWANGALLI·NAMPO)을 따릅니다. 서버 시작 시 모든 권역의 중심 좌표와 반경 조회를 확인하고, 하나라도 실패하면 시작하지 않습니다.
 
 **(b) 직접 만들기** (부산 시군구 원본 `data/raw/tourapi/`·`data/raw/tourapi/<권역>/`·`data/raw/tourapi/sigungu/<코드>/`가 있는 사람, 네트워크 없음) — 사후면세점 제외 목록을 원 기준으로 만든 뒤 `circle_build`로 장소·무장애 값·grade·license를 한 번에 넣습니다(운영시간 파서·카테고리는 `mapping.build_rows`, 무장애 판정·grade는 `accessibility_judge`의 DEC-026 규칙 그대로, license는 `pipelines/mapping.py`의 `PORTAL_LICENSE` 한 곳). 같은 경로에 파일이 있으면 거절합니다. 원본 수집 명령과 자세한 규칙은 `pipelines/README.md` "권역 확장".
 ```text

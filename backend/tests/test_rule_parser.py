@@ -78,6 +78,31 @@ def test_ambiguous_or_unhandled_area_is_not_defaulted(text):
     assert 'area' in result.unconfirmed_fields
 
 
+@pytest.mark.parametrize('text,value', [
+    ('서면에서 놀래요', 'SEOMYEON'), ('광안리', 'GWANGALLI'), ('남포에서', 'NAMPO'),
+    ('남포동에서 놀래요', 'NAMPO'), ('2026-11-12 광안리에서, 13시부터 17시까지', 'GWANGALLI'),
+])
+def test_new_area_names_are_extracted(text, value):
+    result = parse(text)
+    assert result.conditions['area'].value == value
+    assert result.conditions['area'].source == 'USER' and result.conditions['area'].strength == 'HARD'
+    assert 'area' not in result.unconfirmed_fields
+
+
+@pytest.mark.parametrize('text', ['서면 말고 광안리', '광안리나 남포', '남포는 안가요', '서면, 광안리', '광안리 또는 서울'])
+def test_new_area_ambiguity_stays_unconfirmed(text):
+    result = parse(text)
+    assert result.conditions['area'].value is None
+    assert 'area' in result.unconfirmed_fields
+
+
+@pytest.mark.parametrize('text', ['자갈치 시장', 'BIFF 광장', '광안대교 야경'])
+def test_place_names_are_not_mapped_to_areas(text):
+    result = parse(text)
+    assert result.conditions['area'].value is None
+    assert 'area' not in result.unconfirmed_fields
+
+
 @pytest.mark.parametrize('text,value', [('도보','WALK'),('대중교통','PUBLIC'),('자차','CAR')])
 def test_extracting_transport_does_not_claim_it_is_supported(text, value):
     assert parse(text).conditions['transport'].value == value
