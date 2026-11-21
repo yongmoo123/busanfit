@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import SuggestionChips from './SuggestionChips.jsx'
+import './UnknownPlaceSuggestion.css'
 
 export default function UnknownPlaceSuggestion({
   count, suggestions = [], disabled = false, onConfirm, onEditProfile,
@@ -14,7 +15,7 @@ export default function UnknownPlaceSuggestion({
   const submittingRef = useRef(false)
 
   useEffect(() => {
-    if (disabled) dialogRef.current?.close()
+    if (disabled && !submittingRef.current) dialogRef.current?.close()
   }, [disabled])
 
   if (suggestions.length === 0) return null
@@ -36,7 +37,7 @@ export default function UnknownPlaceSuggestion({
       await onConfirm()
       dialogRef.current?.close()
     } catch (requestError) {
-      setError(requestError.userMessage ?? '다시 만들지 못했어요. 조건을 확인하고 다시 시도해 주세요.')
+      setError(requestError.userMessage ?? requestError.message ?? '다시 만들지 못했어요. 조건을 확인하고 다시 시도해 주세요.')
     } finally {
       submittingRef.current = false
       setIsSubmitting(false)
@@ -45,7 +46,7 @@ export default function UnknownPlaceSuggestion({
 
   return (
     <div className="unknown-place-suggestion">
-      {count > 0 && <p>접근성 정보가 없어 제외된 장소가 {count}곳 있어요.</p>}
+      {count > 0 && <p>정보가 없어 제외된 장소가 {count}곳 있어요.</p>}
       <SuggestionChips
         suggestions={suggestions}
         disabled={disabled || isSubmitting}
