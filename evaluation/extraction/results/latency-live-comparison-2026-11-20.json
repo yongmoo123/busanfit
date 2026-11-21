@@ -1,0 +1,271 @@
+{
+  "description": "Authorized live API measurements of the same fixed synthetic LAT-01 input; no input/output text or credentials.",
+  "realModelMeasured": true,
+  "inputDataKind": "SYNTHETIC_FIXED_LAT_01",
+  "paidTierConversionPerformed": false,
+  "billingTierVerified": false,
+  "before": {
+    "runAt": "2026-11-20T19:54:30.122260+09:00",
+    "modelVersion": "gemini-3.5-flash-lite",
+    "runCount": 5,
+    "actualApiRequests": 5,
+    "firstAttemptSuccessCount": 5,
+    "successfulRuns": 5,
+    "retryRuns": 0,
+    "successWithin5SecondsCount": 1,
+    "successWithin5SecondsRatio": 0.2,
+    "latencyMs": {
+      "mean": 5848.1322,
+      "p50": 6337.357,
+      "p90": 7481.654,
+      "max": 7481.654
+    },
+    "retryReasons": {},
+    "attemptFailureDetails": {},
+    "codeRevision": "8f5c83a2a81db657fcbbc66696c4137f3b34dc51",
+    "workingTreeModified": true,
+    "measurementScope": "ai-boundary-with-retries-and-validation",
+    "runs": [
+      {
+        "run": 1,
+        "inputId": "LAT-01",
+        "elapsedMs": 7419.453,
+        "modelResponseValid": true,
+        "failure": null,
+        "attemptCount": 1,
+        "fallbackRequired": false,
+        "fallbackExecuted": false,
+        "attempts": [
+          {
+            "attempt": 1,
+            "retry_reason": null,
+            "outcome": "SUCCESS",
+            "detail": "NONE",
+            "provider_ms": 7406.0,
+            "validation_ms": 0.0,
+            "elapsed_ms": 7406.0
+          }
+        ]
+      },
+      {
+        "run": 2,
+        "inputId": "LAT-01",
+        "elapsedMs": 6185.648,
+        "modelResponseValid": true,
+        "failure": null,
+        "attemptCount": 1,
+        "fallbackRequired": false,
+        "fallbackExecuted": false,
+        "attempts": [
+          {
+            "attempt": 1,
+            "retry_reason": null,
+            "outcome": "SUCCESS",
+            "detail": "NONE",
+            "provider_ms": 6187.0,
+            "validation_ms": 0.0,
+            "elapsed_ms": 6187.0
+          }
+        ]
+      },
+      {
+        "run": 3,
+        "inputId": "LAT-01",
+        "elapsedMs": 6337.357,
+        "modelResponseValid": true,
+        "failure": null,
+        "attemptCount": 1,
+        "fallbackRequired": false,
+        "fallbackExecuted": false,
+        "attempts": [
+          {
+            "attempt": 1,
+            "retry_reason": null,
+            "outcome": "SUCCESS",
+            "detail": "NONE",
+            "provider_ms": 6344.0,
+            "validation_ms": 0.0,
+            "elapsed_ms": 6344.0
+          }
+        ]
+      },
+      {
+        "run": 4,
+        "inputId": "LAT-01",
+        "elapsedMs": 7481.654,
+        "modelResponseValid": true,
+        "failure": null,
+        "attemptCount": 1,
+        "fallbackRequired": false,
+        "fallbackExecuted": false,
+        "attempts": [
+          {
+            "attempt": 1,
+            "retry_reason": null,
+            "outcome": "SUCCESS",
+            "detail": "NONE",
+            "provider_ms": 7469.0,
+            "validation_ms": 0.0,
+            "elapsed_ms": 7469.0
+          }
+        ]
+      },
+      {
+        "run": 5,
+        "inputId": "LAT-01",
+        "elapsedMs": 1816.549,
+        "modelResponseValid": true,
+        "failure": null,
+        "attemptCount": 1,
+        "fallbackRequired": false,
+        "fallbackExecuted": false,
+        "attempts": [
+          {
+            "attempt": 1,
+            "retry_reason": null,
+            "outcome": "SUCCESS",
+            "detail": "NONE",
+            "provider_ms": 1812.0,
+            "validation_ms": 0.0,
+            "elapsed_ms": 1812.0
+          }
+        ]
+      }
+    ]
+  },
+  "after": {
+    "runAt": "2026-11-20T20:05:07.912584+09:00",
+    "modelVersion": "gemini-3.5-flash-lite",
+    "runCount": 5,
+    "actualApiRequests": 5,
+    "firstAttemptSuccessCount": 5,
+    "successfulRuns": 5,
+    "retryRuns": 0,
+    "successWithin5SecondsCount": 5,
+    "successWithin5SecondsRatio": 1.0,
+    "latencyMs": {
+      "mean": 2040.1918,
+      "p50": 1952.912,
+      "p90": 2790.607,
+      "max": 2790.607
+    },
+    "retryReasons": {},
+    "attemptFailureDetails": {},
+    "codeRevision": "8f5c83a2a81db657fcbbc66696c4137f3b34dc51",
+    "workingTreeModified": true,
+    "measurementScope": "ai-boundary-with-retries-and-validation",
+    "runs": [
+      {
+        "run": 1,
+        "inputId": "LAT-01",
+        "elapsedMs": 1952.912,
+        "modelResponseValid": true,
+        "failure": null,
+        "attemptCount": 1,
+        "fallbackRequired": false,
+        "fallbackExecuted": false,
+        "attempts": [
+          {
+            "attempt": 1,
+            "retry_reason": null,
+            "outcome": "SUCCESS",
+            "detail": "NONE",
+            "provider_ms": 1937.0,
+            "validation_ms": 0.0,
+            "elapsed_ms": 1937.0
+          }
+        ]
+      },
+      {
+        "run": 2,
+        "inputId": "LAT-01",
+        "elapsedMs": 1598.317,
+        "modelResponseValid": true,
+        "failure": null,
+        "attemptCount": 1,
+        "fallbackRequired": false,
+        "fallbackExecuted": false,
+        "attempts": [
+          {
+            "attempt": 1,
+            "retry_reason": null,
+            "outcome": "SUCCESS",
+            "detail": "NONE",
+            "provider_ms": 1610.0,
+            "validation_ms": 0.0,
+            "elapsed_ms": 1610.0
+          }
+        ]
+      },
+      {
+        "run": 3,
+        "inputId": "LAT-01",
+        "elapsedMs": 1578.14,
+        "modelResponseValid": true,
+        "failure": null,
+        "attemptCount": 1,
+        "fallbackRequired": false,
+        "fallbackExecuted": false,
+        "attempts": [
+          {
+            "attempt": 1,
+            "retry_reason": null,
+            "outcome": "SUCCESS",
+            "detail": "NONE",
+            "provider_ms": 1578.0,
+            "validation_ms": 0.0,
+            "elapsed_ms": 1578.0
+          }
+        ]
+      },
+      {
+        "run": 4,
+        "inputId": "LAT-01",
+        "elapsedMs": 2790.607,
+        "modelResponseValid": true,
+        "failure": null,
+        "attemptCount": 1,
+        "fallbackRequired": false,
+        "fallbackExecuted": false,
+        "attempts": [
+          {
+            "attempt": 1,
+            "retry_reason": null,
+            "outcome": "SUCCESS",
+            "detail": "NONE",
+            "provider_ms": 2781.0,
+            "validation_ms": 0.0,
+            "elapsed_ms": 2781.0
+          }
+        ]
+      },
+      {
+        "run": 5,
+        "inputId": "LAT-01",
+        "elapsedMs": 2280.983,
+        "modelResponseValid": true,
+        "failure": null,
+        "attemptCount": 1,
+        "fallbackRequired": false,
+        "fallbackExecuted": false,
+        "attempts": [
+          {
+            "attempt": 1,
+            "retry_reason": null,
+            "outcome": "SUCCESS",
+            "detail": "NONE",
+            "provider_ms": 2281.0,
+            "validation_ms": 0.0,
+            "elapsed_ms": 2281.0
+          }
+        ]
+      }
+    ]
+  },
+  "observedMeanReductionPercent": 65.11378795438311,
+  "limitations": [
+    "Five sequential probes per condition at different times; not a controlled causal estimate.",
+    "No full extraction accuracy, HTTP/browser acceptance or general latency guarantee.",
+    "Recorded revisions are base commits with uncommitted changes at measurement time; final source is this PR."
+  ]
+}
