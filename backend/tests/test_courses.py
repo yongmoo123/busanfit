@@ -98,6 +98,27 @@ def test_four_scenarios_have_only_verified_places_and_keep_profile_revision(env,
     assert result['sessionExpiresAt'] != before['sessionExpiresAt']
 
 
+@pytest.mark.parametrize('mobility', [None, [], ['WHEELCHAIR'], ['STROLLER'], ['INJURY'], ['INJURY', 'WHEELCHAIR']])
+@pytest.mark.parametrize('insufficient', [False, True])
+def test_injury_rules_warning_matches_saved_mobility_and_survives_insufficient(env, mobility, insufficient):
+    seed(env, ready(mobility))
+    if insufficient:
+        env['retriever'].places = ()
+    response = generate(env)
+    check_contract(response)
+    body = response.json()
+    assert body['status'] == ('INSUFFICIENT_PLACES' if insufficient else 'SUCCESS')
+    injury_warnings = [w for w in body['warnings'] if w['code'] == 'INJURY_RULES']
+    if 'INJURY' in (mobility or ()):
+        assert injury_warnings == [{'code': 'INJURY_RULES', 'placeIds': [],
+            'message': '부상 조건으로 구간당 도보 10분 이내만 연결해요. 이동이 힘들면 택시·대중교통 이용을 권해요.'}]
+        if body['course'] is not None:
+            assert all(leg['minutes'] <= 10 for leg in body['course']['legs'])
+    else:
+        assert injury_warnings == []
+    assert any(w['code'] == 'ROUTE_ACCESSIBILITY_UNVERIFIED' for w in body['warnings'])
+
+
 def test_unknown_accessibility_is_excluded_by_item_not_grade(env):
     seed(env, ready(['WHEELCHAIR']))
     p1, p2 = env['places'][:2]

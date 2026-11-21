@@ -104,11 +104,21 @@ def test_insufficient_is_only_correct_when_case_allows_it(stored, tmp_path, allo
     assert [r['state'] for r in report['scenarioResults'][:4]] == (['PASS'] if allowed else ['FAIL']) * 4
 
 
-@pytest.mark.parametrize('fault', ['missing-id', 'duty-free', 'saved-profile', 'http-error'])
+@pytest.mark.parametrize('fault', ['missing-id', 'duty-free', 'saved-profile', 'http-error',
+                                  'missing-injury-warning', 'spurious-injury-warning'])
 def test_runner_rejects_bad_success_and_http_errors(stored, tmp_path, fault):
     connection = fixture_connection(stored)
     path = dataset(tmp_path)
-    if fault == 'duty-free':
+    if fault in ('missing-injury-warning', 'spurious-injury-warning'):
+        original = connection.service.generate
+        def corrupt_warnings(*args):
+            result = original(*args)
+            result.warnings = [w for w in result.warnings if w['code'] != 'INJURY_RULES']
+            if fault == 'spurious-injury-warning':
+                result.warnings.append({'code': 'INJURY_RULES', 'message': '[가상] 잘못된 경고', 'placeIds': []})
+            return result
+        connection.service.generate = corrupt_warnings
+    elif fault == 'duty-free':
         connection.retrieval_settings.excluded_place_ids = frozenset(p.id for p in stored[1])
     elif fault == 'saved-profile':
         data = json.loads(path.read_text())

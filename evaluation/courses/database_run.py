@@ -133,6 +133,9 @@ def evaluate_database(connection, cases_path, *, synthetic=False):
                 body = response.json()
                 try:
                     contract['check'](body, contract['schemas']['CourseResponse'])
+                    injury_warning_count = sum(w['code'] == 'INJURY_RULES' for w in body['warnings'])
+                    if injury_warning_count != int('INJURY' in (profile['mobility']['value'] or ())):
+                        raise AssertionError('injury_rule_warning')
                     for field, expected in case['expected'].get('savedProfile', {}).items():
                         if profile.get(field) != expected:
                             raise AssertionError('saved_profile')

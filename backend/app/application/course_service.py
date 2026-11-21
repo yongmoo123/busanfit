@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from app.api.profile_models import Profile
 from app.api.course_models import Suggestion
 from app.application.suggestions import build_default_suggestions
-from app.constraints.defaults import apply_walk_default
+from app.constraints.defaults import CONFIG, apply_walk_default
 from app.constraints.profile import ProfileError, validate_profile
 from app.constraints.mobility import normalize_mobility
 from app.courses.presentation import build_course, warning
@@ -51,6 +51,11 @@ class CourseService:
         warnings = [*default_warnings, warning('ROUTE_ACCESSIBILITY_UNVERIFIED', '장소의 접근성 정보만 확인했어요. 실제 이동 경로의 계단·경사는 확인하지 못했어요.'),
                     warning('TRAVEL_SCOPE', '첫 장소 이전과 마지막 장소 이후의 이동시간은 포함하지 않아요.'),
                     warning('PRICE_UNKNOWN', '가격 정보가 없어 전체 비용을 추정하지 않았어요.')]
+        injury = 'INJURY' in (profile.mobility.value or ())
+        if injury:
+            limit = CONFIG['injury']['maxLegWalkingMinutes']
+            warnings.append(warning('INJURY_RULES',
+                f'부상 조건으로 구간당 도보 {limit}분 이내만 연결해요. 이동이 힘들면 택시·대중교통 이용을 권해요.'))
         unique = {}
         for candidate in result.candidates[:self.settings.max_candidates]:
             unique.setdefault(candidate.place.id, candidate.distance_m)
@@ -58,7 +63,7 @@ class CourseService:
         if len(result.candidates) > self.settings.max_candidates:
             warnings.append(warning('CANDIDATE_LIMIT', '후보 수 상한 안에서 코스를 구성했어요.'))
         blocked = set()
-        travel = TravelCache(self.travel_provider, injury='INJURY' in (profile.mobility.value or ()))
+        travel = TravelCache(self.travel_provider, injury=injury)
         course = None
         attempts = 0
         for attempt in range(self.settings.max_repair_attempts + 1):
