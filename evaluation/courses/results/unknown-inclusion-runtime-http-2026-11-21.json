@@ -1,0 +1,22 @@
+{
+  "runDate": "2026-11-21T13:15:57.794972+09:00",
+  "codeRevision": "af9866a85fb5b141a0a03b66895b0a2c52c8f7f9",
+  "dbSha256": "c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75",
+  "ordinaryEntrypoint": "app.main:app",
+  "inclusionCapability": true,
+  "beforeOutcome": "INSUFFICIENT_PLACES",
+  "afterOutcome": "SUCCESS",
+  "validationStatus": "CONDITIONAL",
+  "consentedUnknownPlaces": 2,
+  "hardViolations": 0,
+  "missingPlaceIds": 0,
+  "staleRevisionRejected": true,
+  "postOnlyRetryVerified": true,
+  "mobilityChangeResetVerified": true,
+  "detailVerified": true,
+  "sessionDeleted": true,
+  "modelApiRequests": 0,
+  "browserVerified": false,
+  "courseRoundTripMs": 53.49209997802973,
+  "temporaryServerStopped": true
+}

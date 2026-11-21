@@ -22,6 +22,10 @@ with the missing items in ``excluded_unknown_fields`` (contract ``excludedUnknow
 A place with any confirmed failure (closed, ``False``, excluded category, ...) is not counted
 there, because including unknown information would not make it eligible.
 
+Only candidates whose missing fields are all required accessibility items enter the separate
+``unknown_accessibility_candidates`` pool, with distance evidence and a separate candidate cap.
+This never places them in ordinary candidates or enables inclusion support by itself.
+
 Repository errors propagate (``RepositoryError``); an empty result means "no matching place".
 """
 from __future__ import annotations
@@ -69,6 +73,8 @@ class PlaceRetriever:
         items = _required_accessibility_items(profile.mobility.value)
         indoor = _required_indoor(profile)
         passed: list[PlaceCandidate] = []
+        accessibility_only: list[PlaceCandidate] = []
+        accessibility_fields = {mobility_field(item) for item in items}
         unknown_ids: set[str] = set()
         unknown_fields: set[str] = set()
         for hit in hits:
@@ -80,11 +86,17 @@ class PlaceRetriever:
             if unknown:
                 unknown_ids.add(hit.place.id)
                 unknown_fields.update(unknown)
+                # Keep distance and source facts; consent only permits these nulls.
+                # All definite exclusions and non-accessibility unknowns remain out.
+                if unknown <= accessibility_fields:
+                    accessibility_only.append(hit)
                 continue
             passed.append(hit)
         passed.sort(key=lambda hit: (hit.distance_m, hit.place.id))
+        accessibility_only.sort(key=lambda hit: (hit.distance_m, hit.place.id))
         return RetrievalResult(tuple(passed[:self._settings.max_candidates]),
-                               frozenset(unknown_ids), frozenset(unknown_fields))
+                               frozenset(unknown_ids), frozenset(unknown_fields),
+                               tuple(accessibility_only[:self._settings.max_candidates]))
 
 
 def check_place(place: PlaceRecord, start: datetime, end: datetime,

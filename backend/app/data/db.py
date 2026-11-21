@@ -28,10 +28,15 @@ def get_db_path(environ: Mapping[str, str] | None = None) -> Path:
     return Path(value)
 
 
-def connect(path: str | Path | None = None, *, create: bool = False) -> sqlite3.Connection:
-    """Open the DB with foreign keys on. Without ``create``, a missing file is an error."""
+def connect(path: str | Path | None = None, *, create: bool = False, read_only: bool = False) -> sqlite3.Connection:
+    """Open with foreign keys; read_only uses mode=ro and cannot be combined with create.
+
+    Without create, a missing file is an error. Existing callers remain read/write.
+    """
     db_path = Path(path) if path is not None else get_db_path()
-    mode = "rwc" if create else "rw"
+    if create and read_only:
+        raise ValueError('cannot create a read-only database')
+    mode = "ro" if read_only else "rwc" if create else "rw"
     conn = sqlite3.connect(f"{db_path.resolve().as_uri()}?mode={mode}", uri=True)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")

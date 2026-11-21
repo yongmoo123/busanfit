@@ -116,7 +116,7 @@ def test_broken_database_is_http_500_not_missing_place_or_insufficient(stored):
         assert result.status_code == 500 and 'SQL' not in result.text
 
 
-def test_ordinary_server_does_not_open_sqlite_or_activate_support(stored, monkeypatch):
+def test_unconnected_factory_does_not_open_sqlite_or_activate_support(stored, monkeypatch):
     def forbidden(*args, **kwargs): raise AssertionError('ordinary server must not open a DB')
     monkeypatch.setattr('app.application.sqlite_adapter.connect', forbidden)
     with TestClient(create_app()) as client:

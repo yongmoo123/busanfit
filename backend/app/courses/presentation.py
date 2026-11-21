@@ -8,7 +8,7 @@ from app.api.course_models import Course
 from app.places.presentation import UNKNOWN_PRICE, place_payload, source_payloads, warning
 
 
-def build_course(plan, profile, revision, repository, checked_fields, *, now=None):
+def build_course(plan, profile, revision, repository, checked_fields, *, now=None, unverified_fields=()):
     items = []
     source_ids = []
     for index, visit in enumerate(plan.visits, 1):
@@ -37,6 +37,8 @@ def build_course(plan, profile, revision, repository, checked_fields, *, now=Non
         'summary': {'totalStayMinutes': stay, 'totalTravelMinutes': travel,
                     'totalWaitingMinutes': total - stay - travel, 'totalMinutes': total,
                     'estimatedCost': dict(UNKNOWN_PRICE)},
-        'validation': {'status': 'PASSED', 'checkedHardConstraints': list(checked_fields),
-                       'unverifiedFields': ['price', 'routeAccessibility'], 'routeAccessibility': 'UNVERIFIED'},
+        'validation': {'status': 'CONDITIONAL' if unverified_fields else 'PASSED',
+                       'checkedHardConstraints': list(checked_fields),
+                       'unverifiedFields': ['price', 'routeAccessibility', *sorted(set(unverified_fields))],
+                       'routeAccessibility': 'UNVERIFIED'},
         'sources': source_payload})

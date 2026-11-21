@@ -1,0 +1,237 @@
+{
+  "syntheticOnly": false,
+  "appMode": "runtime",
+  "realDataVerified": false,
+  "realTravelVerified": false,
+  "acceptanceComplete": false,
+  "runDate": "2026-11-21T15:02:35.367618+09:00",
+  "codeRevision": "003a38e6107f1a88e300c9fc92f7494e88c1b30d",
+  "workingTreeModified": false,
+  "dbSha256": "c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75",
+  "casesSha256": "cdd8d3f75f646707d8bfec65e61af5b894130ef9d47dffafc9011c8fb3213ccb",
+  "casesVersion": "draft-2026-11-16",
+  "radiusMeters": 1500.0,
+  "weightsVersion": "draft-2026-11-17",
+  "evaluationCenter": {
+    "latitude": 35.159084,
+    "longitude": 129.160279
+  },
+  "travelProvider": "app.travel.walking:WalkingTravelTimeProvider",
+  "scenarioResults": [
+    {
+      "id": "CS-01",
+      "state": "PASS",
+      "responseMs": 92.06280007492751,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "manualChecksPending": [],
+      "outcome": "SUCCESS",
+      "excludedUnknown": {
+        "count": 15,
+        "fields": [
+          "openHours"
+        ]
+      },
+      "warningCodes": [
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ]
+    },
+    {
+      "id": "CS-02",
+      "state": "PASS",
+      "responseMs": 67.43210006970912,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "manualChecksPending": [],
+      "outcome": "SUCCESS",
+      "excludedUnknown": {
+        "count": 15,
+        "fields": [
+          "openHours"
+        ]
+      },
+      "warningCodes": [
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ]
+    },
+    {
+      "id": "CS-03",
+      "state": "PASS",
+      "responseMs": 75.11440000962466,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "manualChecksPending": [
+        "wheelchair 정보가 없는 장소는 excludedUnknown에 집계"
+      ],
+      "outcome": "SUCCESS",
+      "excludedUnknown": {
+        "count": 66,
+        "fields": [
+          "mobility.wheelchair",
+          "openHours"
+        ]
+      },
+      "warningCodes": [
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ]
+    },
+    {
+      "id": "CS-04",
+      "state": "PASS",
+      "responseMs": 78.23039998766035,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "manualChecksPending": [],
+      "outcome": "SUCCESS",
+      "excludedUnknown": {
+        "count": 66,
+        "fields": [
+          "mobility.stroller",
+          "openHours"
+        ]
+      },
+      "warningCodes": [
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ]
+    },
+    {
+      "id": "CS-05",
+      "state": "PASS",
+      "responseMs": 62.556999968364835,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "manualChecksPending": [
+        "보행 속도 3 km/h로 계산",
+        "계단 회피 대리 판정(wheelchair true) 적용",
+        "부상 규칙 안내 경고"
+      ],
+      "outcome": "SUCCESS",
+      "excludedUnknown": {
+        "count": 56,
+        "fields": [
+          "mobility.wheelchair",
+          "openHours"
+        ]
+      },
+      "warningCodes": [
+        "INJURY_RULES",
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ]
+    },
+    {
+      "id": "CS-06",
+      "state": "EXCLUDED",
+      "responseMs": null,
+      "hardViolations": null,
+      "missingPlaceIds": null,
+      "manualChecksPending": [],
+      "unsupportedFields": [
+        "indoorPreference"
+      ]
+    },
+    {
+      "id": "CS-07",
+      "state": "PASS",
+      "responseMs": 64.21290000434965,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "manualChecksPending": [],
+      "outcome": "SUCCESS",
+      "excludedUnknown": {
+        "count": 10,
+        "fields": [
+          "openHours"
+        ]
+      },
+      "warningCodes": [
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ]
+    },
+    {
+      "id": "CS-08",
+      "state": "PASS",
+      "responseMs": 52.820300101302564,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "manualChecksPending": [
+        "SUCCESS면 장소 2곳 이상"
+      ],
+      "outcome": "INSUFFICIENT_PLACES",
+      "excludedUnknown": {
+        "count": 15,
+        "fields": [
+          "openHours"
+        ]
+      },
+      "warningCodes": [
+        "INSUFFICIENT_PLACES",
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ]
+    },
+    {
+      "id": "CS-09",
+      "state": "PASS",
+      "responseMs": 98.74829999171197,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "manualChecksPending": [
+        "장소 6곳 이하",
+        "응답시간 15초 이내"
+      ],
+      "outcome": "SUCCESS",
+      "excludedUnknown": {
+        "count": 15,
+        "fields": [
+          "openHours"
+        ]
+      },
+      "warningCodes": [
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ]
+    },
+    {
+      "id": "CS-10",
+      "state": "PASS",
+      "responseMs": 37.454299977980554,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "manualChecksPending": [],
+      "outcome": "SUCCESS",
+      "excludedUnknown": {
+        "count": 15,
+        "fields": [
+          "openHours"
+        ]
+      },
+      "warningCodes": [
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ]
+    }
+  ],
+  "executedScenarios": 9,
+  "excludedScenarios": 1,
+  "automatedChecksPassed": true,
+  "hardViolations": 0,
+  "missingPlaceIds": 0,
+  "within15SecondsRatio": 1.0,
+  "performanceTargetMet": true,
+  "manualReviewRequired": true
+}
