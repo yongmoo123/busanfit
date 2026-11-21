@@ -77,7 +77,7 @@ example.invalid는 의도적으로 사용할 수 없는 출처 주소다. 실제
 - 질문은 최대 2개씩 한다. 불확실한 중요한 조건을 기본값으로 덮어쓰지 않는다.
 
 ## 5. capabilities와 첫 주 지원
-일반 `app.main:app` 서버는 시작 시 `BUSANFIT_DB_PATH`의 읽기 전용 DB·#65 검색기·실제 COMP-06·DEC-029 승인 동행 점수 연결이 성공하면 HAEUNDAE/WALK 및 area,timeWindow,transport,mobility,companions,excludedCategories를 지원한다. DB/설정/승인 가중치 오류는 시작 실패이며 가상 데이터나 빈 DB로 대체하지 않는다. indoorPreference/budget/preferenceTags 및 정보 없음 포함·날씨·코스 수정은 지원하지 않는다. 실제 호출은 세션 응답의 capabilities를 따른다.
+일반 `app.main:app` 서버는 시작 시 `BUSANFIT_DB_PATH`의 읽기 전용 DB·#65 검색기·실제 COMP-06·DEC-029 승인 동행 점수 연결이 성공하면 4개 권역(HAEUNDAE/SEOMYEON/GWANGALLI/NAMPO, `config/retrieval.json` areaCenters 기준)·WALK 및 area,timeWindow,transport,mobility,companions,excludedCategories를 지원한다. DB/설정/승인 가중치 오류와 지원 권역 중 하나라도 중심 좌표가 없거나 반경 조회가 실패하는 경우는 시작 실패이며 가상 데이터나 빈 DB로 대체하지 않는다. indoorPreference/budget/preferenceTags 및 정보 없음 포함·날씨·코스 수정은 지원하지 않는다. 실제 호출은 세션 응답의 capabilities를 따른다.
 예시 capabilities는 HAEUNDAE/WALK 및 area,timeWindow,transport,indoorPreference,companions,excludedCategories를 지원한다.
 budget/mobility/preferenceTags도 최종 프로필 모양에는 있으나 예시 서버의 첫 주 활성 조건 지원 범위에는 없다.
 - 미지원 필드가 null/빈 목록이면 미설정으로 취급할 수 있다.

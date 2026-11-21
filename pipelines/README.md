@@ -40,6 +40,92 @@ $env:BUSANFIT_DB_PATH = "data/haeundae_sample.sqlite3"     # PowerShell (backend
 
 `data/raw/`, `data/processed/`, `*.sqlite*`, `.env`는 `.gitignore` 대상입니다(`git check-ignore`로 확인). 원본 폴더는 `--raw`로 바꿀 수 있습니다.
 
+## 권역 확장 (FR-020, 이슈 #36)
+
+4개 권역(HAEUNDAE·SEOMYEON·GWANGALLI·NAMPO)의 장소를 넣는 순서입니다. **PM 결정 11/21: 권역 = 중심 좌표에서 반경 1500 m 안**이고, 원이 시군구 경계를 넘으므로 부산 시군구 목록을 모두 받아 원 안 장소만 고릅니다.
+
+| 파일 | 내용 |
+|---|---|
+| `areas.py` | 권역 표(권역 코드·시군구 이름·법정동 코드·원본 폴더). 권역별 값은 여기 한 곳 |
+| `circles.py` | 원 판정. 중심은 `config/retrieval.json` `areaCenters`, 반경은 `BUSANFIT_WALK_RADIUS_M`(기본 1500)을 런타임과 같이 읽음. 두 원에 동시에 들어가면 `CircleOverlap`으로 멈춤 |
+| `circle_details.py` | 원 안 대상의 상세(국문 공통·소개, 무장애) 원본 수집 |
+| `circle_build.py` | 4개 권역 DB 적재 (v3) |
+| `duty_free_ids.py` | 원 안 사후면세점(SH040300) 제외 목록, 백화점 예외 반영 |
+
+권역 중심 (`config/retrieval.json`, 좌표는 목록 원본 mapy·mapx 그대로)
+
+| 권역 | 중심 장소 (contentid) | 위도, 경도 | 근거 |
+|---|---|---|---|
+| HAEUNDAE | 해운대해수욕장 (126081) | 35.159084, 129.160279 | DEC-023 ① (기존 값 그대로) |
+| SEOMYEON | 서면1번가 (1046349) | 35.1535355425, 129.0582576708 | PM 11/21 |
+| GWANGALLI | 광안리해수욕장 (126078) | 35.1531932737, 129.1189760936 | PM 11/21 |
+| NAMPO | BIFF 광장 (127488) | 35.0980089584, 129.0320042811 | PM 11/21 |
+
+### `--area` (권역 인자)
+
+`haeundae_sample`·`accessibility_judge`·`accessibility_collect`는 `--area`(기본 `HAEUNDAE`)를 받습니다. `--raw`를 주지 않으면 권역 원본 폴더를 씁니다: 해운대 `data/raw/tourapi/`(기존 경로 그대로), 다른 권역 `data/raw/tourapi/<권역>/`. `--area`는 하위 명령 앞에 씁니다.
+
+```text
+.venv/Scripts/python.exe -m pipelines.haeundae_sample --area SEOMYEON fetch --list-only   # 그 구의 areaBasedList2만
+.venv/Scripts/python.exe -m pipelines.accessibility_judge --area NAMPO report
+```
+
+`--area`는 시군구 하나 기준입니다. 원 기준 4개 권역 DB는 아래 `circle_build`로 만듭니다.
+
+### 1) 목록 수집 — 부산 시군구 전부 (네트워크)
+
+```text
+.venv/Scripts/python.exe -m pipelines.haeundae_sample fetch-sigungu-list --all          # ldong/26.json의 16개 구·군
+.venv/Scripts/python.exe -m pipelines.haeundae_sample fetch-sigungu-list --sigungu 170 200
+```
+- `areaBasedList2`만 호출합니다. 권역 표에 있는 구는 권역 폴더(해운대 `data/raw/tourapi/`, 부산진구 `SEOMYEON/`, 수영구 `GWANGALLI/`, 중구 `NAMPO/`), 나머지 구는 `data/raw/tourapi/sigungu/<시군구 코드>/`에 둡니다. 받은 페이지는 다시 받지 않고, 오류가 나면 그 자리에서 멈춥니다(재시도 없음). 기본 `--max-calls 30`.
+- 시군구 코드는 해운대 수집 때 받은 `data/raw/tourapi/ldong/26.json`에서만 읽습니다(추측 값 없음).
+
+### 2) 원 안 상세 수집 (네트워크)
+
+```text
+.venv/Scripts/python.exe -m pipelines.circle_details --center 126081 --center 1046349 --center 126078 --center 127488 --dry-run
+.venv/Scripts/python.exe -m pipelines.circle_details --center 126081 --center 1046349 --center 126078 --center 127488 --max-calls 790
+```
+- 대상: 저장된 모든 시군구 목록 중 대상 유형(12·14·28·38·39)이고 `--center` 장소 좌표에서 `--radius`(기본 1500 m) 안인 장소의 합집합. 원본은 장소가 속한 시군구 폴더의 `common/`·`intro/`·`accessibility/`에 저장합니다. 있는 파일은 다시 호출하지 않습니다.
+- `--max-calls`는 상세기능별 한도(일일 한도 1000회/기능 안에서). 필요한 호출이 한도보다 많으면 호출 전에 멈춥니다. 응답이 정상이 아니거나 전송 오류면 전체를 멈춥니다(재시도 없음). `--dry-run`은 키를 읽지 않고 대상·남은 호출 수만 출력합니다.
+
+### 3) 사후면세점 제외 목록 (네트워크 없음)
+
+```text
+.venv/Scripts/python.exe pipelines/duty_free_ids.py           # config/duty-free-exclusion.proposal.json 다시 쓰기
+.venv/Scripts/python.exe pipelines/duty_free_ids.py --check   # 파일이 원본과 같은지만
+```
+- 저장된 시군구 목록 전체에서 4개 원 안(목록 좌표 기준)의 쇼핑(38)·`lclsSystm3 == SH040300` 장소 ID (DEC-023 ④).
+- **백화점 예외 (PM 11/21, "백화점은 놀거리 후보")**: `config/duty-free-exceptions.json`의 장소는 목록에서 뺍니다. 이름이 백화점 본점(지점) 자체인 항목만 넣고, 백화점 입점 매장(브랜드 매장)·대형마트·아울렛은 넣지 않습니다. 예외 장소가 원 안 SH040300 장소가 아니거나 이름이 원본과 다르면 오류로 멈춥니다.
+- 결과 (11/21): 원 안 쇼핑 379곳, SH040300 343곳, 예외 1곳(롯데백화점 부산본점 2908259), **제외 목록 342곳** (해운대 28, 서면 200, 광안리 12, 남포 102). 해운대 원 안 제외 대상 28곳은 이전 목록(해운대구 전체 112곳)과 같습니다.
+- 원 안 SH040300 백화점 본점 항목은 2908259 하나입니다. 같은 백화점이 132607(SH010100)으로도 있어 원래 제외되지 않았고, 예외로 두 항목 모두 후보가 됩니다(판단 필요, PR 참고). 원 밖 백화점(롯데 센텀시티점 2917200, 신세계 센텀시티점 2901373·767084, 롯데 동래점, NC 부산대점)은 DB에 들어가지 않습니다.
+
+### 4) DB 적재 v3 (네트워크 없음)
+
+```text
+.venv/Scripts/python.exe -m pipelines.circle_build --db data/share/busanfit_v3.sqlite3 [--report data/processed/v3_report.json]
+```
+- 저장된 시군구 원본을 모두 합쳐 읽고(같은 contentid가 두 구에 있으면 코드 순 첫 구, 보고서 `listed_duplicates_across_sigungu`), 대상 유형 장소마다 DB에 들어갈 좌표(공통정보가 목록 값을 덮은 것)로 권역을 정합니다. 어느 원에도 안 들어가면 건너뛰고 건수를 보고하고(`target_outside_circles_skipped`), 두 원에 들어가면 DB를 만들기 전에 멈춥니다.
+- 장소 행은 권역마다 `mapping.build_rows`(카테고리·운영시간 파서·체류시간 그대로), 무장애는 장소가 속한 시군구 폴더의 `accessibility/` 원본을 `accessibility_judge`의 DEC-026 규칙·`grade_of`로 판정해 `accessibility_judge.load`로 넣습니다. 두 출처 license는 `mapping.PORTAL_LICENSE`.
+- 보고서 `duty_free.not_in_exclusion_or_exceptions`: DB에 있는 SH040300 장소 중 제외 목록에도 예외에도 없는 것(0이어야 함).
+- 같은 경로에 파일이 있으면 거절합니다. 같은 원본이면 같은 테이블 내용이 나옵니다(두 번 만들어 `iterdump` 비교).
+
+### 결과 (v3, 2026-11-21)
+
+| 권역 | 장소 | open_hours NULL | 무장애 행 | VERIFIED | UNSUITABLE | UNKNOWN |
+|---|---|---|---|---|---|---|
+| HAEUNDAE | 107 | 30 | 18 | 16 | 0 | 91 |
+| SEOMYEON | 258 | 137 | 18 | 14 | 0 | 244 |
+| GWANGALLI | 64 | 29 | 5 | 4 | 0 | 60 |
+| NAMPO | 201 | 100 | 36 | 29 | 1 | 171 |
+| 합계 | 630 | 296 | 77 | 63 | 1 | 566 |
+
+- 저장된 목록 2232건 중 대상 아닌 유형 197건, 원 밖 대상 1405곳 건너뜀, 두 원 겹침 0. 상세·무장애 원본 없음 0.
+- 해운대 107곳은 v2의 해운대해수욕장 1500 m 안 107곳과 장소 칸·무장애 행이 같고, #65 Retriever 후보(토 13–18시, 일반·휠체어·유모차·부상)도 v2와 같습니다.
+- SHA-256·크기·백화점 예외는 `data/share/busanfit_v3.txt`, 받는 방법은 `backend/app/data/README.md`.
+- 권역을 앱에서 켜는 코드(`supportedAreas` 등)는 별도입니다(김영무 확인 대기).
+
 ### 확인한 API 사양 (출처)
 
 엔드포인트·파라미터·응답 필드 이름은 저장소 문서에 없어서 **공공데이터포털 페이지에 들어 있는 Swagger 정의**로 확인했습니다(2026-11-12).

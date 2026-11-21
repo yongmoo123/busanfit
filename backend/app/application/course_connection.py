@@ -6,6 +6,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 
 from app.application.course_service import CourseService
+from app.application.profile_support import configured_areas
 from app.application.sqlite_adapter import ConnectionPerCallRepository
 from app.courses.companion_scoring import ProposalCompanionScorer, load_companion_proposal
 from app.courses.scheduler import CourseScheduler
@@ -48,11 +49,13 @@ def prepare_course_connection(db_path, *, travel_provider, retrieval_settings=No
                        max_candidates=retrieval_settings.max_candidates)
     weights = load_companion_proposal(weights_path, approved_only=True)
     repository = ConnectionPerCallRepository(path, read_only=True)
-    center = retrieval_settings.area_centers.get('HAEUNDAE')
-    if center is None:
-        raise CourseConnectionError('HAEUNDAE center is required')
-    # Fail during preparation for a corrupt/missing-schema DB; no fake fallback.
-    repository.find_within_radius(*center, settings.radius_meters, area='HAEUNDAE', limit=1)
+    # Every area published in capabilities needs a center and a working radius query (FR-020).
+    for area in configured_areas():
+        center = retrieval_settings.area_centers.get(area)
+        if center is None:
+            raise CourseConnectionError(f'{area} center is required')
+        # Fail during preparation for a corrupt/missing-schema DB; no fake fallback.
+        repository.find_within_radius(*center, settings.radius_meters, area=area, limit=1)
     service = CourseService(PlaceRetriever(repository, retrieval_settings), travel_provider,
         repository, settings=settings,
         scheduler=CourseScheduler(settings, scorer=ProposalCompanionScorer(weights)))

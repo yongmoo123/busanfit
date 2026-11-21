@@ -4,6 +4,21 @@
       "latitude": 35.159084,
       "longitude": 129.160279,
       "basis": "DEC-023 ①: 해운대해수욕장 (TourAPI contentid 126081)"
+    },
+    "SEOMYEON": {
+      "latitude": 35.1535355425,
+      "longitude": 129.0582576708,
+      "basis": "PM 결정 11/21: 서면1번가 (TourAPI contentid 1046349, 부산진구 목록 원본 mapy·mapx)"
+    },
+    "GWANGALLI": {
+      "latitude": 35.1531932737,
+      "longitude": 129.1189760936,
+      "basis": "PM 결정 11/21: 광안리해수욕장 (TourAPI contentid 126078, 수영구 목록 원본 mapy·mapx)"
+    },
+    "NAMPO": {
+      "latitude": 35.0980089584,
+      "longitude": 129.0320042811,
+      "basis": "PM 결정 11/21: BIFF 광장 (TourAPI contentid 127488, 중구 목록 원본 mapy·mapx)"
     }
   },
   "excludedPlaceIdFiles": [

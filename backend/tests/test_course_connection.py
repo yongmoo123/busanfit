@@ -40,6 +40,12 @@ def dataset(tmp_path, *, expected='SUCCESS'):
     return path
 
 
+def all_centers():
+    """Configured centers for every supported area, HAEUNDAE pinned to the DEC-023 evaluation center."""
+    from app.retrieval.settings import load_retrieval_settings
+    return {**load_retrieval_settings().area_centers, 'HAEUNDAE': runner.EVALUATION_CENTER}
+
+
 def fixture_connection(stored):
     path, places, repository = stored
     travel = FakeTravel()
@@ -193,7 +199,7 @@ def test_preparation_keeps_unconnected_factory_closed(stored):
 @pytest.mark.parametrize('radius', [1500, 2000])
 def test_actual_pr65_retrieval_and_shared_radius_with_fixture_db(stored, radius):
     from app.retrieval import settings as settings_module
-    settings = settings_module.RetrievalSettings({'HAEUNDAE': runner.EVALUATION_CENTER}, radius)
+    settings = settings_module.RetrievalSettings(all_centers(), radius)
     connection = prepare_course_connection(stored[0], travel_provider=FakeTravel(), retrieval_settings=settings)
     assert connection.settings.radius_meters == radius
     assert connection.service.scheduler.settings == connection.settings
@@ -213,7 +219,7 @@ def test_search_and_validator_agree_for_fixture_places_between_1500_and_2000_m(s
     with connect(stored[0]) as conn:
         conn.execute('UPDATE places SET latitude = 35.175, longitude = 129.16')
     conn.close()
-    settings = settings_module.RetrievalSettings({'HAEUNDAE': runner.EVALUATION_CENTER}, radius)
+    settings = settings_module.RetrievalSettings(all_centers(), radius)
     connection = prepare_course_connection(stored[0], travel_provider=FakeTravel(), retrieval_settings=settings)
     # Configurable app connection remains supported. This is not an official CS run.
     from app.api.profile_models import Profile
@@ -224,6 +230,30 @@ def test_search_and_validator_agree_for_fixture_places_between_1500_and_2000_m(s
         result = connection.service.generate(Profile.model_validate(blank_profile() | case['profile']), 1,
             build_profile_capabilities(ProfileSupport(True, frozenset(INITIAL_FIELDS), True)))
         assert ('SUCCESS' if result.course is not None else 'INSUFFICIENT_PLACES') == expected
+
+
+@pytest.mark.parametrize('missing', ['HAEUNDAE', 'SEOMYEON', 'GWANGALLI', 'NAMPO'])
+def test_startup_requires_a_center_for_every_supported_area(stored, missing):
+    from app.retrieval import settings as settings_module
+    centers = all_centers()
+    del centers[missing]
+    settings = settings_module.RetrievalSettings(centers, 1500)
+    with pytest.raises(CourseConnectionError, match=f'{missing} center is required'):
+        prepare_course_connection(stored[0], travel_provider=FakeTravel(), retrieval_settings=settings)
+
+
+def test_startup_queries_the_radius_of_every_supported_area(stored, monkeypatch):
+    from app.application.sqlite_adapter import ConnectionPerCallRepository
+    from app.retrieval import settings as settings_module
+    seen = []
+    original = ConnectionPerCallRepository.find_within_radius
+    def spy(self, *args, **kwargs):
+        seen.append(kwargs.get('area'))
+        return original(self, *args, **kwargs)
+    monkeypatch.setattr(ConnectionPerCallRepository, 'find_within_radius', spy)
+    prepare_course_connection(stored[0], travel_provider=FakeTravel(),
+                              retrieval_settings=settings_module.RetrievalSettings(all_centers(), 1500))
+    assert seen == ['HAEUNDAE', 'SEOMYEON', 'GWANGALLI', 'NAMPO']
 
 
 @pytest.mark.parametrize('fault', ['radius', 'retrieval-radius', 'center'])
@@ -256,7 +286,7 @@ def test_merged_pr65_default_settings_and_four_mode_http_flow(stored, tmp_path, 
     monkeypatch.delenv('BUSANFIT_WALK_RADIUS_M', raising=False)
     connection = prepare_course_connection(stored[0], travel_provider=FakeTravel())
     assert isinstance(connection.service.retriever, PlaceRetriever)
-    assert len(connection.retrieval_settings.excluded_place_ids) == 112
+    assert len(connection.retrieval_settings.excluded_place_ids) == 342  # 4개 권역 원 기준 (FR-020, PM 11/21)
     assert connection.retrieval_settings.radius_m == connection.settings.radius_meters == 1500
     assert connection.retrieval_settings.area_centers['HAEUNDAE'] == runner.EVALUATION_CENTER
     report = runner.evaluate_database(connection, dataset(tmp_path), synthetic=True)

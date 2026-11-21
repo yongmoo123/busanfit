@@ -62,7 +62,7 @@ def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1
         description=("세션 생성·종료·조건 카드 전체 교체를 지원합니다. "
                      + ("조건 채팅·규칙 대체 처리를 지원합니다. " if condition_extractor is not None else
                         "조건 채팅을 사용할 수 없습니다. ")
-                     + "일반 서버는 설정된 DB로 해운대·도보 코스와 장소 상세를 지원합니다. 실제 지원 범위는 세션 응답의 capabilities를 따릅니다. Gemini는 환경변수 설정 시 추출에 연결되며, 추천 이유는 설명 생성기 주입 시 연결됩니다."),
+                     + "일반 서버는 설정된 DB로 4개 권역(해운대·서면·광안리·남포)·도보 코스와 장소 상세를 지원합니다. 실제 지원 범위는 세션 응답의 capabilities를 따릅니다. Gemini는 환경변수 설정 시 추출에 연결되며, 추천 이유는 설명 생성기 주입 시 연결됩니다."),
         debug=False,
         lifespan=lifespan,
     )
