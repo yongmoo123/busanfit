@@ -17,6 +17,7 @@ build/
 *.db
 data/raw/
 data/processed/
+data/share/
 .DS_Store
 Thumbs.db
 .idea/
