@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react'
 import CourseMap from './CourseMap.jsx'
-import SuggestionChips from './SuggestionChips.jsx'
+import UnknownPlaceSuggestion from './UnknownPlaceSuggestion.jsx'
+import { selectCourseSuggestions, includedUnknownPlaceIds } from './unknownInclusion.js'
 import PlaceDetail from './PlaceDetail.jsx'
 import { getPlaceDetail } from './courseApi.js'
 import courseExample from './mocks/04-course.success.response.json'
@@ -58,6 +59,7 @@ function ServerPlaceDetail({ item, isMock }) {
 
 export default function CourseTimeline({
   courseResponse, isMock = !courseResponse, onEditSuggestion, suggestionsDisabled = false, isInjury = false,
+  supportsUnknownInclusion = false, onIncludeUnknown,
 }) {
   const [selectedItemId, setSelectedItemId] = useState(null)
   const detailId = useId()
@@ -68,12 +70,22 @@ export default function CourseTimeline({
 
   const response = courseResponse ?? (showInsufficient ? insufficientExample : courseExample)
   const { status, course, warnings, excludedUnknown } = response
+  const suggestions = selectCourseSuggestions(response.suggestions, supportsUnknownInclusion)
+  const unknownPlaceIds = includedUnknownPlaceIds(warnings)
+  const controls = (
+    <UnknownPlaceSuggestion
+      suggestions={suggestions}
+      disabled={suggestionsDisabled}
+      onConfirm={onIncludeUnknown}
+      onEditProfile={(field) => onEditSuggestion?.({ field })}
+    />
+  )
 
   if (status === 'INSUFFICIENT_PLACES') {
     return (
       <section className="condition-card" aria-label="후보 부족 안내">
         <h3>방문할 장소가 부족해요</h3>
-        {isInjury && (
+        {isInjury && !warnings.some((warning) => warning.code === 'INJURY_RULES') && (
           <p className="chat-warning">
             이동이 힘들면 택시·대중교통 이용을 추천해요. 이 코스의 이동시간은 도보 기준이에요.
           </p>
@@ -82,6 +94,7 @@ export default function CourseTimeline({
         {warnings.map((warning) => (
           <p key={warning.code}>{warning.message}</p>
         ))}
+        {controls}
         {excludedUnknown.count > 0 && (
           <p>필요한 정보가 없어 제외된 장소 {excludedUnknown.count}곳</p>
         )}
@@ -95,12 +108,15 @@ export default function CourseTimeline({
   return (
     <section className="condition-card" aria-label={title}>
       <h3>{title}</h3>
-      {isInjury && (
+      {isInjury && !warnings.some((warning) => warning.code === 'INJURY_RULES') && (
         <p className="chat-warning">
           이동이 힘들면 택시·대중교통 이용을 추천해요. 이 코스의 이동시간은 도보 기준이에요.
         </p>
       )}
 
+      {course.validation?.status === 'CONDITIONAL' && (
+        <p className="unknown-place-warning">조건부 코스 · 접근성 정보가 없는 장소가 포함돼 있어요. 방문 전 이용 가능 여부를 확인해 주세요.</p>
+      )}
       <ol>
         {course.items.map((item) => {
           const incomingLeg = course.legs.find((leg) => leg.toItemId === item.id)
@@ -136,6 +152,9 @@ export default function CourseTimeline({
                 {item.stayMinutes}분
               </p>
 
+              {unknownPlaceIds.has(item.place.id) && (
+                <p className="unknown-place-warning">접근성 정보 없음 · 이용 가능 여부를 확인하지 못했어요. 방문 전 직접 확인해 주세요.</p>
+              )}
               <p>
                 접근성 등급:{' '}
                 {accessibilityLabels[item.place.accessibility?.grade] ?? '정보 없음'}
@@ -171,12 +190,9 @@ export default function CourseTimeline({
 
       <CourseMap items={course.items} isMock={isMock} />
 
-      {onEditSuggestion && (
-        <SuggestionChips
-          suggestions={(response.suggestions ?? []).filter((suggestion) => suggestion.type === 'EDIT_PROFILE')}
-          disabled={suggestionsDisabled}
-          onSelect={onEditSuggestion}
-        />
+      {controls}
+      {excludedUnknown.count > 0 && (
+        <p>정보가 없어 제외된 장소가 {excludedUnknown.count}곳 있어요.</p>
       )}
 
       {warnings.map((warning) => (

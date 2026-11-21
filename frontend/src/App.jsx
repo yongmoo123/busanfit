@@ -7,6 +7,7 @@ import { budgetLabel } from './profileDefaults.js'
 import ProfileEditor from './ProfileEditor.jsx'
 import CourseTimeline from './CourseTimeline.jsx'
 import { createCourse } from './courseApi.js'
+import { buildInclusionProfile } from './unknownInclusion.js'
 import './App.css'
 
 const MIN_SIDEBAR_WIDTH = 220
@@ -82,7 +83,7 @@ function getCompanionsName(value) {
   return value.count ? `${type} · ${value.count}명` : type
 }
 
-function ConditionCard({ profile, onRecommend, onEdit, ready }) {
+function ConditionCard({ profile, onRecommend, onEdit, ready, disabled = false }) {
   const timeWindow = profile?.timeWindow?.value
 
   const items = [
@@ -116,9 +117,10 @@ function ConditionCard({ profile, onRecommend, onEdit, ready }) {
         ))}
       </div>
 
+      <p>접근성 미확인 장소 포함: {profile.includeUnknownAccessibility ? '요청함' : '요청 안 함'}</p>
       <div className="profile-actions">
-        <button type="button" className="primary-button" onClick={onEdit}>조건 편집</button>
-        <button type="button" className="profile-secondary" disabled={!ready} onClick={onRecommend}>가상 코스 미리보기</button>
+        <button type="button" className="primary-button" disabled={disabled} onClick={onEdit}>조건 편집</button>
+        <button type="button" className="profile-secondary" disabled={!ready || disabled} onClick={onRecommend}>코스 만들기</button>
       </div>
     </div>
   )
@@ -223,6 +225,9 @@ function App() {
   const profileSaveRef = useRef(false)
   const courseRequestRef = useRef(null)
   const [isCreatingCourse, setIsCreatingCourse] = useState(false)
+  const [isIncludingUnknown, setIsIncludingUnknown] = useState(false)
+  const [courseRetry, setCourseRetry] = useState(null)
+  const unknownRequestRef = useRef(false)
 
   useEffect(() => {
     if (isQaEditor) return undefined
@@ -253,8 +258,9 @@ function App() {
   }, [isQaEditor, sessionAttempt])
 
   function retrySession() {
-    if (profileSaveRef.current) return
+    if (profileSaveRef.current || unknownRequestRef.current) return
     courseRequestRef.current?.abort()
+    setCourseRetry(null)
     if (session?.sessionId) deleteSession(session.sessionId).catch(() => {})
     sessionRequestRef.current = null
     setSession(null)
@@ -364,6 +370,7 @@ function App() {
     let result
     try {
       result = await saveProfile(session.sessionId, profile, session.profileRevision)
+      setCourseRetry(null)
       setSession((current) => {
         if (current?.sessionId !== session.sessionId) return current
         return {
@@ -477,6 +484,8 @@ function App() {
 
     try {
       const response = await sendChat(session.sessionId, text, session.profileRevision, controller.signal)
+      if (controller.signal.aborted) return
+      setCourseRetry(null)
       setSession((current) => ({
         ...current,
         savedProfile: response.profile,
@@ -533,10 +542,12 @@ function App() {
     }
 
     const requestedRevision = savedProfile.profileRevision
-    const isInjuryCourse = savedProfile.profile?.mobility?.value?.includes('INJURY') ?? false
+    const courseProfile = savedProfile.profile ?? savedProfile.savedProfile
+    const isInjuryCourse = courseProfile?.mobility?.value?.includes('INJURY') ?? false
     const controller = new AbortController()
     courseRequestRef.current = controller
     setIsCreatingCourse(true)
+    setCourseRetry(null)
 
     try {
       const response = await createCourse(
@@ -547,9 +558,9 @@ function App() {
 
       if (controller.signal.aborted) return
 
-      const isDemo =
-        import.meta.env.DEV &&
+      const isDemo = import.meta.env.DEV &&
         new URLSearchParams(window.location.search).get('qa') === 'course-api'
+      setCourseRetry(null)
 
       setMessages((previous) => [
         ...previous,
@@ -573,6 +584,13 @@ function App() {
       if (!controller.signal.aborted) {
         if ([409, 410].includes(error.status)) {
           setSessionError('코스 생성 상태를 확인할 수 없어요. 새 대화를 시작해 주세요.')
+        } else if (!error.status || error.status === 429 || error.status >= 500) {
+          setCourseRetry({
+            sessionId: session.sessionId,
+            profileRevision: requestedRevision,
+            status: 'READY',
+            profile: courseProfile,
+          })
         }
         setMessages((previous) => [
           ...previous,
@@ -595,17 +613,37 @@ function App() {
   }
 
   function handleRecommend() {
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: '가상 코스 결과를 확인해 보세요.',
-        showCoursePlaceholder: true,
-        isInjuryCourse: (messages.findLast((item) => item.profile)?.profile ?? session?.profile)?.mobility?.value?.includes('INJURY') ?? false,
-        isMock: true,
-      },
-    ])
+    return handleCreateCourse()
+  }
+
+  async function handleIncludeUnknown(message) {
+    if (!session || sessionError || editor || isSending || profileSaveRef.current ||
+        courseRequestRef.current || unknownRequestRef.current) return
+    if (message.requestedRevision !== session.profileRevision ||
+        message.id !== messages.findLast((item) => item.courseResponse)?.id) {
+      throw new Error('조건이 변경됐어요. 최신 조건으로 코스를 다시 만들어 주세요.')
+    }
+    const profile = buildInclusionProfile(session)
+    unknownRequestRef.current = true
+    setIsIncludingUnknown(true)
+    try {
+      const result = await handleSaveProfile(profile)
+      if (result.status !== 'READY' || !result.profile.includeUnknownAccessibility) return
+      await handleCreateCourse(result)
+    } catch (error) {
+      error.userMessage = error.message
+      throw error
+    } finally {
+      unknownRequestRef.current = false
+      setIsIncludingUnknown(false)
+    }
+  }
+
+  async function handleRetryCourse() {
+    if (!courseRetry || editor || isSending || isIncludingUnknown ||
+        courseRetry.sessionId !== session?.sessionId ||
+        courseRetry.profileRevision !== session?.profileRevision) return
+    return handleCreateCourse(courseRetry)
   }
 
   function handleKeyDown(event) {
@@ -625,7 +663,7 @@ function App() {
         aria-label="여행 조건 입력"
         rows={1}
         maxLength={1000}
-        disabled={isSending || isCreatingCourse || !session || Boolean(sessionError) || Boolean(editor)}
+        disabled={isSending || isCreatingCourse || isIncludingUnknown || !session || Boolean(sessionError) || Boolean(editor)}
       />
       <div className="composer-bottom">
         <span>✦ BusanFit AI</span>
@@ -633,7 +671,7 @@ function App() {
           type="submit"
           className="send-button"
           aria-label="메시지 전송"
-          disabled={!input.trim() || isSending || isCreatingCourse || !session || Boolean(sessionError) || Boolean(editor)}
+          disabled={!input.trim() || isSending || isCreatingCourse || isIncludingUnknown || !session || Boolean(sessionError) || Boolean(editor)}
         >
           ↑
         </button>
@@ -665,7 +703,7 @@ function App() {
         </header>
 
         {!isQaEditor && <div className="chat-notice" role="status">
-          <span>개발 검증 중 · 가상 시나리오만 입력해 주세요. 코스 추천은 준비 중입니다.</span>
+          <span>개발 검증 중 · 개인정보가 없는 가상 조건만 입력해 주세요.</span>
           {sessionError ? <><p>{sessionError}</p><button type="button" onClick={handleNewChat}>새 대화 시작</button></>
             : !session ? <p>서버 연결 중…</p> : <button type="button" disabled={isSending || Boolean(editor)} onClick={() => openEditor('manual')}>조건 직접 입력</button>}
         </div>}
@@ -732,6 +770,7 @@ function App() {
                           <ConditionCard
                             profile={message.profile}
                             ready={message.status === 'READY'}
+                            disabled={isSending || isCreatingCourse || isIncludingUnknown || Boolean(sessionError)}
                             onRecommend={handleRecommend}
                             onEdit={() => openEditor(message.id)}
                           />
@@ -748,12 +787,14 @@ function App() {
                         <CourseTimeline
                           courseResponse={message.courseResponse}
                           isInjury={message.isInjuryCourse ?? false}
+                          supportsUnknownInclusion={session?.capabilities?.supportsUnknownAccessibilityInclusion === true}
+                          onIncludeUnknown={() => handleIncludeUnknown(message)}
                           isMock={message.isMock}
                           onEditSuggestion={message.courseResponse
                             ? (suggestion) => openEditor(message.id, suggestion.field)
                             : undefined}
                           suggestionsDisabled={
-                            Boolean(editor) || isSending || isCreatingCourse || Boolean(sessionError)
+                            Boolean(editor) || isSending || isCreatingCourse || isIncludingUnknown || Boolean(sessionError)
                             || message.id !== messages.findLast((item) => item.courseResponse)?.id
                             || message.requestedRevision !== session?.profileRevision
                           }
@@ -762,6 +803,18 @@ function App() {
                     </div>
                   </div>
                 ))}
+
+                {courseRetry && courseRetry.sessionId === session?.sessionId &&
+                  courseRetry.profileRevision === session?.profileRevision && (
+                  <div className="condition-card" role="status">
+                    <p>저장한 조건은 유지돼요. 조건을 다시 저장하지 않고 코스 생성만 재시도할 수 있어요.</p>
+                    <button type="button" className="profile-secondary"
+                      disabled={Boolean(editor) || isSending || isCreatingCourse || isIncludingUnknown || Boolean(sessionError)}
+                      onClick={handleRetryCourse}>
+                      코스 생성만 다시 시도
+                    </button>
+                  </div>
+                )}
 
                 {isSending && (
                   <div className="message-row assistant">
