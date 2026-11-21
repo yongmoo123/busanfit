@@ -1,4 +1,4 @@
-"""HTTP-level synthetic four-scenario audit and latency measurements, not real data."""
+"""Synthetic HTTP audit by default; explicit case-driven DB mode requires dependencies."""
 import argparse
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
@@ -26,9 +26,22 @@ from audit import audit_response
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--mode', choices=('synthetic', 'real'), default='synthetic')
+    parser.add_argument('--cases', type=Path, default=ROOT / 'evaluation/courses/cases.json')
+    parser.add_argument('--travel-provider', help='agreed COMP-06 zero-argument module:factory')
+    parser.add_argument('--expected-db-sha256')
+    parser.add_argument('--runtime-app', action='store_true', help='audit the ordinary app.main startup connection in real mode')
     args = parser.parse_args()
+    if args.runtime_app and args.mode != 'real':
+        parser.error('--runtime-app requires --mode real')
     if not __debug__:
         parser.error('Contract assertions require Python without -O.')
+    if args.mode == 'real':
+        from database_run import run_database
+        try:
+            return run_database(args)
+        except (OSError, ValueError, ImportError, RuntimeError):
+            parser.exit(2, 'DB evaluation prerequisites failed; check DB path/SHA, PR #53/#65, COMP-06 factory and official 1500m/DEC-023 center.\n')
     contract = runpy.run_path(str(ROOT / 'contracts/validate_contract.py'))
     places = [synthetic_place(i) for i in range(1, 9)]
     places[5] = replace(places[5], open_hours=OpenHoursRecord(None, None))
@@ -99,4 +112,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())

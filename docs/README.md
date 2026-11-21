@@ -10,6 +10,8 @@
 | `sdd.md` | 기준 문서 | 설계의 유일한 기준 (아키텍처·컴포넌트·DB·API 개요) |
 | `plan.md` | 기준 문서 | 프로젝트 계획서 (범위·일정·역할·위험) |
 | `test-report.md` | 제출 문서 | 테스트 및 품질 보고서 (TC·인수 테스트·비기능 측정 결과, DEC-031) |
+| `SUBMISSION_RUN.md` | 실행 안내 초안 | 제출 압축 구성·의존성·DB/SHA·로컬 실행·재현 명령 |
+| `TEST_EVIDENCE_2026-11-21.md` | 검증 근거 | 실제 DB·동의/조건부 API·별도 AI 지연·TC/AC/NFR 반영 범위 |
 | `../contracts/openapi.json` + `API_CONTRACT.md` | 기준 문서 | API 형식(OpenAPI)과 의미 규칙의 유일한 기준 |
 | `DECISIONS.md` | 기록 | 결정 로그. 기준 문서와 다르면 확정 결정이 우선 |
 | `meetings/YYYY-MM-DD.md` | 기록 | 회의록 (참석자·안건·결정·할 일) |

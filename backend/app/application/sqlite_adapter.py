@@ -12,12 +12,13 @@ from app.data.sqlite_repository import SqlitePlaceRepository
 
 
 class ConnectionPerCallRepository:
-    def __init__(self, path: str | Path):
+    def __init__(self, path: str | Path, *, read_only: bool = False):
         self.path = Path(path).resolve()
+        self.read_only = read_only
 
     def _call(self, name, *args, **kwargs):
         try:
-            connection = connect(self.path)
+            connection = connect(self.path, read_only=True) if self.read_only else connect(self.path)
         except sqlite3.Error:
             raise RepositoryError('SQLite connection unavailable') from None
         try:

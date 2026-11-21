@@ -30,6 +30,15 @@ PR #65의 기존 해운대 표본 분석 근거: 반경 1500m 안 SH040300 28곳
 
 같은 표본의 운영시간 NULL 103곳 = 원문은 있으나 파싱 못 한 102곳(DEC-023 기준) + 원문 자체가 없는 1곳. 원문 유무와 관계없이 구조화된 운영시간이 NULL이면 위 하드 조건 표대로 후보에서 제외한다.
 
+## #30 미확인 접근성 후보 풀
+
+`RetrievalResult.unknown_accessibility_candidates`는 필요한 접근성 항목의 null 때문에만 제외된 장소를 거리 근거와 함께 전달한다. 일반 후보와 별도로 거리·ID 순 정렬 후 각각 max_candidates(기본 20)까지 전달하며, CourseService의 최종 배치 후보는 합쳐서 기존 상한을 지킨다. `excludedUnknown` 집계는 다른 정보 누락도 포함하므로 후보 풀과 구분한다.
+
+사후면세점·권역/반경·제외 카테고리·주소·운영시간/체류 가능 구간·접근성 false·실내 HARD 등 확정 제외나 다른 미확인 조건이 있으면 별도 풀에 넣지 않는다. 동의 여부로 검색기의 일반 후보를 완화하지 않는다. #70 서버는 풀의 Repository 사실과 거리·시간·이동제약을 다시 검사하고, 동의 후 접근성 null만 조건부로 허용한다. 실제로 포함되면 CONDITIONAL과 UNKNOWN_ACCESSIBILITY_INCLUDED.placeIds를 반환한다.
+
+실제 DB의 별도 앱 검증 후 사용자 요청으로 #72 일반 서버의 포함 지원을 활성화했다. 일반 시작 경로의 검증은 `evaluation/courses/unknown_inclusion.py --runtime-app`으로 실행한다. capability가 true여도 사용자의 명시적 동의 전에는 이 풀을 코스에 포함하지 않는다.
+
 ## 주의
-- 반경이 두 곳에 있다: 검색은 `BUSANFIT_WALK_RADIUS_M`, 검증(`candidate_violations`)은 `config/courses.json` `radiusMeters`. 둘 다 기본 1500이지만, 환경변수만 늘리면 반경 밖 후보가 검증에서 빠진다.
-- 앱 연결(`CourseService`에 주입, capabilities 활성화)은 이 모듈에 없다(김영무, #50 연결).
+
+- 검색기와 검증기를 개별로 조립할 때는 반경을 맞춰야 한다. 일반 서버의 `prepare_course_connection`은 검색 설정의 반경을 CourseService·Scheduler·Validator에 함께 전달한다.
+- 앱 연결과 capabilities 활성화는 `application/course_connection.py` 및 일반 `app.main:app` 시작 경로에서 담당한다. 이 모듈은 후보 풀만 전달한다.

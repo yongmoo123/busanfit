@@ -34,10 +34,17 @@ class RetrievalResult:
     candidates: tuple[PlaceCandidate, ...]
     excluded_unknown_ids: frozenset[str] = field(default_factory=frozenset)
     excluded_unknown_fields: frozenset[str] = field(default_factory=frozenset)
+    # #30 opt-in pool, separate from ordinary candidates. The #22 adapter must
+    # still apply its definite exclusions (e.g. duty-free IDs). The engine
+    # rechecks Repository facts, distances and all remaining hard conditions.
+    unknown_accessibility_candidates: tuple[PlaceCandidate, ...] = ()
 
     def __post_init__(self):
         if not isinstance(self.candidates, tuple) or not all(isinstance(c, PlaceCandidate) for c in self.candidates):
             raise ValueError('invalid candidates')
+        if (not isinstance(self.unknown_accessibility_candidates, tuple)
+                or not all(isinstance(c, PlaceCandidate) for c in self.unknown_accessibility_candidates)):
+            raise ValueError('invalid unknown accessibility candidates')
         for values in (self.excluded_unknown_ids, self.excluded_unknown_fields):
             if not isinstance(values, frozenset) or not all(isinstance(v, str) for v in values):
                 raise ValueError('invalid exclusion information')
@@ -94,7 +101,13 @@ class Violation:
 class ValidationResult:
     violations: tuple[Violation, ...]
     checked_fields: tuple[str, ...]
+    unverified_fields: tuple[str, ...] = ()
 
     @property
     def passed(self):
+        return self.accepted and not self.unverified_fields
+
+    @property
+    def accepted(self):
+        """No confirmed violation; may require a CONDITIONAL response."""
         return not self.violations
