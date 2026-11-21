@@ -3,6 +3,7 @@
     python -m pipelines.haeundae_sample check                 # 서비스마다 1건 호출, HTTP 상태·resultCode만 출력
     python -m pipelines.haeundae_sample fetch --max-calls 200 # 원본을 data/raw/tourapi/ 에 저장 (이어받기)
     python -m pipelines.haeundae_sample --area SEOMYEON fetch --list-only   # areaBasedList2만
+    python -m pipelines.haeundae_sample fetch-sigungu-list --all            # 부산 시군구별 목록만 (11/21 PM 결정)
     python -m pipelines.haeundae_sample build --db data/busanfit.sqlite3 [--report data/processed/report.json]
 
 --area 기본값은 HAEUNDAE (권역 표: pipelines/areas.py). --raw를 주지 않으면 권역의 원본 폴더를 쓴다
@@ -122,6 +123,26 @@ def find_code(items: list[dict], name: str) -> str:
     return str(found[0])
 
 
+def fetch_list(fetcher: Fetcher, busan: str, sigungu_cd: str) -> list[dict]:
+    """areaBasedList2 every page for one 시군구 (resumable; stored pages are not requested again)."""
+    page, listed = 1, []
+    while True:
+        params = {"lDongRegnCd": busan, "lDongSignguCd": sigungu_cd, "arrange": "A",
+                  "numOfRows": LIST_ROWS, "pageNo": page}
+        data = fetcher.get("areaBasedList2", params, "list", f"areaBasedList2_p{page}.json")
+        listed.extend(items_of(data))
+        if page * LIST_ROWS >= int(data["response"]["body"].get("totalCount") or 0):
+            break
+        page += 1
+    return listed
+
+
+def busan_sigungu(ldong_path: Path = areas.LDONG_BUSAN) -> dict[str, str]:
+    """{시군구 코드: 이름} from the stored ldongCode2 부산 file (no network)."""
+    data = json.loads(ldong_path.read_text(encoding="utf-8"))
+    return {str(it["code"]): str(it["name"]) for it in items_of(data)}
+
+
 def run_fetch(fetcher: Fetcher, area: str = areas.DEFAULT_AREA, *, list_only: bool = False) -> dict:
     """Fetch one area's raw files into ``fetcher.store`` (resumable).
 
@@ -152,16 +173,7 @@ def run_fetch(fetcher: Fetcher, area: str = areas.DEFAULT_AREA, *, list_only: bo
                 break
             page += 1
 
-    page, listed = 1, []
-    while True:
-        params = {"lDongRegnCd": busan, "lDongSignguCd": sigungu_cd, "arrange": "A",
-                  "numOfRows": LIST_ROWS, "pageNo": page}
-        data = fetcher.get("areaBasedList2", params, "list", f"areaBasedList2_p{page}.json")
-        listed.extend(items_of(data))
-        if page * LIST_ROWS >= int(data["response"]["body"].get("totalCount") or 0):
-            break
-        page += 1
-
+    listed = fetch_list(fetcher, busan, sigungu_cd)
     targets = sorted({(str(it["contentid"]), str(it["contenttypeid"])) for it in listed
                       if str(it.get("contenttypeid")) in mapping.TARGET_CONTENT_TYPES},
                      key=lambda pair: (len(pair[0]), pair[0]))
@@ -199,6 +211,43 @@ def cmd_fetch(args) -> int:
         print(f"area={info['area']}, busan lDongRegnCd={info['busan']}, "
               f"lDongSignguCd={info['sigungu']}, listed={info['listed']}, detail targets={info['targets']}"
               + (" (list only: details not fetched)" if args.list_only else ""))
+    return 0 if status == "complete" or status.startswith("stopped: --max-calls") else 1
+
+
+def run_sigungu_lists(client: TourApiClient, codes: list[str], known: dict[str, str],
+                      out=print) -> list[dict]:
+    """areaBasedList2 only, for each 시군구 code in order. Stops at the first error (raises)."""
+    unknown = [c for c in codes if c not in known]
+    if unknown:
+        raise FetchStopped(f"부산 시군구 목록(ldong/{areas.BUSAN_LDONG_REGN_CD}.json)에 없는 코드: {unknown}")
+    done = []
+    for code in codes:
+        fetcher = Fetcher(client, RawStore(areas.sigungu_raw_dir(code)), out=out)
+        before = client.calls
+        listed = fetch_list(fetcher, areas.BUSAN_LDONG_REGN_CD, code)
+        done.append({"sigungu": code, "name": known[code], "listed": len(listed),
+                     "calls": client.calls - before, "raw": str(fetcher.store.root)})
+        out(f"{code} {known[code]}: listed={len(listed)}, calls={client.calls - before}, "
+            f"raw={fetcher.store.root}")
+    return done
+
+
+def cmd_fetch_sigungu_list(args) -> int:
+    known = busan_sigungu()
+    codes = list(known) if args.all else args.sigungu
+    if not codes:
+        print("give --sigungu CODE ... or --all")
+        return 2
+    keys = load_service_keys()
+    client = TourApiClient(keys.kor, KOR_BASE, max_calls=args.max_calls)
+    status = "complete"
+    try:
+        run_sigungu_lists(client, codes, known)
+    except CallBudgetExceeded:
+        status = f"stopped: --max-calls {args.max_calls} reached (run again to continue)"
+    except (FetchStopped, TourApiError) as error:
+        status = f"stopped on error: {error}"
+    print(f"fetch-sigungu-list {status}; calls this run: {client.calls}, key name: {keys.kor_name}")
     return 0 if status == "complete" or status.startswith("stopped: --max-calls") else 1
 
 
@@ -297,13 +346,19 @@ def main(argv: list[str] | None = None) -> int:
     fetch.add_argument("--max-calls", type=int, default=200)
     fetch.add_argument("--list-only", action="store_true",
                        help="areaBasedList2만 호출 (상세 detailCommon2·detailIntro2 호출 안 함)")
+    sig = sub.add_parser("fetch-sigungu-list",
+                         help="부산 시군구별 areaBasedList2만 수집 (권역 원에 걸치는 옆 구, 이어받기)")
+    sig.add_argument("--sigungu", nargs="*", default=[], help="시군구 코드 (ldong/26.json)")
+    sig.add_argument("--all", action="store_true", help="ldong/26.json의 부산 시군구 전부")
+    sig.add_argument("--max-calls", type=int, default=30)
     build = sub.add_parser("build", help="원본에서 새 SQLite DB 만들기 (네트워크 없음)")
     build.add_argument("--db", required=True)
     build.add_argument("--report", default=None)
     args = parse_area_args(parser, argv)
     if getattr(args, "max_calls", 1) < 1:
         parser.error("--max-calls must be >= 1")
-    return {"check": cmd_check, "fetch": cmd_fetch, "build": cmd_build}[args.cmd](args)
+    return {"check": cmd_check, "fetch": cmd_fetch, "fetch-sigungu-list": cmd_fetch_sigungu_list,
+            "build": cmd_build}[args.cmd](args)
 
 
 def add_area_args(parser: argparse.ArgumentParser) -> None:

@@ -46,6 +46,22 @@ DEFAULT_AREA = "HAEUNDAE"
 AREA_CODES = tuple(AREAS)
 
 
+SIGUNGU_SUBDIR = "sigungu"
+LDONG_BUSAN = RAW_ROOT / "ldong" / f"{BUSAN_LDONG_REGN_CD}.json"  # 해운대 수집 때 받은 부산 시군구 목록
+
+
+def sigungu_raw_dir(signgu_cd: str) -> Path:
+    """시군구 하나의 목록 원본 폴더 (PM 결정 11/21: 권역 원에 걸치는 옆 구도 수집).
+
+    권역 표에 있는 구는 그 권역 폴더를 그대로 쓰고(이미 받은 목록을 다시 받지 않음),
+    나머지 구는 data/raw/tourapi/sigungu/<시군구 코드>/ 를 쓴다.
+    """
+    for area in AREAS.values():
+        if area.ldong_signgu_cd == signgu_cd:
+            return area.raw_dir
+    return RAW_ROOT / SIGUNGU_SUBDIR / signgu_cd
+
+
 def get(code: str) -> Area:
     try:
         return AREAS[code]

@@ -207,6 +207,40 @@ def test_full_fetch_uses_area_name_and_checks_table(tmp_path):
     assert "areaBasedList2" not in [op for op, _ in wrong.calls]
 
 
+def test_sigungu_raw_dir_reuses_area_folders():
+    assert areas.sigungu_raw_dir("350") == areas.RAW_ROOT
+    assert areas.sigungu_raw_dir("230") == areas.RAW_ROOT / "SEOMYEON"
+    assert areas.sigungu_raw_dir("500") == areas.RAW_ROOT / "GWANGALLI"
+    assert areas.sigungu_raw_dir("110") == areas.RAW_ROOT / "NAMPO"
+    assert areas.sigungu_raw_dir("290") == areas.RAW_ROOT / "sigungu" / "290"
+
+
+def test_busan_sigungu_reads_stored_ldong_file(tmp_path):
+    path = tmp_path / "26.json"
+    path.write_bytes(ok_body([{"code": "110", "name": "중구"}, {"code": "290", "name": "남구"}]))
+    assert haeundae_sample.busan_sigungu(path) == {"110": "중구", "290": "남구"}
+
+
+def test_sigungu_lists_skip_stored_and_stop_on_unknown(tmp_path, monkeypatch):
+    monkeypatch.setattr(areas, "RAW_ROOT", tmp_path)
+    stored = tmp_path / "list" / "areaBasedList2_p1.json"     # [가상] 해운대구(350) 목록이 이미 있음
+    stored.parent.mkdir(parents=True)
+    stored.write_bytes(ok_body([{"contentid": "1", "contenttypeid": "12"}]))
+    opener = AreaOpener()
+    client = TourApiClient(FAKE_KEY, "https://example.invalid/KorService2", max_calls=5, opener=opener)
+    known = {"350": "해운대구", "290": "남구"}
+    done = haeundae_sample.run_sigungu_lists(client, ["350", "290"], known, out=lambda *a: None)
+    assert [(d["sigungu"], d["calls"], d["listed"]) for d in done] == [("350", 0, 1), ("290", 1, 2)]
+    assert [op for op, _ in opener.calls] == ["areaBasedList2"]
+    assert "lDongSignguCd=290" in opener.calls[0][1]
+    assert (tmp_path / "sigungu" / "290" / "list" / "areaBasedList2_p1.json").is_file()
+    assert not (tmp_path / "sigungu" / "290" / "common").exists()
+
+    with pytest.raises(haeundae_sample.FetchStopped):
+        haeundae_sample.run_sigungu_lists(client, ["999"], known, out=lambda *a: None)
+    assert len(opener.calls) == 1
+
+
 # ---------------------------------------------------------------- build: area column
 
 def sample():
