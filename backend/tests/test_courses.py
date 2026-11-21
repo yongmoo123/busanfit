@@ -318,20 +318,16 @@ def test_legacy_infant_profile_does_not_bypass_stroller_default(env):
     assert response.json()['excludedUnknown']['count'] == 3
 
 
-@pytest.mark.parametrize('field', ['budget', 'preferenceTags', 'companions', 'includeUnknownAccessibility'])
+@pytest.mark.parametrize('field', ['budget', 'preferenceTags', 'companions'])
 def test_unsupported_active_constraints_do_not_get_ignored_to_make_a_course(env, field):
     seed(env)
     state = env['store'].check_current(env['sid'], 1)
     profile = state.profile
-    if field == 'includeUnknownAccessibility':
-        profile[field] = True
-        env['app'].state.capabilities.supportsUnknownAccessibilityInclusion = True
-    else:
-        values = {'budget': {'amount': 0, 'currency': 'KRW', 'basis': 'TOTAL', 'includes': ['FOOD']},
-                  'preferenceTags': ['가상 선호'], 'companions': {'type': 'FRIENDS', 'count': 2, 'hasInfant': False}}
-        profile[field] = {'value': values[field], 'source': 'USER', 'strength': 'HARD'}
-        if field not in env['app'].state.capabilities.supportedProfileFields:
-            env['app'].state.capabilities.supportedProfileFields.append(field)
+    values = {'budget': {'amount': 0, 'currency': 'KRW', 'basis': 'TOTAL', 'includes': ['FOOD']},
+              'preferenceTags': ['가상 선호'], 'companions': {'type': 'FRIENDS', 'count': 2, 'hasInfant': False}}
+    profile[field] = {'value': values[field], 'source': 'USER', 'strength': 'HARD'}
+    if field not in env['app'].state.capabilities.supportedProfileFields:
+        env['app'].state.capabilities.supportedProfileFields.append(field)
     env['store'].commit_profile(env['sid'], 1, profile=profile, history=[])
     response = generate(env, 2)
     assert response.status_code == 422

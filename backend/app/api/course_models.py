@@ -1,10 +1,11 @@
 """Existing CourseRequest/CourseResponse wire contract. No new response states."""
 from datetime import date, datetime
-from typing import Annotated, Literal
+from typing import Annotated, Literal, get_args
+from copy import deepcopy
 from uuid import UUID
 from urllib.parse import urlparse
 
-from pydantic import AwareDatetime, Field, StrictBool, StrictFloat, StrictStr, field_validator
+from pydantic import AwareDatetime, Field, StrictBool, StrictFloat, StrictStr, field_validator, model_validator
 from app.api.profile_models import Area, Category, NonnegativeInt, ProfileField, Timestamp, TimeWindow, Warning
 from app.api.session_models import ContractModel
 
@@ -131,11 +132,32 @@ class Course(ContractModel):
     sources: Annotated[list[Source], Field(min_length=1)]
 
 
+def _suggestion_schema(schema):
+    """Expose the same coupled action/field branches in generated OpenAPI."""
+    branches = []
+    for action, fields in [('EDIT_PROFILE', list(get_args(ProfileField))),
+                           ('INCLUDE_UNKNOWN_ACCESSIBILITY', ['includeUnknownAccessibility'])]:
+        branch = deepcopy(schema)
+        branch.pop('title', None)
+        branch['properties']['type'] = {'type': 'string', 'enum': [action]}
+        branch['properties']['field'] = {'type': 'string', 'enum': fields}
+        branches.append(branch)
+    schema.clear()
+    schema.update(title='Suggestion', oneOf=branches)
+
+
 class Suggestion(ContractModel):
+    model_config = {'extra': 'forbid', 'json_schema_extra': _suggestion_schema}
     id: StrictStr
-    type: Literal['EDIT_PROFILE']
+    type: Literal['EDIT_PROFILE', 'INCLUDE_UNKNOWN_ACCESSIBILITY']
     label: StrictStr
-    field: ProfileField
+    field: ProfileField | Literal['includeUnknownAccessibility']
+
+    @model_validator(mode='after')
+    def action_matches_field(self):
+        if (self.type == 'INCLUDE_UNKNOWN_ACCESSIBILITY') != (self.field == 'includeUnknownAccessibility'):
+            raise ValueError('suggestion action and field must match')
+        return self
 
 
 class ExcludedUnknown(ContractModel):

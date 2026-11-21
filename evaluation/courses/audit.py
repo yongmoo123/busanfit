@@ -29,11 +29,12 @@ def minute_is_open(place, point):
 
 
 def audit_response(body, profile, revision, repository, travel, distances, *, radius_meters=1500,
-                   allowed_reason_methods=('TEMPLATE',)):
+                   allowed_reason_methods=('TEMPLATE',), allow_unknown_accessibility=False):
     need(body['status'] == 'SUCCESS', 'expected_success')
     need(profile['transport']['value'] in (None, 'WALK'), 'unsupported_transport_profile')
     need(profile['budget']['value'] is None, 'unsupported_budget_profile')
-    need(not profile['includeUnknownAccessibility'], 'unsupported_unknown_accessibility')
+    need(not profile['includeUnknownAccessibility'] or allow_unknown_accessibility, 'unsupported_unknown_accessibility')
+    consented = allow_unknown_accessibility and profile['includeUnknownAccessibility']
     need(profile['preferenceTags']['value'] in (None, []), 'unsupported_tag_profile')
     need(profile['companions']['value'] is None or profile['companions']['strength'] != 'HARD', 'unsupported_companion_hard')
     course = body['course']
@@ -53,6 +54,7 @@ def audit_response(body, profile, revision, repository, travel, distances, *, ra
     injury = 'INJURY' in mobility
     stay_total = travel_total = waiting_total = 0
     records = []
+    unknown_fields, unknown_ids = set(), set()
     unknown_price = {'status': 'UNKNOWN', 'amount': None, 'currency': 'KRW', 'basis': 'UNKNOWN'}
     for item in items:
         place_id = item['place']['id']
@@ -77,8 +79,14 @@ def audit_response(body, profile, revision, repository, travel, distances, *, ra
             need(minute_is_open(record, a + timedelta(minutes=minute)), 'opening_hours')
         for mode in mobility:
             field = 'stroller' if mode == 'STROLLER' else 'wheelchair'
-            need(getattr(record.accessibility, field, None) is True, 'source_accessibility')
-            need(item['place']['accessibility'][field] is True, 'wire_accessibility')
+            value = getattr(record.accessibility, field, None)
+            if consented and value is None:
+                need(item['place']['accessibility'][field] is None, 'unknown_must_stay_null')
+                unknown_fields.add('mobility.' + field)
+                unknown_ids.add(place_id)
+            else:
+                need(value is True, 'source_accessibility')
+                need(item['place']['accessibility'][field] is True, 'wire_accessibility')
         preference = profile['indoorPreference']
         if preference['strength'] == 'HARD' and preference['value'] in ('INDOOR', 'OUTDOOR'):
             need(record.indoor is (preference['value'] == 'INDOOR'), 'hard_indoor')
@@ -106,9 +114,18 @@ def audit_response(body, profile, revision, repository, travel, distances, *, ra
     need(summary['totalMinutes'] == total == stay_total + travel_total + waiting_total, 'total')
     need(summary['estimatedCost'] == unknown_price, 'unknown_total_cost')
     validation = course['validation']
-    need(validation['status'] == 'PASSED' and validation['routeAccessibility'] == 'UNVERIFIED', 'validation_scope')
+    need(validation['status'] == ('CONDITIONAL' if unknown_fields else 'PASSED')
+         and validation['routeAccessibility'] == 'UNVERIFIED', 'validation_scope')
+    need(set(validation['unverifiedFields']) == {'price', 'routeAccessibility'} | unknown_fields, 'unverified_fields')
+    inclusion_warnings = [w for w in body['warnings'] if w['code'] == 'UNKNOWN_ACCESSIBILITY_INCLUDED']
+    if unknown_ids:
+        need(len(inclusion_warnings) == 1 and set(inclusion_warnings[0]['placeIds']) == unknown_ids, 'inclusion_warning_ids')
+    else:
+        need(not inclusion_warnings, 'spurious_inclusion_warning')
     for name, condition in profile.items():
         if isinstance(condition, dict) and condition.get('strength') == 'HARD' and condition['value'] not in (None, []):
-            need(not any(field == name or field.startswith(name + '.') for field in validation['unverifiedFields']), 'unverified_hard')
+            need(not any((field == name or field.startswith(name + '.')) and field not in unknown_fields
+                         for field in validation['unverifiedFields']), 'unverified_hard')
     need(any(w['code'] == 'ROUTE_ACCESSIBILITY_UNVERIFIED' for w in body['warnings']), 'route_warning')
-    return {'items': len(items), 'legs': len(legs), 'hardViolations': 0, 'missingPlaceIds': 0}
+    return {'items': len(items), 'legs': len(legs), 'hardViolations': 0, 'missingPlaceIds': 0,
+            'consentedUnknownPlaces': len(unknown_ids), 'validationStatus': validation['status']}

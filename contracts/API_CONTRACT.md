@@ -88,7 +88,7 @@ budget/mobility/preferenceTags도 최종 프로필 모양에는 있으나 예시
 - 같은 도보 값을 다시 선택하는 명시적 수락은 POST /api/chat에 `message="도보로 이동할게요"`와 최신 `expectedProfileRevision`을 보낸다. 카드 저장 후라면 그 응답의 revision을 사용한다. 프론트는 이 문장을 사용자의 명시적 선택 때만 전송하며 경고 닫기·시간 저장에서 자동 전송하지 않는다. 409·422·503 또는 네트워크 실패를 수락 성공으로 표시하지 않고 서버 최신 status·revision을 따른다. 새 외부 필드는 추가하지 않는다.
 - 채팅에서 미지원 이동수단을 WALK로 자동 변경하거나 새 DEFAULT를 넣어 수락한 것으로 처리하지 않는다. 기존 값이 없다면 transport=null/UNSET, 기존 값이 있으면 보존한다. 사용자가 명시적으로 수락하면 그때 지원되는 값을 USER로 저장하고 해당 확인 대기를 해소한다.
 - 다른 미지원 조건까지 함께 들어온 경우에는 일반 422 규칙을 유지한다. 이동수단 예외가 지역·이동제약 등 모든 미지원 조건을 허용하는 예외는 아니다.
-- includeUnknownAccessibility는 첫 주 false만 허용한다. true 요청은 422.
+- 일반 앱은 includeUnknownAccessibility=false만 허용한다. true 요청은 422. FR-013 사전 구현은 검증용 composition root에서 supportsUnknownAccessibilityInclusion을 명시적으로 켰을 때만 PUT true를 허용한다. 일반 활성화·확인된 정책은 아래 FR-013·FR-014② 항목 참조.
 - 권역/이동수단도 capabilities로 검증한다. 구현되지 않은 조건을 지원한다고 표시하지 않는다.
 - 이는 최종 SRS Must 요구사항의 삭제가 아니다. 이후 검증을 마친 기능부터 지원 범위를 넓힌다.
 
@@ -101,7 +101,7 @@ budget/mobility/preferenceTags도 최종 프로필 모양에는 있으나 예시
 FR-005·006 구현 보완: 카드 PUT에서 transport=null/UNSET이면 지원되는 WALK/DEFAULT를 서버가 적용한다. 미지원 이동수단 확인 대기가 있으면 기본값을 넣어 수락 처리하지 않는다. mobility의 비어 있지 않은 값과 명시적 []는 HARD이며 SOFT 입력은 422 INVALID_PROFILE이다. 예산 미입력은 null/UNSET으로 유지하고 화면에서 '제한 없음(기본 동작)'으로 표시한다. 이는 0원·무료·가격 정보 없음과 다르며 DEFAULT 출처의 null을 만들지 않는다. 체류시간과 부상 초기 설정은 config/defaults.json을 따르고, 체류시간의 source는 내부 계산 결과에서 관리한다. 프로필에 새 체류시간·출처 필드를 추가하지 않는다.
 - SUCCESS는 course가 존재, INSUFFICIENT_PLACES는 HTTP 200 + course=null.
 - 첫 주 후보가 두 곳 미만이면 후보 부족이다. 시간 안에 못 넣는 장소를 무리하게 채우지 않는다.
-- suggestions는 최대 3개, 첫 주 type=EDIT_PROFILE만 허용. 클릭은 조건 입력 카드를 열며 자동으로 조건을 변경하지 않는다.
+- suggestions는 최대 3개. EDIT_PROFILE 클릭은 조건 입력 카드를 열며 자동으로 조건을 변경하지 않는다. 검증용 포함 기능은 별도 type=INCLUDE_UNKNOWN_ACCESSIBILITY로 확인 화면을 열며 클릭만으로 동의·저장하지 않는다. 일반 앱은 포함 제안을 반환하지 않는다.
 - course.availableWindow는 사용자의 허용 시간, startAt/endAt은 실제 첫 방문 시작/마지막 방문 종료. 시간을 모두 채울 필요는 없다.
 - items.order는 1부터 연속, item.id는 코스 내 고유값. place.id와 구분한다.
 - N개 방문이면 legs는 N-1개이며 인접 item.id를 연결한다.
@@ -118,7 +118,7 @@ FR-005·006 구현 보완: 카드 PUT에서 transport=null/UNSET이면 지원되
 - mobility 미입력 일반 코스에는 접근성 UNKNOWN 장소가 포함될 수 있다. 이동제약을 확인한 코스로 표시하면 안 된다.
 - validation.PASSED는 checkedHardConstraints에 나열한 조건이 데이터와 추정 방식 기준으로 통과했다는 의미다.
 - unverifiedFields가 활성 HARD 조건과 겹치면 PASSED 금지.
-- CONDITIONAL은 추후 미확인 정보 포함 동의 기능의 예약 값이다. 첫 주에는 반환하지 않으며 HARD 위반 우회 수단이 아니다.
+- CONDITIONAL은 명시적으로 지원을 켠 FR-013 검증용 서버에서 동의한 접근성 미확인 항목이 최종 코스에 실제 포함될 때 사용한다. 일반 앱에서는 반환하지 않으며 확인된 HARD 위반을 허용하는 수단이 아니다.
 - excludedUnknown.count는 필수 판단 정보 부족으로 제외한 고유 장소 수. fields는 이유 목록이다.
 - sourceIds/evidence.sourceId는 응답 sources에 모두 존재해야 한다. sources의 id는 중복하지 않는다.
 - license/baseDate=null은 미확인 표현용이다. 실제 공개 전 이용조건을 확인해야 한다. 제공 기준일과 retrievedAt(조회일)을 구분한다.
@@ -127,7 +127,7 @@ FR-005·006 구현 보완: 카드 PUT에서 transport=null/UNSET이면 지원되
 
 ## 7. 오류
 
-FR-009 구현 연결: POST /api/courses는 CourseRequest의 sessionId·profileRevision만 받으며 expectedProfileRevision을 대신 받지 않는다. READY·미확인 항목·요청 제한·revision을 먼저 확인하고 생성 후 최신 revision·만료를 다시 검사한다. 성공과 후보 부족 모두 프로필 revision은 변경하지 않고 세션 TTL만 갱신한다. 실패는 프로필·revision·TTL을 갱신하지 않는다. 조회 장애·이동시간 오류·출처 누락은 후보 부족으로 숨기지 않고 기존 500 INTERNAL_ERROR로 처리하며, AI 장애로 분류하지 않는다. 스케줄러 초안 뒤 최대 3회 교체·재배치를 허용하고 검증을 통과한 2~6곳만 SUCCESS로 반환한다. 안전한 두 곳을 확보하지 못하면 INSUFFICIENT_PLACES/course=null이다. 부분 성공 상태·위반 코스·CONDITIONAL 우회는 추가하지 않는다. 최소 템플릿 이유와 suggestions=[]는 #25·#26 연결 전의 범위다. 실제 검색·이동시간 검증 완료와 가상 API 검증은 별개다.
+FR-009 구현 연결: POST /api/courses는 CourseRequest의 sessionId·profileRevision만 받으며 expectedProfileRevision을 대신 받지 않는다. READY·미확인 항목·요청 제한·revision을 먼저 확인하고 생성 후 최신 revision·만료를 다시 검사한다. 성공과 후보 부족 모두 프로필 revision은 변경하지 않고 세션 TTL만 갱신한다. 실패는 프로필·revision·TTL을 갱신하지 않는다. 조회 장애·이동시간 오류·출처 누락은 후보 부족으로 숨기지 않고 기존 500 INTERNAL_ERROR로 처리하며, AI 장애로 분류하지 않는다. 스케줄러 초안 뒤 최대 3회 교체·재배치를 허용하고 검증을 통과한 2~6곳만 SUCCESS로 반환한다. 두 곳을 확보하지 못하면 INSUFFICIENT_PLACES/course=null이다. 부분 성공 상태·확인된 위반 코스는 추가하지 않는다. FR-013의 명시적 동의와 capability가 함께 있을 때만 접근성 null에 한정해 CONDITIONAL로 반환한다. 최소 템플릿 이유와 suggestions=[]는 #25·#26 연결 전의 범위다. 실제 검색·이동시간 검증 완료와 가상 API 검증은 별개다.
 형식: {"error":{"code":"...","message":"...","retryable":false,"details":[{"field":"...","reason":"..."}]},"requestId":"UUID"}
 | HTTP | code | 처리 |
 |---|---|---|
@@ -222,7 +222,25 @@ GET /api/places/{placeId}를 기존 PlaceResponse(place/sources/warnings/request
 
 성공 코스의 suggestions를 최종 적용 프로필에서 생성한다. 값이 null이 아니고 source=DEFAULT이며 capabilities와 기존 카드에서 지원하는 필드만 EDIT_PROFILE로 최대 3개 반환한다. area/transport는 지원 값 목록도 확인한다. 기존 카드 순서로 표시하며 필드별 중복은 없다. id는 edit-default-{field}이고 사용자 값·건강 원문을 문구에 넣지 않는다. USER·UNSET·미지원 항목은 제외하며 현재 실제 자동 기본값은 도보·영유아 동반 시 유모차다. 다른 필드에 새 기본값을 적용하지 않는다.
 
-칩 선택은 field에 해당하는 카드를 여는 동작이며 자동 변경·저장·하드 완화가 아니다. 사용자가 USER로 저장한 최신 profileRevision으로 재생성하면 해당 제안이 사라진다. 같은 DEFAULT를 유지하면 제안도 유지하며 최신 응답으로 칩을 교체한다. INSUFFICIENT_PLACES는 suggestions=[]이다. 프로필·revision·코스 내용을 제안 생성으로 변경하지 않는다. 체류시간 제안은 기존 프로필 필드가 없어 이번 범위에서 제외하고, 정보 없음·날씨 제안은 후속이다. 외부 JSON 필드·enum 변경은 없다. 프론트 칩 연결·캡처는 후속이며 현재는 가상 HTTP 흐름으로 검증한다.
+EDIT_PROFILE 칩 선택은 field에 해당하는 카드를 여는 동작이며 자동 변경·저장·하드 완화가 아니다. 사용자가 USER로 저장한 최신 profileRevision으로 재생성하면 해당 제안이 사라진다. 같은 DEFAULT를 유지하면 제안도 유지하며 최신 응답으로 칩을 교체한다. INSUFFICIENT_PLACES는 suggestions=[]이다. 프로필·revision·코스 내용을 제안 생성으로 변경하지 않는다. 체류시간 제안은 기존 프로필 필드가 없어 이번 범위에서 제외하고, 날씨 제안은 후속이다. FR-014① 자체의 외부 JSON 필드·enum 변경은 없으며 FR-013·014② 확장은 다음 절과 구분한다.
+
+## FR-013·FR-014② 사전 구현 (일반 서비스 비활성)
+
+이 절은 프론트 리뷰와 사용자 전달 PM 확인을 반영한 서버 부분을 기술한다. #72 실제 검색기는 접근성 정보만 없어 제외된 장소를 거리 근거와 함께 별도 후보 풀로 전달하며, 실제 DB의 동의 전후 검증은 격리된 검증용 앱에서 수행한다. 일반 app.main:app의 supportsUnknownAccessibilityInclusion은 계속 false이고 PUT true를 거절한다. 후보 검색·mobility 검증과 unknown_accessibility_verified를 명시한 검증용 root에서만 true가 된다. 화면 인수·일반 포함 기능 활성화는 별도다.
+
+Suggestion은 type과 field가 결합된 두 분기다. 기존 EDIT_PROFILE은 기존 ProfileField만, INCLUDE_UNKNOWN_ACCESSIBILITY는 field=includeUnknownAccessibility만 허용하며 두 타입을 서로 바꿔 쓰면 검증 실패다. 새 action의 id는 include-unknown-accessibility, label은 '접근성 정보가 없는 장소도 포함해서 다시 만들까요?'다. id는 수락 토큰이 아니며 POST에 전송하지 않는다.
+
+표시 조건: 지원 capability=true, includeUnknownAccessibility=false, 활성 HARD 이동제약이 있고, 다른 후보 하드 검사를 통과하며 필요한 접근성 항목 null 때문에만 제외된 후보가 있을 때. 집계 count나 fields 합집합만으로 자격을 추정하지 않는다. Repository 사실과 거리 증거를 재확인한다. 2026-11-20 사용자 전달 PM 확인 및 프론트 리뷰에 따라, 포함 칩이 있으면 기존 순서의 기본값 칩 최대 2개 다음에 포함 칩 1개를 반환한다(총 3개 이하). INSUFFICIENT_PLACES/course=null에서도 자격이 있으면 포함 칩 1개를 반환하며, 기본값 칩은 반환하지 않는다. 포함 칩이 없으면 성공 응답의 기존 기본값 칩 최대 3개를 유지한다. FR-014① 절의 후보 부족 suggestions=[] 설명은 포함 제안이 없는 경우에 해당한다.
+
+동의 초기화: 카드 전체 PUT·채팅 수정·영유아 동반에 따른 유모차 기본값 추가/제거 모두, 정규화가 끝난 mobility.value를 직전 저장 값과 비교한다. 값 집합이 바뀌면 includeUnknownAccessibility=false로 저장·응답하며 재동의를 받는다. 같은 요청에 true를 함께 보내도 값 변경 시 초기화가 우선한다. 목록 순서·source만 바뀌면 기존 true 동의를 초기화하지 않는다. null(미입력)과 [](명시적 없음)은 구분한다. 초기화 후 반환된 프로필·새 revision으로 별도 PUT에서 명시적으로 재동의한다. 사용자가 false로 저장한 취소는 값 변경이 없어도 유지하며 AI 추출로 동의를 만들지 않는다.
+
+수락 순서: 확인 화면에서 명시적으로 선택 → 최신 저장 프로필의 includeUnknownAccessibility만 true로 바꿔 전체 PUT /api/sessions/{id}/profile(expectedProfileRevision 포함) → READY 응답의 새 profileRevision으로 POST /api/courses. POST body는 기존 sessionId·profileRevision만 사용한다. mobility source·strength·value 등 다른 조건은 보존한다. 저장 전 확인 화면 취소는 요청 없음, PUT 실패·NEEDS_INPUT은 POST 없음. PUT 성공 후 POST 실패 시 저장한 동의·revision은 유지하고 POST만 재시도한다. 화면을 닫는 것만으로 이미 저장된 동의가 취소되었다고 표시하지 않는다. 저장된 동의를 철회하려면 최신 revision으로 false 전체 PUT을 별도로 성공시켜야 한다. 일반 미지원 서버의 PUT true는 422 UNSUPPORTED_CONSTRAINT이고 revision이 증가하지 않는다. 409/410·세션 폐기·TTL·동시성 처리 규칙은 기존과 같다. AI 추출로 동의를 만들지 않는다.
+
+동의 후에도 필요한 항목 false와 주소·운영시간·반경·제외 카테고리·이동시간·시간창 등 다른 위반은 거절한다. 장소 접근성 null을 true로 바꾸거나 mobility를 SOFT/[]로 변경하지 않는다. INJURY의 wheelchair 대리 지표와 구간 도보 상한도 유지한다.
+
+최종 코스에 해당 null이 실제 포함됐으면 validation.status=CONDITIONAL, unverifiedFields에 mobility.wheelchair/stroller를 추가하고 UNKNOWN_ACCESSIBILITY_INCLUDED 경고의 placeIds로 최종 포함 장소를 지정한다. routeAccessibility=UNVERIFIED·가격 미확인·출처는 보존한다. checkedHardConstraints는 검사한 조건의 목록이며 CONDITIONAL의 미확인 항목을 확인 완료로 표시하지 않는다. 다른 항목 때문에 grade=VERIFIED여도 필요한 null과 경고를 숨기지 않는다. flag=true지만 최종 장소가 모두 필요한 접근성 true이면 PASSED로 반환하고 포함 경고를 붙이지 않는다.
+
+별도 adjust API는 추가하지 않는다. 새 action·조건부 예시는 contracts/examples/06-* 및 참고 문서에 있으며 모두 가상 검증용이다. 서버 기능 테스트·계약 검증은 실제 DB·화면 인수와 구분한다.
 
 
 ## FR-018 연결 상태 (이슈 #27 / DEC-029)

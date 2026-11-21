@@ -2,7 +2,7 @@ from uuid import UUID, uuid4
 from fastapi import APIRouter, Request, Response
 from app.api.profile_models import ProfileResponse, ProfileUpdateRequest
 from app.constraints.profile import validate_profile
-from app.application.condition_policy import replace_card
+from app.application.condition_policy import replace_card, reset_changed_mobility_consent
 
 router = APIRouter()
 
@@ -15,7 +15,7 @@ def replace_profile(sessionId: UUID, body: ProfileUpdateRequest, request: Reques
               if request.app.state.extractor is not None else None)
     questions = (policy.questions if policy else
                  validate_profile(body.profile, current.profile, request.app.state.capabilities))
-    profile = policy.profile if policy else body.profile
+    profile = policy.profile if policy else reset_changed_mobility_consent(body.profile, current.profile)
     # Construct/validate the response before committing any state.
     result = ProfileResponse(
         status='NEEDS_INPUT' if questions else 'READY', profile=profile,

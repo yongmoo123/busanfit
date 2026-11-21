@@ -206,7 +206,7 @@ Software Design Document (SDD)
 | API-002 | POST | /api/chat | 조건 입력·제약 분석 | {sessionId, message} | {reply, questions\[\], profile, status} | FR-001~005 |
 | API-003 | PUT | /api/sessions/{id}/profile | 제약 확인·수정 | {profile} | {profile} | FR-006 |
 | API-004 | POST | /api/courses | 코스 생성 | {sessionId} | {course, suggestions\[\], warnings\[\], excludedUnknown} | FR-007~012, FR-016 |
-| API-005 | POST | /api/courses/{courseId}/adjust | 조정 제안·대화형 수정 | {sessionId, chipId \| message} | {course, changes\[\], suggestions\[\]} | FR-013~015 |
+| API-005 | POST | /api/courses/{courseId}/adjust | 조정 제안·대화형 수정 (계획; FR-013·FR-014②는 API-003 전체 PUT → API-004 POST 사용) | {sessionId, chipId \| message} | {course, changes\[\], suggestions\[\]} | FR-013~015 |
 | API-006 | GET | /api/places/{placeId} | 장소 상세·출처 | \- | {place, sources\[\], warnings\[\]} | FR-008, FR-012 |
 | API-007 | GET | /api/facilities?bbox=&types= | 주변 편의시설 | query | {facilities\[\]} | FR-017 |
 | API-008 | POST | /api/courses/{courseId}/share | 코스 공유 링크 생성 | {sessionId} | {shareUrl, expiresAt} | FR-019 |
