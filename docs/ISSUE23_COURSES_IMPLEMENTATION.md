@@ -105,3 +105,36 @@ http://127.0.0.1:8002/docs 에서 세션 생성→프로필 PUT→반환된 prof
 ## 기존 PR #50 보완 (2026-11-17)
 
 기존 #48·#49의 채팅 경합 보완과 #12의 세션 종료를 이 브랜치에 통합했다. PR #41(451b3f0)의 SQLite 구현/공통 계약 검사를 선택 재사용하고 호출별 연결 어댑터로 worker thread에서 검사했다. 실제 SQLite 코드에 넣은 행·검색·이동시간은 가상이며 일반 capabilities는 비활성이다. 코스4모드·폐기 후410·저장소 오류500·병렬읽기 포함 전체548 passed(기존 경고1건), 계약6 operations·참고 문서 동기화 통과. 실제 #22·이동시간·해운대4모드/15초 인수는 후속이다.
+
+## 실제 공유 DB·COMP-06 평가 (2026-11-21)
+
+- 공유 DB SHA-256: `c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75`, 491520바이트. 읽기 전용 연결, quick_check=ok, 외래키 위반 0건. places 275·운영시간 NULL 103·accessibility 53·출처 2행·반경 1500m 내 107곳을 확인했다. 실행 전후 해시가 같다. DB와 전달받은 txt 파일은 커밋하지 않는다.
+- #75 `b926c6c`와 그 기반 develop `6d86ada`를 #72에 반영했다. 개발 브랜치 내 반영이며 GitHub PR #75/#72를 develop에 병합한 것이 아니다. #53의 최신 develop 평가셋을 사용하고 방문일·기대 결과·원본 result=null은 바꾸지 않았다.
+- 계산기: `app.travel.walking:create_travel_provider`. 일반 4 km/h·부상 3 km/h, 우회 계수 1.0·분 단위 올림·허용 오차 1e-9분을 사용했다. 실제 보행 경로 검증은 아니다.
+- 실행일: `2026-11-21T11:49:07.844002+09:00`. 실행 코드: `548aa7a9aa419d0b48553cfc21903aa60ac506f1`. `workingTreeModified=true`는 당시 전달받은 미추적 txt 파일이 있었기 때문이며, 계산기·실행기 코드는 해당 커밋에 기록되어 있었다. 결과 JSON은 실행 후 새로 생성했다.
+- 평가셋 SHA-256: `cdd8d3f75f646707d8bfec65e61af5b894130ef9d47dffafc9011c8fb3213ccb`. 조회/검증 반경 1500m·DEC-023 해운대 중심을 고정했다.
+- 자동 검사: **9개 통과, 실내 HARD 미지원 CS-06 1개 EXCLUDED**, SUCCESS 8개·정상 INSUFFICIENT_PLACES(CS-08) 1개. 하드 위반·DB 미존재 장소 각각 **0건**.
+- POST 9개 모두 15초 이내(**100%**, 이번 실행 최대 **105.25ms**). 로컬 TestClient 측정이며 외부 LLM·브라우저·지도·호스팅 전체 흐름의 성능 근거가 아니다.
+- 공유 경로를 기존 실제 DB 테스트도 `BUSANFIT_DB_PATH`로 선택하도록 보완했다. 실제 검색기 4개 모드 4 passed. 공유 DB를 지정한 최종 전체 pytest **1408 passed, 1 warning**, 계약·참고 문서 JSON 동기화·diff 검사 PASS. 기존 Starlette/httpx 경고 1건이다.
+
+| 사례 | 자동 판정 | 응답 | POST(ms) |
+|---|---|---|---:|
+| CS-01 | PASS | SUCCESS | 92.12 |
+| CS-02 | PASS | SUCCESS | 73.97 |
+| CS-03 | PASS | SUCCESS | 63.31 |
+| CS-04 | PASS | SUCCESS | 47.77 |
+| CS-05 | PASS | SUCCESS | 32.56 |
+| CS-06 | EXCLUDED | 실내 HARD 미지원 | — |
+| CS-07 | PASS | SUCCESS | 69.74 |
+| CS-08 | PASS | INSUFFICIENT_PLACES | 49.54 |
+| CS-09 | PASS | SUCCESS | 105.25 |
+| CS-10 | PASS | SUCCESS | 38.87 |
+
+### 남은 확인 / 제한
+
+- 결과 JSON의 `realDataVerified`, `realTravelVerified`, `acceptanceComplete`는 기존 실행기 정책에 따라 false를 유지했다. 실제 공유 DB와 실제 계산기를 사용했지만 수동 extraChecks·전체 인수를 완료했다는 뜻은 아니다.
+- **CS-05의 부상 규칙 안내 경고는 현재 응답에 없다.** 자동 검사 PASS와 별개로 후속 서버 반영 및 화면 확인이 필요하다. CS-03·05·08·09 extraChecks의 수동 확인도 남아 있다. 자동 PASS를 모든 사례별 요구사항 완료로 해석하지 않는다.
+- 일반 앱의 CourseService 미연결·capabilities 비활성은 회귀 테스트로 확인했다. #70 정보 없음 포함 기능·동행 가중치의 일반 서비스 활성화·브라우저/모바일 인수·배포·PR 병합은 수행하지 않았다. 평가용 앱 안에서만 승인된 동행 가중치를 사용했다.
+- `.env`·실제 키를 읽지 않았고 모델/데이터 API를 호출하지 않았다. #28 댓글 게시와 활성화 판단은 별도 요청 전 수행하지 않는다.
+
+결과: `evaluation/courses/results/real-2026-11-21.json`.

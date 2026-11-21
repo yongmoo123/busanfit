@@ -1,6 +1,6 @@
 # DB 기반 코스 평가 실행 준비 — FR-009 / AI-REQ-01·05
 
-2026-11-20. 실제 DB와 COMP-06 계산기 없이 연결·실행기·가상 검증만 준비한 상태다. 서버 활성화·실제 데이터 인수·병합 완료가 아니다. 기존 `run.py --output ...`의 가상 4개 모드 실행은 유지한다.
+2026-11-21. 실제 공유 DB 수령·SHA 확인 및 #75 COMP-06 연결 후 CS-01~10 자동 평가를 수행했다. 결과와 남은 수동 확인은 아래 최신 기록과 `docs/ISSUE23_COURSES_IMPLEMENTATION.md`를 따른다. 아래 이전 대기·가상 기록은 당시 상태다. 서버 활성화·실제 데이터 인수·병합 완료가 아니다. 기존 `run.py --output ...`의 가상 4개 모드 실행은 유지한다.
 
 ## 선행 입력
 
@@ -27,12 +27,12 @@
 .venv/Scripts/python.exe evaluation/courses/run.py --mode synthetic --output evaluation/courses/results/synthetic-local.json
 ```
 
-DB 모드는 위 선행 입력이 모두 준비된 뒤에 사용한다. `--travel-provider`는 **찬용과 합의한 구현의 `모듈:무인자팩토리`**를 받아 실제 포트 객체를 만든다. 현재 해당 구현은 없으므로 아래는 준비된 실행 형식이며 그대로 실행 가능한 명령이 아니다. 가상 테스트 팩토리를 실제 보고서에 쓰지 않는다.
+DB 모드는 위 선행 입력이 모두 준비된 뒤에 사용한다. `--travel-provider`는 **찬용과 합의한 구현의 `모듈:무인자팩토리`**를 받아 실제 포트 객체를 만든다. 이 브랜치에는 #75의 실제 구현 `app.travel.walking:create_travel_provider`가 반영됐다. 가상 테스트 팩토리를 실제 보고서에 쓰지 않는다.
 
 ```text
 # PowerShell: 키/.env는 필요 없으며 읽지 않는다.
 $env:BUSANFIT_DB_PATH = '<공유 DB 절대 경로>'
-.venv/Scripts/python.exe evaluation/courses/run.py --mode real --cases evaluation/courses/cases.json --travel-provider '<합의한 모듈>:<팩토리>' --expected-db-sha256 '<공유 파일 SHA-256>' --output evaluation/courses/results/real-2026-11-21.json
+.venv/Scripts/python.exe evaluation/courses/run.py --mode real --cases evaluation/courses/cases.json --travel-provider app.travel.walking:create_travel_provider --expected-db-sha256 '<공유 파일 SHA-256>' --output evaluation/courses/results/real-2026-11-21.json
 ```
 
 실행기는 서버 포트를 열지 않고 TestClient에서 세션 생성 → 전체 PUT → READY의 새 revision POST → 세션 삭제를 수행한다. 추출·이유 생성을 위해 외부 AI를 호출하지 않는다. capabilities는 이 평가용 앱 내부에서만 해운대·도보 및 검증 필드를 사용하고 일반 `app.main:app`은 그대로 닫혀 있다. 실내 HARD 등 requiresSupport 미지원 사례는 EXCLUDED로 기록하고 실행·성능 분모에서 제외한다.
@@ -47,7 +47,7 @@ $env:BUSANFIT_DB_PATH = '<공유 DB 절대 경로>'
 - DB 해시가 실행 전후 달라지면 결과를 저장하지 않는다. 세션 ID·프로필·전체 응답·키·예외 원문은 보고서에 저장하지 않는다. 입력 cases의 result는 수정하지 않는다.
 - `syntheticOnly=true`인 테스트 결과는 가상 검증이다. DB 모드도 자동 실행만으로 `realDataVerified`·`realTravelVerified`·`acceptanceComplete`를 true로 만들지 않는다. 공유 DB SHA 확인·계산기 합의·PC/모바일·수동 extraChecks·전체 수용 판단은 별도다. `manualChecksPending`은 자동 검사 완료와 구분한다.
 
-## 남은 작업
+## 이전 대기 기록 (11/20)
 
 - #65 검색기는 develop 반영 완료. #53 평가셋 통합 및 찬용 계산기 구현/계약 확인은 후속이다.
 - 공유 DB 수령·SHA 확인 후 CS-01~10 실제 실행.
@@ -77,3 +77,36 @@ $env:BUSANFIT_DB_PATH = '<공유 DB 절대 경로>'
 - 전체 pytest: **1315 passed, 4 skipped, 1 warning**. 계약 6 operations·31 schemas·20 examples·15 정책 사례, 참고 문서 JSON 동기화·diff 검사 PASS.
 - #53 `5a579ea`의 외부 원본 CS-01~10을 읽어 현재 브랜치의 기본 검색 설정과 가상 SQLite/FakeTravel로 실행: **9개 자동 검사 통과·실내 미지원 1개 EXCLUDED**, 하드 위반·미존재 장소 0건(가상). 사례 파일을 복제하거나 결과 null을 바꾸지 않았다.
 - 실제 공유 DB·찬용 COMP-06·PC/모바일·응답시간 인수는 미완료다. 일반 create_app은 CourseService 미연결·지원 비활성을 유지하는 검사도 통과했다. 실제 키·모델 API·유료 전환·배포·PR 병합은 수행하지 않았다.
+
+## 실제 공유 DB·COMP-06 평가 (2026-11-21)
+
+- 공유 DB SHA-256: `c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75`, 491520바이트. 읽기 전용 연결, quick_check=ok, 외래키 위반 0건. places 275·운영시간 NULL 103·accessibility 53·출처 2행·반경 1500m 내 107곳을 확인했다. 실행 전후 해시가 같다. DB와 전달받은 txt 파일은 커밋하지 않는다.
+- #75 `b926c6c`와 그 기반 develop `6d86ada`를 #72에 반영했다. 개발 브랜치 내 반영이며 GitHub PR #75/#72를 develop에 병합한 것이 아니다. #53의 최신 develop 평가셋을 사용하고 방문일·기대 결과·원본 result=null은 바꾸지 않았다.
+- 계산기: `app.travel.walking:create_travel_provider`. 일반 4 km/h·부상 3 km/h, 우회 계수 1.0·분 단위 올림·허용 오차 1e-9분을 사용했다. 실제 보행 경로 검증은 아니다.
+- 실행일: `2026-11-21T11:49:07.844002+09:00`. 실행 코드: `548aa7a9aa419d0b48553cfc21903aa60ac506f1`. `workingTreeModified=true`는 당시 전달받은 미추적 txt 파일이 있었기 때문이며, 계산기·실행기 코드는 해당 커밋에 기록되어 있었다. 결과 JSON은 실행 후 새로 생성했다.
+- 평가셋 SHA-256: `cdd8d3f75f646707d8bfec65e61af5b894130ef9d47dffafc9011c8fb3213ccb`. 조회/검증 반경 1500m·DEC-023 해운대 중심을 고정했다.
+- 자동 검사: **9개 통과, 실내 HARD 미지원 CS-06 1개 EXCLUDED**, SUCCESS 8개·정상 INSUFFICIENT_PLACES(CS-08) 1개. 하드 위반·DB 미존재 장소 각각 **0건**.
+- POST 9개 모두 15초 이내(**100%**, 이번 실행 최대 **105.25ms**). 로컬 TestClient 측정이며 외부 LLM·브라우저·지도·호스팅 전체 흐름의 성능 근거가 아니다.
+- 공유 경로를 기존 실제 DB 테스트도 `BUSANFIT_DB_PATH`로 선택하도록 보완했다. 실제 검색기 4개 모드 4 passed. 공유 DB를 지정한 최종 전체 pytest **1408 passed, 1 warning**, 계약·참고 문서 JSON 동기화·diff 검사 PASS. 기존 Starlette/httpx 경고 1건이다.
+
+| 사례 | 자동 판정 | 응답 | POST(ms) |
+|---|---|---|---:|
+| CS-01 | PASS | SUCCESS | 92.12 |
+| CS-02 | PASS | SUCCESS | 73.97 |
+| CS-03 | PASS | SUCCESS | 63.31 |
+| CS-04 | PASS | SUCCESS | 47.77 |
+| CS-05 | PASS | SUCCESS | 32.56 |
+| CS-06 | EXCLUDED | 실내 HARD 미지원 | — |
+| CS-07 | PASS | SUCCESS | 69.74 |
+| CS-08 | PASS | INSUFFICIENT_PLACES | 49.54 |
+| CS-09 | PASS | SUCCESS | 105.25 |
+| CS-10 | PASS | SUCCESS | 38.87 |
+
+### 남은 확인 / 제한
+
+- 결과 JSON의 `realDataVerified`, `realTravelVerified`, `acceptanceComplete`는 기존 실행기 정책에 따라 false를 유지했다. 실제 공유 DB와 실제 계산기를 사용했지만 수동 extraChecks·전체 인수를 완료했다는 뜻은 아니다.
+- **CS-05의 부상 규칙 안내 경고는 현재 응답에 없다.** 자동 검사 PASS와 별개로 후속 서버 반영 및 화면 확인이 필요하다. CS-03·05·08·09 extraChecks의 수동 확인도 남아 있다. 자동 PASS를 모든 사례별 요구사항 완료로 해석하지 않는다.
+- 일반 앱의 CourseService 미연결·capabilities 비활성은 회귀 테스트로 확인했다. #70 정보 없음 포함 기능·동행 가중치의 일반 서비스 활성화·브라우저/모바일 인수·배포·PR 병합은 수행하지 않았다. 평가용 앱 안에서만 승인된 동행 가중치를 사용했다.
+- `.env`·실제 키를 읽지 않았고 모델/데이터 API를 호출하지 않았다. #28 댓글 게시와 활성화 판단은 별도 요청 전 수행하지 않는다.
+
+결과: `evaluation/courses/results/real-2026-11-21.json`.
