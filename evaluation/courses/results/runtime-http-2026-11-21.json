@@ -1,0 +1,22 @@
+{
+  "runDate": "2026-11-21T12:28:50.125469+09:00",
+  "codeRevision": "ea7ebe583cd6d28905ad7f47de853feae0dc597e",
+  "dbSha256": "c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75",
+  "ordinaryEntrypoint": "app.main:app",
+  "supportedAreas": [
+    "HAEUNDAE"
+  ],
+  "supportedTransports": [
+    "WALK"
+  ],
+  "chatRuleFallbackVerified": true,
+  "courseStatus": "SUCCESS",
+  "injuryWarningVerified": true,
+  "courseItemCount": 2,
+  "detailRequestsVerified": 2,
+  "courseRoundTripMs": 54.454099969007075,
+  "sessionDeleted": true,
+  "modelApiRequests": 0,
+  "browserVerified": false,
+  "temporaryServerStopped": true
+}

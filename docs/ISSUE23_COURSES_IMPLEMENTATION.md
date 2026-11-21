@@ -158,3 +158,31 @@ SRS·SDD에 추가했던 #72 구현 기록을 이 문서로 옮겼다. 아래 �
 - 누락·잘못된 일반 코스 경고를 평가기가 거절하도록 검사와 음성 대조를 추가했다. 관련 124 passed, 실제 DB 지정 전체 **1422 passed, 1 warning**, 계약·참고 문서 JSON 동기화·diff 검사 PASS.
 - 실제 공유 DB로 CS-01~10 재실행: **9개 자동 통과·실내 미지원 1개 제외**, 하드 위반·미존재 장소 0건, 15초 이내 9/9(최대 127.30ms). CS-05 warningCodes의 `INJURY_RULES`를 확인했다. 보고서 실행 코드 `2edf98c351007dd9afc71bf05a21a655f0e4ceed`, 실행일 `2026-11-21T11:56:54.151429+09:00`, 전달 txt로 workingTreeModified=true. DB 해시는 기존 공유값과 실행 전후 동일하다.
 - 아래/위 이전 평가 기록의 부상 경고 미포함은 이 후속에서 서버 반영을 완료했다. 화면 표시와 기타 수동 extraChecks는 별도 미완료이며 전체 인수 플래그는 false로 유지한다. 일반 서비스·동행 가중치·#70 활성화·PR 병합·외부 API 호출은 하지 않았다.
+
+## 일반 서버 연결 활성화 (2026-11-21, 사용자 요청)
+
+- 실제 DB 자동 검사에서 하드 위반·미존재 장소 0건 확인 후 사용자 요청으로 일반 `app.main:app`을 활성화했다. 아래/위 이전 비활성 기록은 당시 상태이며, 현재 일반 진입점은 이 절을 따른다. 구현 코드 `ea7ebe583cd6d28905ad7f47de853feae0dc597e`.
+- 시작 시 `BUSANFIT_DB_PATH`의 기존 SQLite를 읽기 전용으로 확인하고 #65 검색기·실제 COMP-06·APPROVED/pmApproved=true DEC-029 scorer를 조립한다. 모든 준비가 성공한 뒤 CourseService·장소 Repository·capabilities를 함께 공개한다. DB 누락/손상/스키마 누락·미승인 가중치는 시작 실패이고, 빈 DB 생성·가상 제공자 대체는 없다.
+- 지원은 HAEUNDAE/WALK 및 area,timeWindow,transport,mobility,companions,excludedCategories다. 미입력 동행 점수는 0이며 SOFT 동행 점수만 사용한다. 정보 없음 포함(#70)·실내 HARD·예산·선호 태그·날씨·코스 수정은 활성화하지 않았다. 승인된 가중치도 하드 조건을 완화하지 않는다.
+- 의존성 주입용 `create_app()`은 기본적으로 미연결 상태를 유지하고, 일반 진입점은 `create_runtime_app()`의 실제 시작 연결을 사용한다. 시작 실패 및 종료 시 지원/서비스를 닫고 세션을 정리한다. `.env`를 자동 로드하지 않는다.
+- 관련 회귀 **59 passed**, 실제 공유 DB 포함 전체 **1433 passed, 1 warning**. 일반 진입점의 4개 모드·동행 가중치/미입력 0점·장소 상세·지원 범위·시작 실패·종료 정리를 검사했다. 계약 및 참고 문서 JSON 동기화·diff 검사 PASS.
+- `--mode real --runtime-app`은 평가용 서비스 주입 대신 일반 시작 경로의 실제 연결을 감사한다. 실제 DB CS-01~10 재평가: **9개 자동 통과·실내 HARD 미지원 1개 제외**, SUCCESS 8개·정상 후보 부족(CS-08) 1개, 하드 위반·미존재 장소 0건. 15초 이내 9/9, 최대 **441.50ms**(로컬 TestClient).
+- 실제 Uvicorn `app.main:app` 임시 loopback HTTP에서도 세션 → 채팅 규칙 대체 → 카드 PUT → 부상 코스 → 장소 상세 2건 → 세션 삭제를 확인했다. POST 왕복 54.45ms, `INJURY_RULES` 포함, 테스트 서버는 확인 후 종료했다. 브라우저/지도/모바일 인수는 수행하지 않았다.
+- DB SHA-256 `c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75` 실행 전후 동일. 모델 API 호출 0회·키/.env 읽기 및 키 저장 없음. 결과의 수동/전체 인수 플래그는 false 유지. 실제 보행 경로를 확인한 것이 아니며 계단·경사는 UNVERIFIED다. PR #72/#75 병합·배포는 하지 않았다.
+- 근거: `evaluation/courses/results/runtime-real-2026-11-21.json`, `runtime-http-2026-11-21.json`. 실행일 `2026-11-21T12:28:05.488219+09:00`, 코드 커밋은 위와 같으며 보고서 저장 전 미추적 공유 txt로 workingTreeModified=true였다.
+
+### 일반 서버 실행 (의존성 설치 후 저장소 루트)
+
+```powershell
+$env:BUSANFIT_DB_PATH = (Resolve-Path data/share/haeundae_sample_v1.sqlite3).Path
+.venv/Scripts/python.exe -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 --no-access-log
+```
+
+### 일반 시작 경로를 사용하는 실제 DB 평가
+
+```powershell
+$env:BUSANFIT_DB_PATH = (Resolve-Path data/share/haeundae_sample_v1.sqlite3).Path
+.venv/Scripts/python.exe evaluation/courses/run.py --mode real --runtime-app --travel-provider app.travel.walking:create_travel_provider --expected-db-sha256 c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75 --output evaluation/courses/results/runtime-real-local.json
+```
+
+브라우저 점검자는 우선 `POST /api/sessions`의 HAEUNDAE/WALK 지원을 확인하고 일반·휠체어·유모차·부상, 추천 이유·출처·정보 없음·동행 기본값/칩과 지도·모바일 흐름을 이어서 점검한다. #70 정보 없음 포함은 계속 false이므로 해당 동의 API를 활성화된 것으로 연결하지 않는다. #72 미병합 상태에서는 이 브랜치에서 실행해야 한다.
