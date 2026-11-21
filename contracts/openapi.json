@@ -3471,42 +3471,77 @@
         "additionalProperties": false
       },
       "Suggestion": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
+        "description": "FR-013/FR-014② opt-in server capability. The ordinary app remains disabled pending real-data and UI integration verification.",
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "EDIT_PROFILE"
+                ]
+              },
+              "label": {
+                "type": "string"
+              },
+              "field": {
+                "type": "string",
+                "enum": [
+                  "area",
+                  "timeWindow",
+                  "transport",
+                  "mobility",
+                  "budget",
+                  "indoorPreference",
+                  "companions",
+                  "excludedCategories",
+                  "preferenceTags"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "label",
+              "field"
+            ],
+            "additionalProperties": false
           },
-          "type": {
-            "type": "string",
-            "enum": [
-              "EDIT_PROFILE"
-            ]
-          },
-          "label": {
-            "type": "string"
-          },
-          "field": {
-            "type": "string",
-            "enum": [
-              "area",
-              "timeWindow",
-              "transport",
-              "mobility",
-              "budget",
-              "indoorPreference",
-              "companions",
-              "excludedCategories",
-              "preferenceTags"
-            ]
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "INCLUDE_UNKNOWN_ACCESSIBILITY"
+                ]
+              },
+              "label": {
+                "type": "string"
+              },
+              "field": {
+                "type": "string",
+                "enum": [
+                  "includeUnknownAccessibility"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "label",
+              "field"
+            ],
+            "additionalProperties": false
           }
-        },
-        "required": [
-          "id",
-          "type",
-          "label",
-          "field"
-        ],
-        "additionalProperties": false
+        ]
       },
       "CourseSuccess": {
         "type": "object",

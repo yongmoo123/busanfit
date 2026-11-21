@@ -1,4 +1,4 @@
-"""Integration seam for #22 validation evidence; closed in the ordinary server."""
+"""Enable only verified #22 fields after composition-root connection succeeds."""
 from dataclasses import dataclass, field
 
 from app.api.session_models import Capabilities
@@ -14,9 +14,13 @@ class ProfileSupport:
     candidate_search_connected: bool = False
     verified_fields: frozenset[str] = field(default_factory=frozenset)
     mobility_verified: bool = False
+    # Defaults closed for injected apps. The ordinary root enables it after
+    # actual #22/consent/conditional integration checks and explicit authorization.
+    unknown_accessibility_verified: bool = False
 
     def __post_init__(self):
-        if type(self.candidate_search_connected) is not bool or type(self.mobility_verified) is not bool:
+        if any(type(value) is not bool for value in (self.candidate_search_connected, self.mobility_verified,
+                                                    self.unknown_accessibility_verified)):
             raise ValueError('connection evidence must be boolean')
         if not isinstance(self.verified_fields, frozenset) or not self.verified_fields <= set(INITIAL_FIELDS):
             raise ValueError('unsupported initial profile fields')
@@ -30,5 +34,6 @@ def build_profile_capabilities(support: ProfileSupport | None = None) -> Capabil
     return Capabilities(supportedAreas=['HAEUNDAE'] if enabled else [],
                         supportedTransports=['WALK'] if enabled else [],
                         supportedProfileFields=fields,
-                        supportsUnknownAccessibilityInclusion=False,
+                        supportsUnknownAccessibilityInclusion=(enabled and support.mobility_verified
+                            and 'mobility' in fields and support.unknown_accessibility_verified),
                         supportsCourseAdjustment=False, supportsWeather=False)

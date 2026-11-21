@@ -17,7 +17,7 @@
 
 
 ## 읽는 순서와 한계
-계약 본문 → API별 스키마 연결 → 공통 스키마 → 요청/응답 JSON 20개.
+계약 본문 → API별 스키마 연결 → 공통 스키마 → 요청/응답 JSON 23개.
 첫 주 계약으로 전체 SRS를 표현하지 않는다. 앵커·수정·날씨·시설·공유는 후속 계약이다.
 기존 계약과 JSON을 통합했으며 미합의 사항을 새로 승인하지 않았다.
 예시의 형식·출처 ID 연결·시간 합계는 검증했지만 실제 서버·공공데이터 연동은 검증하지 않았다.
@@ -26,7 +26,7 @@
 기존 SDD v0.1 및 첫 주 개발 계획에 따른 **팀 합의용 초안**. 서버 구현물이나 실제 API 검증 결과는 아니다. 원본 문서는 수정하지 않았다.
 
 ### 통합 방식
-이 파일 안에 계약·전체 공통 스키마·예시 JSON 20개를 수록했다. 별도 JSON 업로드 없이 읽을 수 있다. 원래 OpenAPI와 검증 스크립트는 개발용 묶음에 남아 있다. 아래 파일명은 예시 제목과 대응한다.
+이 파일 안에 계약·전체 공통 스키마·예시 JSON 23개를 수록했다. 별도 JSON 업로드 없이 읽을 수 있다. 원래 OpenAPI와 검증 스크립트는 개발용 묶음에 남아 있다. 아래 파일명은 예시 제목과 대응한다.
 
 **모든 예시 장소·기관·좌표·운영시간·출처는 가상 fixture다.**
 example.invalid는 의도적으로 사용할 수 없는 출처 주소다. 실제 공공데이터로 제출·사용하지 않는다.
@@ -1676,42 +1676,77 @@ JSON Schema(OpenAPI 3.1). $ref는 아래 components.schemas 이름을 가리킨�
         "additionalProperties": false
       },
       "Suggestion": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
+        "description": "FR-013/FR-014② opt-in server capability. The ordinary app remains disabled pending real-data and UI integration verification.",
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "EDIT_PROFILE"
+                ]
+              },
+              "label": {
+                "type": "string"
+              },
+              "field": {
+                "type": "string",
+                "enum": [
+                  "area",
+                  "timeWindow",
+                  "transport",
+                  "mobility",
+                  "budget",
+                  "indoorPreference",
+                  "companions",
+                  "excludedCategories",
+                  "preferenceTags"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "label",
+              "field"
+            ],
+            "additionalProperties": false
           },
-          "type": {
-            "type": "string",
-            "enum": [
-              "EDIT_PROFILE"
-            ]
-          },
-          "label": {
-            "type": "string"
-          },
-          "field": {
-            "type": "string",
-            "enum": [
-              "area",
-              "timeWindow",
-              "transport",
-              "mobility",
-              "budget",
-              "indoorPreference",
-              "companions",
-              "excludedCategories",
-              "preferenceTags"
-            ]
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "INCLUDE_UNKNOWN_ACCESSIBILITY"
+                ]
+              },
+              "label": {
+                "type": "string"
+              },
+              "field": {
+                "type": "string",
+                "enum": [
+                  "includeUnknownAccessibility"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "label",
+              "field"
+            ],
+            "additionalProperties": false
           }
-        },
-        "required": [
-          "id",
-          "type",
-          "label",
-          "field"
-        ],
-        "additionalProperties": false
+        ]
       },
       "CourseSuccess": {
         "type": "object",
@@ -5642,3 +5677,428 @@ GET /api/places/{placeId}를 기존 PlaceResponse(place/sources/warnings/request
 ## FR-018 제안 검증 상태 (2026-11-17, 이슈 #27)
 
 동행 카테고리 가중치와 실내 선호 합산은 미승인 제안 설정으로 별도 가상 앱에서만 검증했다. 일반 코스 생성은 기존 점수 함수를 유지하며 외부 JSON·capabilities·API 동작에 가중치를 활성화하지 않았다. 하드 동행은 기존 미지원 처리이고 동행 점수가 하드 제약을 완화하지 않는다. 분위기·야경·가성비·인원 적합성 추론은 하지 않으며 PM 확인과 별도 활성화 변경 전에는 일반 경로에 주입하지 않는다.
+
+
+## FR-013·FR-014② 사전 구현용 예시 (일반 서비스 비활성)
+
+아래는 명시적으로 supportsUnknownAccessibilityInclusion을 켠 검증용 서버의 가상 예시다. 프론트 합의·실제 검색기 연결 전 일반 앱은 false이며 true 저장 요청을 거절한다. 현재 일반 서비스가 동작한다는 증거가 아니다.
+
+### 06-course.unknown-proposal.response.json
+
+~~~json
+{
+  "status": "SUCCESS",
+  "course": {
+    "id": "33333333-3333-4333-8333-333333333333",
+    "profileRevision": 1,
+    "createdAt": "2026-11-05T10:00:00+09:00",
+    "availableWindow": {
+      "startAt": "2026-11-06T13:00:00+09:00",
+      "endAt": "2026-11-06T17:00:00+09:00"
+    },
+    "startAt": "2026-11-06T13:00:00+09:00",
+    "endAt": "2026-11-06T15:10:00+09:00",
+    "items": [
+      {
+        "id": "item-01",
+        "order": 1,
+        "place": {
+          "id": "mock-place-001",
+          "name": "[가상] 실내 전시공간 A",
+          "category": "EXHIBITION",
+          "area": "HAEUNDAE",
+          "address": "부산광역시 해운대구 — 테스트용 가상 주소",
+          "coordinates": {
+            "latitude": 35.16,
+            "longitude": 129.16
+          },
+          "indoor": true,
+          "openHours": {
+            "status": "KNOWN",
+            "description": "테스트 설정: 10:00~18:00"
+          },
+          "price": {
+            "status": "UNKNOWN",
+            "amount": null,
+            "currency": "KRW",
+            "basis": "UNKNOWN"
+          },
+          "defaultStayMinutes": 60,
+          "accessibility": {
+            "grade": "UNKNOWN",
+            "wheelchair": null,
+            "stroller": null,
+            "elevator": null,
+            "accessibleToilet": null,
+            "evidence": []
+          },
+          "sourceIds": [
+            "mock-source-01"
+          ]
+        },
+        "startAt": "2026-11-06T13:00:00+09:00",
+        "endAt": "2026-11-06T14:00:00+09:00",
+        "stayMinutes": 60,
+        "reason": "실내 전시공간으로 실내 위주 선호에 부합합니다.",
+        "reasonMethod": "TEMPLATE",
+        "isAnchor": false
+      },
+      {
+        "id": "item-02",
+        "order": 2,
+        "place": {
+          "id": "mock-place-002",
+          "name": "[가상] 카페 B",
+          "category": "CAFE",
+          "area": "HAEUNDAE",
+          "address": "부산광역시 해운대구 — 테스트용 가상 주소",
+          "coordinates": {
+            "latitude": 35.162,
+            "longitude": 129.163
+          },
+          "indoor": true,
+          "openHours": {
+            "status": "KNOWN",
+            "description": "테스트 설정: 10:00~18:00"
+          },
+          "price": {
+            "status": "UNKNOWN",
+            "amount": null,
+            "currency": "KRW",
+            "basis": "UNKNOWN"
+          },
+          "defaultStayMinutes": 60,
+          "accessibility": {
+            "grade": "UNKNOWN",
+            "wheelchair": null,
+            "stroller": null,
+            "elevator": null,
+            "accessibleToilet": null,
+            "evidence": []
+          },
+          "sourceIds": [
+            "mock-source-01"
+          ]
+        },
+        "startAt": "2026-11-06T14:10:00+09:00",
+        "endAt": "2026-11-06T15:10:00+09:00",
+        "stayMinutes": 60,
+        "reason": "실내에서 쉬어갈 수 있는 카페입니다.",
+        "reasonMethod": "TEMPLATE",
+        "isAnchor": false
+      }
+    ],
+    "legs": [
+      {
+        "fromItemId": "item-01",
+        "toItemId": "item-02",
+        "mode": "WALK",
+        "minutes": 10,
+        "method": "DISTANCE_ESTIMATE",
+        "isEstimate": true
+      }
+    ],
+    "summary": {
+      "totalStayMinutes": 120,
+      "totalTravelMinutes": 10,
+      "totalWaitingMinutes": 0,
+      "totalMinutes": 130,
+      "estimatedCost": {
+        "status": "UNKNOWN",
+        "amount": null,
+        "currency": "KRW",
+        "basis": "UNKNOWN"
+      }
+    },
+    "validation": {
+      "status": "PASSED",
+      "checkedHardConstraints": [
+        "area",
+        "timeWindow",
+        "excludedCategories"
+      ],
+      "unverifiedFields": [
+        "price",
+        "routeAccessibility"
+      ],
+      "routeAccessibility": "UNVERIFIED"
+    },
+    "sources": [
+      {
+        "id": "mock-source-01",
+        "provider": "테스트용 가상 기관",
+        "datasetName": "API 연결용 가상 장소 데이터",
+        "url": "https://example.invalid/busanfit/mock-data",
+        "license": "MOCK_ONLY — 실제 공공데이터·이용허락의 증거가 아님",
+        "baseDate": "2026-11-01",
+        "retrievedAt": "2026-11-05T09:00:00+09:00"
+      }
+    ]
+  },
+  "suggestions": [
+    {
+      "id": "include-unknown-accessibility",
+      "type": "INCLUDE_UNKNOWN_ACCESSIBILITY",
+      "label": "접근성 정보가 없는 장소도 포함해서 다시 만들까요?",
+      "field": "includeUnknownAccessibility"
+    }
+  ],
+  "warnings": [
+    {
+      "code": "TRAVEL_TIME_ESTIMATED",
+      "message": "이동시간은 추정치이며, 실제 보행 경로와 경로 접근성은 확인되지 않았습니다.",
+      "placeIds": []
+    }
+  ],
+  "excludedUnknown": {
+    "count": 1,
+    "fields": [
+      "mobility.wheelchair"
+    ]
+  },
+  "sessionExpiresAt": "2026-11-05T10:30:00+09:00",
+  "requestId": "22222222-2222-4222-8222-222222222222"
+}
+~~~
+
+### 06-profile.include-unknown.request.json
+
+~~~json
+{
+  "expectedProfileRevision": 1,
+  "profile": {
+    "area": {
+      "value": "HAEUNDAE",
+      "source": "USER",
+      "strength": "HARD"
+    },
+    "timeWindow": {
+      "value": {
+        "startAt": "2026-11-06T13:00:00+09:00",
+        "endAt": "2026-11-06T17:00:00+09:00"
+      },
+      "source": "USER",
+      "strength": "HARD"
+    },
+    "transport": {
+      "value": "WALK",
+      "source": "DEFAULT",
+      "strength": "SOFT"
+    },
+    "mobility": {
+      "value": [
+        "WHEELCHAIR"
+      ],
+      "source": "USER",
+      "strength": "HARD"
+    },
+    "budget": {
+      "value": null,
+      "source": "UNSET",
+      "strength": "HARD"
+    },
+    "indoorPreference": {
+      "value": "INDOOR",
+      "source": "USER",
+      "strength": "HARD"
+    },
+    "companions": {
+      "value": {
+        "type": "FRIENDS",
+        "count": 2,
+        "hasInfant": false
+      },
+      "source": "USER",
+      "strength": "SOFT"
+    },
+    "excludedCategories": {
+      "value": [],
+      "source": "DEFAULT",
+      "strength": "HARD"
+    },
+    "preferenceTags": {
+      "value": [],
+      "source": "DEFAULT",
+      "strength": "SOFT"
+    },
+    "includeUnknownAccessibility": true
+  }
+}
+~~~
+
+### 06-course.conditional.response.json
+
+~~~json
+{
+  "status": "SUCCESS",
+  "course": {
+    "id": "33333333-3333-4333-8333-333333333333",
+    "profileRevision": 2,
+    "createdAt": "2026-11-05T10:00:00+09:00",
+    "availableWindow": {
+      "startAt": "2026-11-06T13:00:00+09:00",
+      "endAt": "2026-11-06T17:00:00+09:00"
+    },
+    "startAt": "2026-11-06T13:00:00+09:00",
+    "endAt": "2026-11-06T15:10:00+09:00",
+    "items": [
+      {
+        "id": "item-01",
+        "order": 1,
+        "place": {
+          "id": "mock-place-001",
+          "name": "[가상] 실내 전시공간 A",
+          "category": "EXHIBITION",
+          "area": "HAEUNDAE",
+          "address": "부산광역시 해운대구 — 테스트용 가상 주소",
+          "coordinates": {
+            "latitude": 35.16,
+            "longitude": 129.16
+          },
+          "indoor": true,
+          "openHours": {
+            "status": "KNOWN",
+            "description": "테스트 설정: 10:00~18:00"
+          },
+          "price": {
+            "status": "UNKNOWN",
+            "amount": null,
+            "currency": "KRW",
+            "basis": "UNKNOWN"
+          },
+          "defaultStayMinutes": 60,
+          "accessibility": {
+            "grade": "UNKNOWN",
+            "wheelchair": null,
+            "stroller": null,
+            "elevator": null,
+            "accessibleToilet": null,
+            "evidence": []
+          },
+          "sourceIds": [
+            "mock-source-01"
+          ]
+        },
+        "startAt": "2026-11-06T13:00:00+09:00",
+        "endAt": "2026-11-06T14:00:00+09:00",
+        "stayMinutes": 60,
+        "reason": "실내 전시공간으로 실내 위주 선호에 부합합니다.",
+        "reasonMethod": "TEMPLATE",
+        "isAnchor": false
+      },
+      {
+        "id": "item-02",
+        "order": 2,
+        "place": {
+          "id": "mock-place-002",
+          "name": "[가상] 카페 B",
+          "category": "CAFE",
+          "area": "HAEUNDAE",
+          "address": "부산광역시 해운대구 — 테스트용 가상 주소",
+          "coordinates": {
+            "latitude": 35.162,
+            "longitude": 129.163
+          },
+          "indoor": true,
+          "openHours": {
+            "status": "KNOWN",
+            "description": "테스트 설정: 10:00~18:00"
+          },
+          "price": {
+            "status": "UNKNOWN",
+            "amount": null,
+            "currency": "KRW",
+            "basis": "UNKNOWN"
+          },
+          "defaultStayMinutes": 60,
+          "accessibility": {
+            "grade": "UNKNOWN",
+            "wheelchair": null,
+            "stroller": null,
+            "elevator": null,
+            "accessibleToilet": null,
+            "evidence": []
+          },
+          "sourceIds": [
+            "mock-source-01"
+          ]
+        },
+        "startAt": "2026-11-06T14:10:00+09:00",
+        "endAt": "2026-11-06T15:10:00+09:00",
+        "stayMinutes": 60,
+        "reason": "실내에서 쉬어갈 수 있는 카페입니다.",
+        "reasonMethod": "TEMPLATE",
+        "isAnchor": false
+      }
+    ],
+    "legs": [
+      {
+        "fromItemId": "item-01",
+        "toItemId": "item-02",
+        "mode": "WALK",
+        "minutes": 10,
+        "method": "DISTANCE_ESTIMATE",
+        "isEstimate": true
+      }
+    ],
+    "summary": {
+      "totalStayMinutes": 120,
+      "totalTravelMinutes": 10,
+      "totalWaitingMinutes": 0,
+      "totalMinutes": 130,
+      "estimatedCost": {
+        "status": "UNKNOWN",
+        "amount": null,
+        "currency": "KRW",
+        "basis": "UNKNOWN"
+      }
+    },
+    "validation": {
+      "status": "CONDITIONAL",
+      "checkedHardConstraints": [
+        "area",
+        "timeWindow",
+        "excludedCategories"
+      ],
+      "unverifiedFields": [
+        "price",
+        "routeAccessibility",
+        "mobility.wheelchair"
+      ],
+      "routeAccessibility": "UNVERIFIED"
+    },
+    "sources": [
+      {
+        "id": "mock-source-01",
+        "provider": "테스트용 가상 기관",
+        "datasetName": "API 연결용 가상 장소 데이터",
+        "url": "https://example.invalid/busanfit/mock-data",
+        "license": "MOCK_ONLY — 실제 공공데이터·이용허락의 증거가 아님",
+        "baseDate": "2026-11-01",
+        "retrievedAt": "2026-11-05T09:00:00+09:00"
+      }
+    ]
+  },
+  "suggestions": [],
+  "warnings": [
+    {
+      "code": "TRAVEL_TIME_ESTIMATED",
+      "message": "이동시간은 추정치이며, 실제 보행 경로와 경로 접근성은 확인되지 않았습니다.",
+      "placeIds": []
+    },
+    {
+      "code": "UNKNOWN_ACCESSIBILITY_INCLUDED",
+      "message": "접근성 정보를 확인하지 못한 장소가 포함되어 있어요. 이용 가능 여부를 방문 전에 확인해 주세요.",
+      "placeIds": [
+        "mock-place-001"
+      ]
+    }
+  ],
+  "excludedUnknown": {
+    "count": 0,
+    "fields": []
+  },
+  "sessionExpiresAt": "2026-11-05T10:30:00+09:00",
+  "requestId": "22222222-2222-4222-8222-222222222222"
+}
+~~~

@@ -105,3 +105,109 @@ http://127.0.0.1:8002/docs 에서 세션 생성→프로필 PUT→반환된 prof
 ## 기존 PR #50 보완 (2026-11-17)
 
 기존 #48·#49의 채팅 경합 보완과 #12의 세션 종료를 이 브랜치에 통합했다. PR #41(451b3f0)의 SQLite 구현/공통 계약 검사를 선택 재사용하고 호출별 연결 어댑터로 worker thread에서 검사했다. 실제 SQLite 코드에 넣은 행·검색·이동시간은 가상이며 일반 capabilities는 비활성이다. 코스4모드·폐기 후410·저장소 오류500·병렬읽기 포함 전체548 passed(기존 경고1건), 계약6 operations·참고 문서 동기화 통과. 실제 #22·이동시간·해운대4모드/15초 인수는 후속이다.
+
+## #72 연결 준비 기록 이관 (2026-11-21)
+
+SRS·SDD에 추가했던 #72 구현 기록을 이 문서로 옮겼다. 아래 두 문단은 **2026-11-20 당시 상태**를 그대로 보존한 기록이다. 실제 DB·계산기 연결 및 부상 경고 후속 결과는 뒤의 11/21 기록을 따른다. 요구사항·설계·API·결정은 바꾸지 않았다.
+
+### SRS에서 이관한 연결 준비 기록
+
+2026-11-20: DB 없이 연결 준비 함수 및 #53 사례 기반 DB 평가 실행 모드를 추가했다. 가상 SQLite·외부 주입 가상 이동시간으로 검증하며 일반 활성화·실제 DB/이동시간 인수와 구분한다. [범위·선행 입력·실행 방법](../evaluation/courses/DATABASE_RUN.md).
+
+### SDD에서 이관: FR-009·FR-018 연결 준비 (2026-11-20)
+
+`application/course_connection.py`는 읽기 전용 SQLite Repository·#65 검색기·외부 주입 COMP-06·승인된 DEC-029 scorer를 CourseService에 조립한다. 검색 반경을 Scheduler·Validator에도 전달한다. 일반 앱·capabilities는 변경하지 않는다. #53 사례를 읽는 평가용 TestClient 모드는 실행일·커밋·DB/사례 SHA-256·응답시간과 자동 감사 결과를 기록한다. 실제 DB·계산기·화면 검증은 미완료이며 #70 활성화는 별도다. [선행 입력·실행·결과 해석](../evaluation/courses/DATABASE_RUN.md).
+
+## 실제 공유 DB·COMP-06 평가 (2026-11-21)
+
+- 공유 DB SHA-256: `c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75`, 491520바이트. 읽기 전용 연결, quick_check=ok, 외래키 위반 0건. places 275·운영시간 NULL 103·accessibility 53·출처 2행·반경 1500m 내 107곳을 확인했다. 실행 전후 해시가 같다. DB와 전달받은 txt 파일은 커밋하지 않는다.
+- #75 `b926c6c`와 그 기반 develop `6d86ada`를 #72에 반영했다. 개발 브랜치 내 반영이며 GitHub PR #75/#72를 develop에 병합한 것이 아니다. #53의 최신 develop 평가셋을 사용하고 방문일·기대 결과·원본 result=null은 바꾸지 않았다.
+- 계산기: `app.travel.walking:create_travel_provider`. 일반 4 km/h·부상 3 km/h, 우회 계수 1.0·분 단위 올림·허용 오차 1e-9분을 사용했다. 실제 보행 경로 검증은 아니다.
+- 실행일: `2026-11-21T11:49:07.844002+09:00`. 실행 코드: `548aa7a9aa419d0b48553cfc21903aa60ac506f1`. `workingTreeModified=true`는 당시 전달받은 미추적 txt 파일이 있었기 때문이며, 계산기·실행기 코드는 해당 커밋에 기록되어 있었다. 결과 JSON은 실행 후 새로 생성했다.
+- 평가셋 SHA-256: `cdd8d3f75f646707d8bfec65e61af5b894130ef9d47dffafc9011c8fb3213ccb`. 조회/검증 반경 1500m·DEC-023 해운대 중심을 고정했다.
+- 자동 검사: **9개 통과, 실내 HARD 미지원 CS-06 1개 EXCLUDED**, SUCCESS 8개·정상 INSUFFICIENT_PLACES(CS-08) 1개. 하드 위반·DB 미존재 장소 각각 **0건**.
+- POST 9개 모두 15초 이내(**100%**, 이번 실행 최대 **105.25ms**). 로컬 TestClient 측정이며 외부 LLM·브라우저·지도·호스팅 전체 흐름의 성능 근거가 아니다.
+- 공유 경로를 기존 실제 DB 테스트도 `BUSANFIT_DB_PATH`로 선택하도록 보완했다. 실제 검색기 4개 모드 4 passed. 공유 DB를 지정한 최종 전체 pytest **1408 passed, 1 warning**, 계약·참고 문서 JSON 동기화·diff 검사 PASS. 기존 Starlette/httpx 경고 1건이다.
+
+| 사례 | 자동 판정 | 응답 | POST(ms) |
+|---|---|---|---:|
+| CS-01 | PASS | SUCCESS | 92.12 |
+| CS-02 | PASS | SUCCESS | 73.97 |
+| CS-03 | PASS | SUCCESS | 63.31 |
+| CS-04 | PASS | SUCCESS | 47.77 |
+| CS-05 | PASS | SUCCESS | 32.56 |
+| CS-06 | EXCLUDED | 실내 HARD 미지원 | — |
+| CS-07 | PASS | SUCCESS | 69.74 |
+| CS-08 | PASS | INSUFFICIENT_PLACES | 49.54 |
+| CS-09 | PASS | SUCCESS | 105.25 |
+| CS-10 | PASS | SUCCESS | 38.87 |
+
+### 남은 확인 / 제한
+
+- 결과 JSON의 `realDataVerified`, `realTravelVerified`, `acceptanceComplete`는 기존 실행기 정책에 따라 false를 유지했다. 실제 공유 DB와 실제 계산기를 사용했지만 수동 extraChecks·전체 인수를 완료했다는 뜻은 아니다.
+- **이전 실행 당시 CS-05의 부상 규칙 안내 경고는 미포함이었다(아래 후속에서 서버 반영 완료).** 자동 검사 PASS와 별개로 후속 서버 반영 및 화면 확인이 필요하다. CS-03·05·08·09 extraChecks의 수동 확인도 남아 있다. 자동 PASS를 모든 사례별 요구사항 완료로 해석하지 않는다.
+- 일반 앱의 CourseService 미연결·capabilities 비활성은 회귀 테스트로 확인했다. #70 정보 없음 포함 기능·동행 가중치의 일반 서비스 활성화·브라우저/모바일 인수·배포·PR 병합은 수행하지 않았다. 평가용 앱 안에서만 승인된 동행 가중치를 사용했다.
+- `.env`·실제 키를 읽지 않았고 모델/데이터 API를 호출하지 않았다. #28 댓글 게시와 활성화 판단은 별도 요청 전 수행하지 않는다.
+
+결과: `evaluation/courses/results/real-2026-11-21.json`.
+
+## 부상 안내 경고 후속 반영 (2026-11-21)
+
+- 코드 `2edf98c`: 정규화된 이동제약에 INJURY가 있으면 기존 warnings에 `INJURY_RULES`를 한 번 추가한다. placeIds는 []이며 원문을 넣지 않는다. 문구는 “부상 조건으로 구간당 도보 10분 이내만 연결해요. 이동이 힘들면 택시·대중교통 이용을 권해요.”이다. 최대 시간은 기존 설정에서 읽고 계산기·도보 제한은 바꾸지 않았다.
+- 성공/후보 부족 응답 모두 규칙을 안내한다. 코스가 없는 경우에도 “연결했어요”라고 완료를 주장하지 않는다. 부상 없는 요청에는 표시하지 않고 경로 접근성 미확인 경고를 유지한다. API 스키마는 기존 Warning을 그대로 사용하며 계약의 경고 표만 설명을 추가했다.
+- 누락·잘못된 일반 코스 경고를 평가기가 거절하도록 검사와 음성 대조를 추가했다. 관련 124 passed, 실제 DB 지정 전체 **1422 passed, 1 warning**, 계약·참고 문서 JSON 동기화·diff 검사 PASS.
+- 실제 공유 DB로 CS-01~10 재실행: **9개 자동 통과·실내 미지원 1개 제외**, 하드 위반·미존재 장소 0건, 15초 이내 9/9(최대 127.30ms). CS-05 warningCodes의 `INJURY_RULES`를 확인했다. 보고서 실행 코드 `2edf98c351007dd9afc71bf05a21a655f0e4ceed`, 실행일 `2026-11-21T11:56:54.151429+09:00`, 전달 txt로 workingTreeModified=true. DB 해시는 기존 공유값과 실행 전후 동일하다.
+- 아래/위 이전 평가 기록의 부상 경고 미포함은 이 후속에서 서버 반영을 완료했다. 화면 표시와 기타 수동 extraChecks는 별도 미완료이며 전체 인수 플래그는 false로 유지한다. 일반 서비스·동행 가중치·#70 활성화·PR 병합·외부 API 호출은 하지 않았다.
+
+## 일반 서버 연결 활성화 (2026-11-21, 사용자 요청)
+
+- 실제 DB 자동 검사에서 하드 위반·미존재 장소 0건 확인 후 사용자 요청으로 일반 `app.main:app`을 활성화했다. 아래/위 이전 비활성 기록은 당시 상태이며, 현재 일반 진입점은 이 절을 따른다. 구현 코드 `ea7ebe583cd6d28905ad7f47de853feae0dc597e`.
+- 시작 시 `BUSANFIT_DB_PATH`의 기존 SQLite를 읽기 전용으로 확인하고 #65 검색기·실제 COMP-06·APPROVED/pmApproved=true DEC-029 scorer를 조립한다. 모든 준비가 성공한 뒤 CourseService·장소 Repository·capabilities를 함께 공개한다. DB 누락/손상/스키마 누락·미승인 가중치는 시작 실패이고, 빈 DB 생성·가상 제공자 대체는 없다.
+- 지원은 HAEUNDAE/WALK 및 area,timeWindow,transport,mobility,companions,excludedCategories다. 미입력 동행 점수는 0이며 SOFT 동행 점수만 사용한다. 정보 없음 포함(#70)·실내 HARD·예산·선호 태그·날씨·코스 수정은 활성화하지 않았다. 승인된 가중치도 하드 조건을 완화하지 않는다.
+- 의존성 주입용 `create_app()`은 기본적으로 미연결 상태를 유지하고, 일반 진입점은 `create_runtime_app()`의 실제 시작 연결을 사용한다. 시작 실패 및 종료 시 지원/서비스를 닫고 세션을 정리한다. `.env`를 자동 로드하지 않는다.
+- 관련 회귀 **59 passed**, 실제 공유 DB 포함 전체 **1433 passed, 1 warning**. 일반 진입점의 4개 모드·동행 가중치/미입력 0점·장소 상세·지원 범위·시작 실패·종료 정리를 검사했다. 계약 및 참고 문서 JSON 동기화·diff 검사 PASS.
+- `--mode real --runtime-app`은 평가용 서비스 주입 대신 일반 시작 경로의 실제 연결을 감사한다. 실제 DB CS-01~10 재평가: **9개 자동 통과·실내 HARD 미지원 1개 제외**, SUCCESS 8개·정상 후보 부족(CS-08) 1개, 하드 위반·미존재 장소 0건. 15초 이내 9/9, 최대 **441.50ms**(로컬 TestClient).
+- 실제 Uvicorn `app.main:app` 임시 loopback HTTP에서도 세션 → 채팅 규칙 대체 → 카드 PUT → 부상 코스 → 장소 상세 2건 → 세션 삭제를 확인했다. POST 왕복 54.45ms, `INJURY_RULES` 포함, 테스트 서버는 확인 후 종료했다. 브라우저/지도/모바일 인수는 수행하지 않았다.
+- DB SHA-256 `c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75` 실행 전후 동일. 모델 API 호출 0회·키/.env 읽기 및 키 저장 없음. 결과의 수동/전체 인수 플래그는 false 유지. 실제 보행 경로를 확인한 것이 아니며 계단·경사는 UNVERIFIED다. PR #72/#75 병합·배포는 하지 않았다.
+- 근거: `evaluation/courses/results/runtime-real-2026-11-21.json`, `runtime-http-2026-11-21.json`. 실행일 `2026-11-21T12:28:05.488219+09:00`, 코드 커밋은 위와 같으며 보고서 저장 전 미추적 공유 txt로 workingTreeModified=true였다.
+
+### 일반 서버 실행 (의존성 설치 후 저장소 루트)
+
+```powershell
+$env:BUSANFIT_DB_PATH = (Resolve-Path data/share/haeundae_sample_v1.sqlite3).Path
+.venv/Scripts/python.exe -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 --no-access-log
+```
+
+### 일반 시작 경로를 사용하는 실제 DB 평가
+
+```powershell
+$env:BUSANFIT_DB_PATH = (Resolve-Path data/share/haeundae_sample_v1.sqlite3).Path
+.venv/Scripts/python.exe evaluation/courses/run.py --mode real --runtime-app --travel-provider app.travel.walking:create_travel_provider --expected-db-sha256 c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75 --output evaluation/courses/results/runtime-real-local.json
+```
+
+브라우저 점검자는 우선 `POST /api/sessions`의 HAEUNDAE/WALK 지원을 확인하고 일반·휠체어·유모차·부상, 추천 이유·출처·정보 없음·동행 기본값/칩과 지도·모바일 흐름을 이어서 점검한다. #70 정보 없음 포함은 계속 false이므로 해당 동의 API를 활성화된 것으로 연결하지 않는다. #72 미병합 상태에서는 이 브랜치에서 실행해야 한다.
+
+## #30 검색기·서버 통합 검증 (2026-11-21)
+
+#70 기능 및 별도 미확인 후보 풀을 연결하고 실제 DB의 12개 조합을 검증했다(전체 1510 passed·조건부 7개·하드 위반/미존재 0건). 일반 포함 capability는 false 유지. 상세·결과·일반 활성화 전 남은 항목은 [ISSUE30 최신 연결 기록](ISSUE30_UNKNOWN_ACCESSIBILITY_IMPLEMENTATION.md)을 따른다. 기존 일반 코스 기능의 CS-01~10도 재검증해 9개 통과·실내 미지원 1개 제외를 유지했다.
+
+## 일반 포함 기능 활성화·실제 연결 검증 (2026-11-21, 사용자 요청)
+
+- 사용자 요청으로 일반 #72 `app.main:app` 시작 연결에서 포함 지원을 활성화했다. DB·검색기·계산기·승인 점수 준비가 성공한 뒤 `supportsUnknownAccessibilityInclusion=true`를 반환한다. 기본 동의는 false이며 명시적 전체 PUT 동의 전에는 접근성 null을 코스에 넣지 않는다. 코드 `af9866a85fb5b141a0a03b66895b0a2c52c8f7f9`. 이전 비활성 기록은 당시 상태다.
+- 일반 진입점 4개 모드에서 true PUT 허용·새 revision, null이 없는 코스는 PASSED 유지 및 종료 정리를 확인했다. 관련 **89 passed**, 공유 DB 포함 전체 **1510 passed, 1 warning**, 계약 6 operations·31 schemas·23 examples·15 정책 사례·문서 동기화·diff PASS.
+- `unknown_inclusion.py --runtime-app`은 일반 시작 경로의 실제 서비스를 감사한다. 실제 DB 12개 조합 통과: **7 CONDITIONAL·1 PASSED·4 정상 후보 부족**, 하드 위반·미존재 장소 0건. 장소별 경고·null 보존·동의 초기화·순서 변경 유지·POST 재시도 검증은 일반 지원이 켜진 상태에서 재실행했다.
+- 임시 Uvicorn 실제 HTTP에서도 06~08시 휠체어 입력의 후보 부족/포함 칩 → 동의 PUT → 새 revision POST → CONDITIONAL(미확인 장소 2곳)·상세를 확인했다. 이전 revision 409·POST만 재시도·이동제약 변경 동의 false·세션 삭제를 확인했고 테스트 서버는 종료했다. POST 왕복 53.49ms(로컬)이며 브라우저 인수 결과는 아니다.
+- 근거: `evaluation/courses/results/unknown-inclusion-runtime-real-2026-11-21.json`, `unknown-inclusion-runtime-http-2026-11-21.json`. 실행일 `2026-11-21T13:15:49.178324+09:00`·위 코드 커밋 및 작업 상태를 그대로 기록했다. 기존 격리 앱 보고서는 과거 근거로 보존했다. 일반 코스 CS-01~10도 9통과·실내 1제외·위반/미존재0을 유지했다.
+- DB SHA-256 `c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75` 실행 전후 동일. 실제 모델/데이터 API 호출·키/.env 읽기·DB 커밋·유료 전환·배포·PR 병합 없음. #72는 미병합이므로 이 브랜치에서 서버를 실행해야 한다. 날씨·코스 수정 등 다른 기능 지원은 바꾸지 않았다.
+- 프론트 실제 연결·지도·PC/모바일·수동/전체 인수는 후속이며 acceptanceComplete=false를 유지한다. [실행·API 순서·실패·검증 안내](ISSUE30_FRONTEND_HANDOFF.md)를 진호님께 전달할 수 있게 정리했다. 직접 메시지를 보내지는 않았다.
+
+## #72 승인 리뷰 후 깨끗한 상태 최종 검증 (2026-11-21)
+
+찬용의 e2304a9 승인 리뷰를 확인하고 실행 안내의 DB 절대 경로·제출용 문서와 검색기 README 구조를 보완했다. 프로그램 코드·하드 정책·승인 설정은 바꾸지 않았다. AGENTS.md의 공통 지침은 “이 파일을 바꾸는 것은 팀 규칙을 바꾸는 것이므로 PM 리뷰를 받는다”에 따라 유지하고, 현재 바로 실행할 절차는 README/SUBMISSION_RUN에 명시했다. AGENTS 실행 예시의 동기화는 리뷰에서 언급한 11/27 공동 실행 방법 정리/PM 검토 후속으로 남긴다.
+
+수정 없는 별도 작업 폴더의 커밋 `003a38e6107f1a88e300c9fc92f7494e88c1b30d`에서 공유 DB를 절대 경로로 지정했다. 출력은 해당 작업 폴더 밖에 저장해 시작/종료 git status가 모두 비었고 보고서 두 건 모두 `workingTreeModified=false`다. 전체 **1510 passed, 1 warning** 및 계약 6 operations·31 schemas·23 examples·15 정책 사례·문서 JSON 동기화 PASS. 경고는 기존 Starlette/httpx 경고1건이다.
+
+- 일반 CS: 9개 자동 통과·실내 HARD 1개 제외, 위반/미존재0·15초 이내9/9. [깨끗한 커밋 보고서](../evaluation/courses/results/pr72-final-clean-runtime-real-2026-11-21.json).
+- 일반 포함 지원: 12개 조합 통과, 7 CONDITIONAL·1 PASSED·4 정상 후보 부족, 위반/미존재0·동의 초기화/재시도 확인. [깨끗한 커밋 보고서](../evaluation/courses/results/pr72-final-clean-unknown-inclusion-runtime-real-2026-11-21.json).
+- CS-03·04의 excludedUnknown=66은 시간창/요일별 확정 제외 결과로 승인 리뷰에서 의도된 동작임을 확인했다. 숫자를 맞추려고 검색기·평가셋·DB를 바꾸지 않았다.
+- 이 자동 검증은 브라우저/지도/모바일/수동 extraChecks 및 최종 인수 완료를 의미하지 않는다. DB·키를 커밋하거나 새 모델 API를 호출하지 않았다. 실행 커밋을 이후 보고서 저장 커밋으로 소급 변경하지 않았다.

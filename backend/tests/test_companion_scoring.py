@@ -153,7 +153,7 @@ def test_score_is_deterministic_without_mutating_records_or_profile():
     assert value.model_dump() == before and place == place_before
 
 
-def test_ordinary_app_and_existing_course_service_never_load_proposal(monkeypatch):
+def test_unconnected_factory_and_synthetic_service_never_load_proposal(monkeypatch):
     def forbidden(*args, **kwargs): raise AssertionError('proposal must not load')
     monkeypatch.setattr('app.courses.companion_scoring.load_companion_proposal', forbidden)
     app = create_app()

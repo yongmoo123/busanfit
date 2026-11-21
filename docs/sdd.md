@@ -52,10 +52,10 @@ Software Design Document (SDD)
 
 최종 범위(SRS 1.2, FR-005)에 이르기 전, 단계별로 지원하는 권역과 이동수단은 다음과 같다(DEC-001, DEC-008, DEC-028). 기능별 스프린트 배치는 프로젝트 계획서 8장(DEC-010)을 따른다.
 
-| 구분 | 스프린트 2 (11/10~11/22) | 제출본 v1.0 (11/27 개발 완료) | 향후 확장 |
+| 구분 | 스프린트 2 (11/10~11/22) | 제출본 (11/30 제출) | 향후 확장 |
 |----|----|----|----|
-| 권역 | 해운대 | 해운대 + 서면·광안리·남포 (권역 확장 완료 시) | 부산 전역 |
-| 이동수단 | 도보(WALK)만 지원 | 도보(WALK)만 지원 | 대중교통(PUBLIC), 자차(CAR) (SRS FR-002) |
+| 권역 | 해운대 | 해운대, 일정상 가능하면 서면·광안리·남포 추가 | 서면·해운대·광안리·남포 (SRS 1.2) 중 제출본에 없는 권역 |
+| 이동수단 | 도보(WALK)만 지원 | 도보(WALK)만 지원 | 도보·대중교통(PUBLIC)·자차(CAR) (SRS FR-002) |
 | 자차 | 자차 표현도 추출하되 `capabilities` 기준 미지원으로 안내 | 같음 | 주차장 표시(FR-017)·검색 반경 5km와 함께 추가 |
 | 기본 이동수단 | WALK (`source=DEFAULT`로 카드에 표시) | WALK | 대중교통(PUBLIC) (SRS FR-005, DEC-001) |
 | 지원 범위 안내 | 응답의 `capabilities`로 화면에 표시 | 같음 | 같음 |
@@ -207,7 +207,7 @@ Software Design Document (SDD)
 | API-002 | POST | /api/chat | 조건 입력·제약 분석 | {sessionId, message} | {reply, questions\[\], profile, status} | FR-001~005 |
 | API-003 | PUT | /api/sessions/{id}/profile | 제약 확인·수정 | {profile} | {profile} | FR-006 |
 | API-004 | POST | /api/courses | 코스 생성 | {sessionId} | {course, suggestions\[\], warnings\[\], excludedUnknown} | FR-007~012, FR-016 |
-| API-005 | POST | /api/courses/{courseId}/adjust | 조정 제안·대화형 수정 | {sessionId, chipId \| message} | {course, changes\[\], suggestions\[\]} | FR-013~015 |
+| API-005 | POST | /api/courses/{courseId}/adjust | 조정 제안·대화형 수정 (계획; FR-013·FR-014②는 API-003 전체 PUT → API-004 POST 사용) | {sessionId, chipId \| message} | {course, changes\[\], suggestions\[\]} | FR-013~015 |
 | API-006 | GET | /api/places/{placeId} | 장소 상세·출처 | \- | {place, sources\[\], warnings\[\]} | FR-008, FR-012 |
 | API-007 | GET | /api/facilities?bbox=&types= | 주변 편의시설 | query | {facilities\[\]} | FR-017 |
 | API-008 | POST | /api/courses/{courseId}/share | 코스 공유 링크 생성 | {sessionId} | {shareUrl, expiresAt} | FR-019 |

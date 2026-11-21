@@ -426,7 +426,8 @@ def test_build_maps_without_filling_missing(tmp_path):
     assert report["skipped"] == {"contentid 허용 문자 규칙 위반": 1, "대상 아닌 유형 32 숙박": 1,
                                  "좌표 없음·범위 밖": 1}
     assert report["skipped_ids"]["contentid 허용 문자 규칙 위반"] == ["10.5"]  # 값을 바꾸지 않고 보고
-    assert source["code"] == "tourapi-kor" and source["license"] is None and source["base_date"] is None
+    assert source["code"] == "tourapi-kor" and source["base_date"] is None
+    assert source["license"] == "이용허락범위 제한 없음(공공데이터포털)"  # mapping.PORTAL_LICENSE (NFR-009)
 
     exhibition = rows["100"]
     assert (exhibition["category"], exhibition["price_text"], exhibition["price_amount"],

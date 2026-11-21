@@ -19,15 +19,15 @@ cd backend; ../.venv/Scripts/python.exe -m app.data.db create; cd ..
 ## DB 받는 방법 (해운대 표본)
 DB 파일은 용량과 재현성 때문에 git에 커밋하지 않습니다. 공유 파일을 받거나, 수집 원본(`data/raw/`)이 있으면 직접 만듭니다.
 
-**(a) 공유받은 파일 쓰기** — 파일 이름은 `haeundae_sample_v1.sqlite3`, 같이 받은 `haeundae_sample_v1.txt`에 SHA-256·크기·건수가 있습니다. 저장소 루트 `data/share/`에 두면 `.gitignore`(`*.sqlite*`)로 커밋되지 않습니다. 앱은 `BUSANFIT_DB_PATH` 환경변수로만 DB를 찾고 `.env`를 자동으로 읽지 않으므로 셸에서 설정합니다. 상대 경로는 명령을 실행한 폴더 기준이라 절대 경로를 권장합니다.
+**(a) 공유받은 파일 쓰기** — 최신은 v2입니다. 파일 이름은 `haeundae_sample_v2.sqlite3`, 같이 받은 `haeundae_sample_v2.txt`에 SHA-256·크기·건수·grade 분포·v1과 달라진 점이 있습니다. v1(`haeundae_sample_v1.sqlite3`)은 grade가 모두 UNKNOWN이고 license가 NULL이라 v2로 바꿉니다(장소·운영시간·무장애 항목값은 같음). 저장소 루트 `data/share/`에 두면 `.gitignore`(`*.sqlite*`)로 커밋되지 않습니다. 앱은 `BUSANFIT_DB_PATH` 환경변수로만 DB를 찾고 `.env`를 자동으로 읽지 않으므로 셸에서 설정합니다. 상대 경로는 명령을 실행한 폴더 기준이라 절대 경로를 권장합니다.
 ```text
 # Windows PowerShell, 저장소 루트
-$env:BUSANFIT_DB_PATH = (Resolve-Path data/share/haeundae_sample_v1.sqlite3).Path
+$env:BUSANFIT_DB_PATH = (Resolve-Path data/share/haeundae_sample_v2.sqlite3).Path
 # macOS/Linux, 저장소 루트
-export BUSANFIT_DB_PATH="$(pwd)/data/share/haeundae_sample_v1.sqlite3"
+export BUSANFIT_DB_PATH="$(pwd)/data/share/haeundae_sample_v2.sqlite3"
 ```
 
-**(b) 직접 만들기** (`data/raw/tourapi/`와 `data/raw/tourapi/accessibility/`가 있는 사람, 네트워크 없음) — develop의 build(운영시간 파서 포함)로 장소를 적재한 뒤, PR #64의 `accessibility_judge load`로 무장애 값을 넣습니다. 두 명령 모두 #64 브랜치(develop 병합됨)에 있습니다. build는 같은 경로에 파일이 있으면 거절하고, load는 처음 실행 때 `haeundae_sample.pre_access.sqlite3` 백업을 만듭니다. 자세한 규칙은 `pipelines/README.md`.
+**(b) 직접 만들기** (`data/raw/tourapi/`와 `data/raw/tourapi/accessibility/`가 있는 사람, 네트워크 없음) — develop의 build로 장소를 적재한 뒤 `accessibility_judge load`로 무장애 값과 grade를 넣습니다. 두 출처의 `data_sources.license`도 이때 채워집니다(값은 `pipelines/mapping.py`의 `PORTAL_LICENSE` 한 곳). build는 같은 경로에 파일이 있으면 거절하고, load는 처음 실행 때 `haeundae_sample.pre_access.sqlite3` 백업을 만듭니다(`--backup`으로 경로 지정). 자세한 규칙은 `pipelines/README.md`.
 ```text
 .venv/Scripts/python.exe -m pipelines.haeundae_sample build --db data/haeundae_sample.sqlite3
 .venv/Scripts/python.exe -m pipelines.accessibility_judge load --db data/haeundae_sample.sqlite3
@@ -36,15 +36,16 @@ export BUSANFIT_DB_PATH="$(pwd)/data/share/haeundae_sample_v1.sqlite3"
 **(c) 파일 확인 (SHA-256)** — 결과가 `.txt`의 SHA-256과 같아야 합니다(대소문자 무관).
 ```text
 # Windows PowerShell
-(Get-FileHash data/share/haeundae_sample_v1.sqlite3 -Algorithm SHA256).Hash
+(Get-FileHash data/share/haeundae_sample_v2.sqlite3 -Algorithm SHA256).Hash
 # macOS
-shasum -a 256 data/share/haeundae_sample_v1.sqlite3
+shasum -a 256 data/share/haeundae_sample_v2.sqlite3
 # Linux
-sha256sum data/share/haeundae_sample_v1.sqlite3
+sha256sum data/share/haeundae_sample_v2.sqlite3
 ```
-v1: `c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75`, 491520 바이트 (places 275, `open_hours` NULL 103, accessibility 53행, data_sources 2행).
+v2: `2ff6a71a6cb4a7a51bdba39d0a92f164985c30cc138cbe5fbcfc05caedf67898`, 491520 바이트 (places 275, `open_hours` NULL 103, accessibility 53행, data_sources 2행, grade VERIFIED 48곳·UNSUITABLE 0곳·UNKNOWN 227곳). 직접 만들면 파일 SHA는 다를 수 있으나 테이블 내용은 같습니다(두 번 만들어 비교 확인).
+v1(이전): `c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75`, 491520 바이트.
 
-**(d) 연결 점검** — places 건수와 반경 검색 1회(해운대해수욕장 35.159084, 129.160279 반경 1500 m). `BUSANFIT_DB_PATH`를 설정한 셸에서 실행합니다. v1 기준 `places 275`, `within_1500m 107`.
+**(d) 연결 점검** — places 건수와 반경 검색 1회(해운대해수욕장 35.159084, 129.160279 반경 1500 m). `BUSANFIT_DB_PATH`를 설정한 셸에서 실행합니다. v2 기준 `places 275`, `within_1500m 107`(v1과 같음).
 ```text
 # Windows PowerShell, 저장소 루트
 cd backend; ../.venv/Scripts/python.exe -c "from app.data import db; from app.data.sqlite_repository import SqlitePlaceRepository as R; c = db.connect(); print('places', c.execute('select count(*) from places').fetchone()[0]); print('within_1500m', len(R(c).find_within_radius(35.159084, 129.160279, 1500))); c.close()"; cd ..
@@ -53,8 +54,9 @@ cd backend; ../.venv/Scripts/python.exe -c "from app.data import db; from app.da
 ```
 
 **(e) 이용조건과 주의**
-- 데이터 이용허락범위: 제한 없음(공공데이터포털 기준, 국문 관광정보·무장애 여행 정보 모두). 출처 표시: 한국관광공사. DB 파일은 용량과 재현성 때문에 git에 커밋하지 않음.
-- 무장애 값은 DEC-026 확정 규칙(#64 표현 목록, 11/19 PM 확인, #58) 기준. grade는 #58 병합 후 DEC-026 :389 규칙으로 계산 예정, 지금은 UNKNOWN.
+- 데이터 이용허락범위: 제한 없음(공공데이터포털 기준, 국문 관광정보·무장애 여행 정보 모두). v2부터 두 출처의 `data_sources.license`에 "이용허락범위 제한 없음(공공데이터포털)"으로 기록(NFR-009). 출처 표시: 한국관광공사, 화면 문구는 SDD 7.3 "출처: 제공기관·데이터명(기준일)". DB 파일은 용량과 재현성 때문에 git에 커밋하지 않음.
+- 무장애 값은 DEC-026 확정 규칙(#64 표현 목록, 11/19 PM 확인, #58) 기준. grade는 DEC-026 ③ 규칙으로 계산(휠체어·유모차 두 항목만: 하나라도 true면 VERIFIED, true 없이 false가 있으면 UNSUITABLE, 둘 다 null이면 UNKNOWN). 등급은 표시용이고 후보 판정은 항목값으로 함(DEC-015).
+- 주의: API 응답의 `accessibility.grade`는 지금 DB의 grade 칸이 아니라 `app/places/presentation.py`가 항목값으로 다시 계산하며, 그 식은 "둘 다 false일 때만 UNSUITABLE"이라 DEC-026과 다름(해운대 v2에는 false+null 장소가 없어 결과는 같음). 후속 정리 대상.
 
 ## 반경 검색 (작업 D)
 - `SqlitePlaceRepository(conn)` (`sqlite_repository.py`): `db.connect()`로 연 연결을 받아 읽기만 합니다. 연결은 호출한 쪽이 닫습니다.

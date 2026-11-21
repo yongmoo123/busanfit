@@ -1,10 +1,11 @@
-"""#22 PlaceRetriever on the real 해운대 DB (data/haeundae_sample.sqlite3).
+"""#22 PlaceRetriever on the real 해운대 DB (BUSANFIT_DB_PATH or legacy path).
 
 The DB file is not committed (DEC-005), so CI skips this module. Opened read-only.
 Counts are printed for the report (``pytest -s``) and not asserted: they change when the
 data, the 무장애 표현 목록 (DEC-026) or the 사후면세점 기준 (DEC-023 ④) change.
 """
 from pathlib import Path
+import os
 import sqlite3
 
 import pytest
@@ -15,8 +16,9 @@ from app.domain.course import CourseSettings
 from app.retrieval import PlaceRetriever, load_retrieval_settings
 from test_place_retriever import profile
 
-DB = Path(__file__).resolve().parents[2] / 'data/haeundae_sample.sqlite3'
-pytestmark = pytest.mark.skipif(not DB.exists(), reason='real 해운대 DB is not available (not committed, DEC-005)')
+DB = (Path(os.environ['BUSANFIT_DB_PATH']) if os.environ.get('BUSANFIT_DB_PATH') else
+      Path(__file__).resolve().parents[2] / 'data/haeundae_sample.sqlite3')
+pytestmark = pytest.mark.skipif(not DB.is_file(), reason='real 해운대 DB is not available (not committed, DEC-005)')
 
 # Saturday afternoon, KST
 WINDOW = {'start': '2026-11-21T13:00:00+09:00', 'end': '2026-11-21T18:00:00+09:00'}

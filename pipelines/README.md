@@ -150,9 +150,9 @@ $env:BUSANFIT_DB_PATH = "data/haeundae_sample.sqlite3"     # PowerShell (backend
 | 관광지(12)·레포츠(28) 나머지 (전망대·테마파크·요트·체험 등) | ATTRACTION | 34 |
 | 그 밖 | OTHER | 0 |
 
-**3. 접근성 등급 규칙** (DEC-015 그대로, 등급은 표시용)
-- 정보 없음 → `UNKNOWN`, 휠체어·유모차 **모두 false** → `UNSUITABLE`, **둘 중 하나라도 true** → `VERIFIED`.
-- **휠체어·유모차 중 하나가 false이고 나머지가 null인 경우: 문서에 없음** (DEC-015에 규칙 없음, PM 결정 필요).
+**3. 접근성 등급 규칙** (DEC-015, DEC-026 ③으로 보완. 등급은 표시용)
+- 휠체어·유모차 **두 항목만** 본다: **둘 중 하나라도 true** → `VERIFIED`, **true 없이 false가 하나라도** 있으면 → `UNSUITABLE`(예: 휠체어 false·유모차 null), **둘 다 null** → `UNKNOWN`. 엘리베이터·장애인 화장실은 등급에 넣지 않는다.
+- 이 제안 당시 "하나가 false, 나머지가 null"은 문서에 없었고, DEC-026 ③에서 `UNSUITABLE`로 정해졌다. 구현은 아래 "무장애 판정과 적재" 7.
 - 무장애 1건 호출(`detailWithTour2`, contentId 988449 = 포털 Swagger 예시값)로 본 응답 구조: `wheelchair`, `exit`, `elevator`, `restroom`, `parking`, `route`, `stroller` 등 contentid 외 28개 필드가 **모두 자유 문장(빈 문자열 = 정보 없음)**입니다. 예: `wheelchair: "대여가능(수동휠체어 2대)"`(휠체어 **대여** 여부), `exit: "주출입구는 경사로가 있어 휠체어 접근 가능함"`. 따라서 DEC-015의 true/false/null로 바꾸려면 문장 판정 규칙이 필요하고, 휠체어 접근 판단은 `wheelchair` 하나가 아니라 `exit`·`route`·`elevator` 등을 함께 봐야 합니다. 무장애 연결과 등급 산출은 11/16 전후 별도 PR에서 합니다.
 - 두 서비스가 같은 contentid를 쓰는지: 포털 문서에는 없고, 2026-11-19 해운대 수집으로 **확인**했습니다(아래 "무장애 원본 수집").
 
@@ -213,7 +213,7 @@ $env:BUSANFIT_DB_PATH = "data/haeundae_sample.sqlite3"     # PowerShell (backend
 | URL | <https://www.data.go.kr/data/15101578/openapi.do> |
 | 조회 시각 (`retrieved_at`) | 마지막 수집 호출 시각 (`data/raw/tourapi/fetch_log.jsonl`) |
 | 기준일 (`base_date`) | 문서에 없음 → NULL |
-| **이용허락범위 (공공누리 유형)** | 공공데이터포털 "이용허락범위" 항목 기준 — 한국관광공사_국문 관광정보 서비스: **제한 없음**, 한국관광공사_무장애 여행 정보: **제한 없음**. 현재 적재 코드는 `data_sources.license`를 아직 NULL로 넣음(반영은 후속) |
+| **이용허락범위 (공공누리 유형)** | 공공데이터포털 "이용허락범위" 항목 기준 — 한국관광공사_국문 관광정보 서비스: **제한 없음**, 한국관광공사_무장애 여행 정보: **제한 없음**. 적재 코드는 두 출처 모두 `data_sources.license`에 **"이용허락범위 제한 없음(공공데이터포털)"**을 넣음(NFR-009). 값은 `mapping.PORTAL_LICENSE` 한 곳에만 있고, `tourapi-kor`는 `haeundae_sample build`, `tourapi-barrierfree`는 `accessibility_judge load`가 이 값을 씀. 공유 DB v2부터 반영 |
 | 출처 표시 | 한국관광공사. 화면 문구는 SDD 7.3 형식 "출처: 제공기관·데이터명(기준일)"을 따름 |
 | 관광 사진 (`detailImage2`) | 이미지별로 공공누리 유형이 따로 있음 → 이미지를 화면에 쓸 때 해당 이미지의 유형을 확인해야 함 |
 | 일일 호출 한도 | 상세기능(엔드포인트)별 1000회 (개발계정 기준). 서비스 전체 합산 한도는 확인하지 못함 |
@@ -223,7 +223,7 @@ $env:BUSANFIT_DB_PATH = "data/haeundae_sample.sqlite3"     # PowerShell (backend
 
 > **상태: 확정 (DEC-026, 11/19 PM 확인, #58).** 표현 목록은 PR #64 초안 그대로 확정되었습니다(#58 `DECISIONS.md` "표현 목록 확정 (11/19, PR #64 초안 그대로 PM 확인)"). 목록을 바꿀 때는 `accessibility_rules.json`만 고치고 `load`를 다시 실행합니다.
 >
-> **grade는 #58 병합 후 DEC-026 :389 규칙으로 계산 예정, 지금은 UNKNOWN.** 이동제약 판정은 항목값으로만 함(DEC-015).
+> **grade는 DEC-026 ③ 규칙(휠체어·유모차 두 항목)으로 계산합니다(공유 DB v2부터).** 등급은 표시용이고 이동제약 판정은 항목값으로만 함(DEC-015).
 
 ```text
 # 판정 결과를 data/haeundae_sample.sqlite3의 accessibility에 적재 (멱등)
@@ -243,12 +243,12 @@ $env:BUSANFIT_DB_PATH = "data/haeundae_sample.sqlite3"     # PowerShell (backend
      - **R4-manual** `handicapetc`의 "전동휠체어 … 불가" 조각은 자동 판정하지 않고 원문·장소명을 raw와 보고서에 남김.
   5. TourAPI `wheelchair`·`stroller` 필드(대여 정보)는 판정에 쓰지 않음(원문은 raw에 남김).
   6. 응답이 비었거나 어떤 규칙에도 안 맞으면 **null(정보 없음)**. false로 채우지 않음.
-  7. grade는 #58 병합 후 DEC-026 :389 규칙으로 계산 예정, 지금은 UNKNOWN: 모든 행 `UNKNOWN`, raw에 `"grade_note": "미산정(#58 등급 규칙 정리 전)"`.
+  7. **grade (DEC-026 ③)**: 판정한 wheelchair·stroller 두 값만 본다(`accessibility_judge.grade_of`, 대상 항목은 규칙 파일 `grade.items`). 하나라도 true → `VERIFIED`, true 없이 false가 하나라도 → `UNSUITABLE`, 둘 다 null(충돌 포함) → `UNKNOWN`. 엘리베이터·장애인 화장실은 넣지 않는다(엘리베이터만 true여도 `UNKNOWN`). raw에 `"grade_note": "DEC-026 등급 규칙(휠체어·유모차 두 항목)"`, `"rules_decision": "DEC-026"`.
   8. **장소별 예외 `overrides`**: 규칙 파일에 장소·항목·값·근거 원문(`evidence`)을 적음. 근거 원문이 해당 필드에 그대로 있을 때만 적용하고, 없으면 적용하지 않고 보고서 `override_missing`에 남김. 적용 내역은 raw `overrides`에 기록.
      - 해운대 블루라인파크(2672393): wheelchair=false. 근거 `handicapetc` "* 전동휠체어 탑승 불가* 수동휠체어는 도움을 받아 휠체어를 접어서 탑승가능". stroller·accessible_toilet은 자동 판정 그대로.
 - `load`
   - 처음 실행 때 DB를 `data/haeundae_sample.pre_access.sqlite3`로 복사(이미 있으면 덮어쓰지 않음).
-  - `data_sources`에 `tourapi-barrierfree`가 없으면 추가, 있으면 그대로. provider·dataset_name·url은 `accessibility_collect.py`와 같고, `license`(공공누리 유형 확인 전)·`base_date`(문서에 없음)는 NULL, `retrieved_at`은 `accessibility/fetch_log.jsonl`의 정상 응답 중 파일이 있는 것의 가장 늦은 시각.
+  - `data_sources`에 `tourapi-barrierfree`가 없으면 추가, 있으면 그대로. provider·dataset_name·url은 `accessibility_collect.py`와 같고, `license`는 `mapping.PORTAL_LICENSE`("이용허락범위 제한 없음(공공데이터포털)"), `base_date`(문서에 없음)는 NULL, `retrieved_at`은 `accessibility/fetch_log.jsonl`의 정상 응답 중 파일이 있는 것의 가장 늦은 시각.
   - 이 출처의 accessibility 행을 지우고 다시 넣음(한 트랜잭션). 응답이 있는 장소만 행을 만들고, 빈 응답 장소는 행 없음(= API에서 UNKNOWN). raw는 원문 필드·근거 조각·충돌·수동 확인 조각·문 종류 조각·override 내역이며 시각을 넣지 않아 두 번 실행해도 같은 DB.
 
 ### 결과 (2026-11-19, 해운대 275곳, 응답 있음 53곳)
@@ -264,4 +264,5 @@ $env:BUSANFIT_DB_PATH = "data/haeundae_sample.sqlite3"     # PowerShell (backend
 - 유형별 wheelchair true: 관광지 24, 문화시설 8, 레포츠 3, 쇼핑 4, 음식점 8.
 - 해운대해수욕장(35.159084, 129.160279) 반경 1500m 안이고 `open_hours`가 NULL이 아닌 77곳 중 wheelchair true 11, stroller true 11.
 - wheelchair false 1곳은 블루라인파크 override. accessible_toilet false 1곳은 같은 장소 `handicapetc`의 "화장실은 공간이 좁아 사용이 어려움"(R4).
+- **grade (공유 DB v2, 2026-11-21)**: 장소 기준 VERIFIED 48 · UNSUITABLE 0 · UNKNOWN 227(무장애 행 있음 5 + 행 없음 222). 블루라인파크는 wheelchair false·stroller true라 VERIFIED. v1과 비교해 places·open_hours·항목값(wheelchair·stroller·elevator·accessible_toilet)은 같고, grade·license·raw 규칙 문구(rules_status·rules_decision·grade_note)만 다름. 상세는 `data/share/haeundae_sample_v2.txt`.
 - 여전히 규칙에 안 맞는 exit·route 문장: 누리마루 APEC하우스 `exit` "동백공원 장애인 전용주차장에서 출발해 산책로 아래쪽 도로를 따라온 탐방객은 1층 엘리베이터를 이용해 3층 전시 공간으로 진입" 1건. 문 종류만 있는 조각 5건은 `door_only`.
