@@ -20,6 +20,7 @@ import sqlite3
 
 from app.data.place_id import validate_source_place_id
 from app.domain.place import validate_open_hours
+from pipelines import areas
 
 # contentTypeId (포털 Swagger: 12 관광지, 14 문화시설, 15 축제공연행사, 25 여행코스, 28 레포츠, 32 숙박, 38 쇼핑, 39 음식점)
 TARGET_CONTENT_TYPES = {"12", "14", "28", "38", "39"}
@@ -38,7 +39,6 @@ SOURCE = {
     "url": "https://www.data.go.kr/data/15101578/openapi.do",
     "base_date": None,    # 제공기관 기준일: 문서에 없음
 }
-AREA = "HAEUNDAE"
 
 # 소개정보(detailIntro2) 필드: 유형별 이용시간·쉬는날·이용요금 (포털 Swagger 응답 필드 설명)
 HOURS_FIELDS = {"12": ("usetime", "restdate"), "14": ("usetimeculture", "restdateculture"),
@@ -558,7 +558,9 @@ def _coordinate(value: object, low: float, high: float) -> float | None:
     return number if math.isfinite(number) and low <= number <= high and number != 0 else None
 
 
-def build_rows(raw: RawSample) -> BuildResult:
+def build_rows(raw: RawSample, area: str = areas.DEFAULT_AREA) -> BuildResult:
+    """places rows for one area. ``area`` is written to places.area (pipelines/areas.py 코드)."""
+    area = areas.get(area).code
     result = BuildResult(retrieved_at=raw.retrieved_at)
     hours_by_id: dict[str, OpenHoursResult] = {}
     for content_id in sorted(raw.listed, key=lambda cid: (len(cid), cid)):
@@ -602,7 +604,7 @@ def build_rows(raw: RawSample) -> BuildResult:
             "source_place_id": content_id,
             "name": text(base.get("title")),
             "category": category,
-            "area": AREA,
+            "area": area,
             "address": addr,
             "latitude": lat,
             "longitude": lon,

@@ -1,4 +1,6 @@
-"""해운대 무장애 원본 수집과 문장 정리 — FR-008 (DEC-026 표현 목록 확정 전 준비 작업).
+"""권역별 무장애 원본 수집과 문장 정리 — FR-008 (DEC-026 표현 목록 확정 전 준비 작업).
+
+--area(기본 HAEUNDAE)로 권역을 고른다. 원본 폴더는 pipelines/areas.py 권역 표를 따른다.
 
     python -m pipelines.accessibility_collect fetch --limit 5        # 처음 5곳만 (contentid 짝 확인용)
     python -m pipelines.accessibility_collect fetch --max-calls 300  # 나머지 (이어받기)
@@ -22,16 +24,16 @@ import sqlite3
 import time
 
 # haeundae_sample을 먼저 import해야 backend/가 sys.path에 들어가 mapping을 import할 수 있다
-from pipelines.haeundae_sample import (OK, RAW_DIR, REPO_ROOT, RawStore, items_of, now_kst)
-from pipelines import mapping  # noqa: E402
+from pipelines.haeundae_sample import (OK, RAW_DIR, REPO_ROOT, RawStore, add_area_args, items_of,
+                                       now_kst, parse_area_args)
+from pipelines import areas, mapping  # noqa: E402
 from pipelines.env import load_service_keys
 from pipelines.tourapi_client import WITH_BASE, CallBudgetExceeded, TourApiClient, TourApiError
 
-ACCESS_DIR = RAW_DIR / "accessibility"
 OPERATION = "detailWithTour2"
 DEFAULT_INTERVAL_S = 0.5
 DEFAULT_OUT = REPO_ROOT / "data" / "processed" / "accessibility_phrases.json"
-DEFAULT_DB = REPO_ROOT / "data" / "haeundae_sample.sqlite3"
+DEFAULT_DB = areas.get(areas.DEFAULT_AREA).default_db  # 권역별 기본값: areas.Area.default_db
 
 # 응답 필드 (포털 Swagger, check 응답 988449와 같은 28개). 묶음 이름은 Swagger 항목 분류를 따름
 FIELD_GROUPS = {
@@ -53,7 +55,7 @@ class FetchStopped(RuntimeError):
 
 
 def targets_from_raw(raw_root: Path = RAW_DIR) -> list[str]:
-    """해운대 대상 contentid (국문 fetch와 같은 규칙, 같은 순서)."""
+    """권역 원본 폴더의 대상 contentid (국문 fetch와 같은 규칙, 같은 순서). 기본은 해운대 폴더."""
     store = RawStore(raw_root)
     pairs = set()
     for path in sorted(store.path("list").glob("areaBasedList2_p*.json")):
@@ -292,7 +294,7 @@ def cmd_phrases(args) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m pipelines.accessibility_collect")
-    parser.add_argument("--raw", default=str(RAW_DIR), help="원본 폴더 (기본 data/raw/tourapi)")
+    add_area_args(parser)
     sub = parser.add_subparsers(dest="cmd", required=True)
     fetch_p = sub.add_parser("fetch", help="detailWithTour2 원본 수집 (이어받기)")
     fetch_p.add_argument("--max-calls", type=int, default=300)
@@ -300,8 +302,11 @@ def main(argv: list[str] | None = None) -> int:
     fetch_p.add_argument("--interval", type=float, default=DEFAULT_INTERVAL_S, help="호출 간격(초)")
     phrases_p = sub.add_parser("phrases", help="문장 원문·필드별 빈도표 (네트워크 없음)")
     phrases_p.add_argument("--out", default=str(DEFAULT_OUT))
-    phrases_p.add_argument("--db", default=str(DEFAULT_DB), help="source_place_id 대조용 (읽기 전용)")
-    args = parser.parse_args(argv)
+    phrases_p.add_argument("--db", default=None,
+                           help="source_place_id 대조용 (읽기 전용, 기본 data/<권역>_sample.sqlite3)")
+    args = parse_area_args(parser, argv)
+    if args.cmd == "phrases" and args.db is None:
+        args.db = str(areas.get(args.area).default_db)
     if args.cmd == "fetch" and (args.max_calls < 1 or (args.limit is not None and args.limit < 1)):
         parser.error("--max-calls and --limit must be >= 1")
     return {"fetch": cmd_fetch, "phrases": cmd_phrases}[args.cmd](args)
