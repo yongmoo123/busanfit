@@ -18,7 +18,49 @@ def values(item):
 
 def test_rules_file_is_marked_as_confirmed():
     assert RULES["status"] == "확정 (DEC-026, 11/19 PM 확인, #58)"
-    assert RULES["grade"] == {"value": "UNKNOWN", "note": "미산정(#58 등급 규칙 정리 전)"}
+    assert RULES["decision"] == "DEC-026"
+    assert RULES["grade"]["items"] == ["wheelchair", "stroller"]
+    assert RULES["grade"]["note"] == "DEC-026 등급 규칙(휠체어·유모차 두 항목)"
+    assert "value" not in RULES["grade"]
+
+
+# ---------------------------------------------------------------- grade (DEC-026 ③)
+
+@pytest.mark.parametrize("wheelchair, stroller, expected", [
+    (True, True, "VERIFIED"),        # 둘 다 true
+    (True, None, "VERIFIED"),        # 하나만 true
+    (None, True, "VERIFIED"),
+    (True, False, "VERIFIED"),       # true + false
+    (False, True, "VERIFIED"),
+    (False, False, "UNSUITABLE"),    # false만
+    (False, None, "UNSUITABLE"),     # false + null
+    (None, False, "UNSUITABLE"),
+    (None, None, "UNKNOWN"),         # 둘 다 null
+])
+def test_grade_uses_wheelchair_and_stroller(wheelchair, stroller, expected):
+    v = {**NONE4, "wheelchair": wheelchair, "stroller": stroller}
+    assert aj.grade_of(v, RULES) == expected
+
+
+@pytest.mark.parametrize("elevator, toilet", [(True, None), (None, True), (True, True), (False, False)])
+def test_grade_ignores_elevator_and_toilet(elevator, toilet):
+    v = {**NONE4, "elevator": elevator, "accessible_toilet": toilet}
+    assert aj.grade_of(v, RULES) == "UNKNOWN"  # 엘리베이터만 true여도 UNKNOWN
+
+
+def test_grade_of_judged_item():
+    assert aj.grade_of(values({"elevator": "엘리베이터 있음"}), RULES) == "UNKNOWN"
+    assert aj.grade_of(values(BLUELINE), RULES) == "VERIFIED"  # wheelchair false, stroller true
+    assert aj.grade_of(values({"handicapetc": "유모차 진입 불가"}), RULES) == "UNSUITABLE"
+
+
+# ---------------------------------------------------------------- license (NFR-009)
+
+def test_license_constant_is_shared_by_both_sources():
+    from pipelines import mapping
+    assert mapping.PORTAL_LICENSE == "이용허락범위 제한 없음(공공데이터포털)"
+    assert mapping.SOURCE["license"] == mapping.PORTAL_LICENSE
+    assert aj.SOURCE["license"] == mapping.PORTAL_LICENSE
 
 
 # ---------------------------------------------------------------- 규칙 1
@@ -225,7 +267,7 @@ def dump(conn):
             [tuple(r) for r in conn.execute("SELECT * FROM accessibility ORDER BY place_id")])
 
 
-def test_load_is_idempotent_and_keeps_grade_unknown(tmp_path):
+def test_load_is_idempotent_and_writes_grade_and_license(tmp_path):
     conn = make_db(tmp_path)
     try:
         stats = aj.load(conn, fake_results(), RULES, "2026-11-19T00:44:04+09:00")
@@ -235,12 +277,15 @@ def test_load_is_idempotent_and_keeps_grade_unknown(tmp_path):
         assert ([tuple(r) for r in dump(conn)[0]], dump(conn)[1]) == first
         source = conn.execute("SELECT * FROM data_sources WHERE code = 'tourapi-barrierfree'").fetchone()
         assert source["retrieved_at"] == "2026-11-19T00:44:04+09:00"  # 있으면 그대로
-        assert source["license"] is None and source["base_date"] is None
+        assert source["license"] == "이용허락범위 제한 없음(공공데이터포털)"
+        assert source["base_date"] is None
         rows = conn.execute("SELECT * FROM accessibility ORDER BY place_id").fetchall()
-        assert [r["grade"] for r in rows] == ["UNKNOWN", "UNKNOWN"]
+        assert [r["grade"] for r in rows] == ["VERIFIED", "UNKNOWN"]
         assert (rows[0]["wheelchair"], rows[0]["stroller"], rows[0]["elevator"]) == (1, 1, None)
         assert (rows[1]["wheelchair"], rows[1]["accessible_toilet"]) == (None, None)
-        assert json.loads(rows[0]["raw"])["grade_note"] == "미산정(#58 등급 규칙 정리 전)"
+        raw = json.loads(rows[0]["raw"])
+        assert raw["grade_note"] == "DEC-026 등급 규칙(휠체어·유모차 두 항목)"
+        assert raw["rules_decision"] == "DEC-026"
     finally:
         conn.close()
 

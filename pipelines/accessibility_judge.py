@@ -8,8 +8,9 @@
 - load: 처음 실행 때 DB를 <db>.pre_access.sqlite3로 복사해 두고(이미 있으면 덮어쓰지 않음),
   data_sources에 tourapi-barrierfree가 없으면 추가(있으면 그대로), 이 출처의 accessibility 행을
   지우고 다시 넣는다(한 트랜잭션). 같은 원본·규칙이면 몇 번 실행해도 같은 결과.
-- grade는 계산하지 않는다. #58 정리 전까지 'UNKNOWN'이고 raw에 grade_note를 남긴다.
-  이동제약 판정은 항목값(wheelchair·stroller 등)으로만 한다(DEC-015).
+- grade는 DEC-026 ③ 규칙으로 계산한다(``grade_of``): 휠체어·유모차 두 항목만 보고, 하나라도 true면
+  VERIFIED, true 없이 false가 있으면 UNSUITABLE, 둘 다 null이면 UNKNOWN. 엘리베이터·장애인 화장실은
+  등급에 넣지 않는다. 등급은 표시용이고 이동제약 판정은 항목값으로만 한다(DEC-015).
 """
 from __future__ import annotations
 
@@ -36,7 +37,7 @@ SOURCE = {
     "code": "tourapi-barrierfree",
     "provider": "한국관광공사",
     "dataset_name": "무장애 여행 정보_GW (KorWithService2)",
-    "license": None,      # 공공누리 유형 확인 전 (pipelines/README.md "출처·이용조건")
+    "license": mapping.PORTAL_LICENSE,  # 값은 mapping.PORTAL_LICENSE 한 곳에만 둔다
     "url": "https://www.data.go.kr/data/15101897/openapi.do",
     "base_date": None,    # 문서에 없음
 }
@@ -176,6 +177,19 @@ def judge(item: dict | None, rules: dict) -> dict:
             "overrides": overrides, "override_missing": override_missing, "fields": fields}
 
 
+def grade_of(values: dict, rules: dict) -> str:
+    """DEC-026 ③: only the items in rules["grade"]["items"] (wheelchair, stroller) decide the grade.
+
+    any True → VERIFIED; no True and any False → UNSUITABLE; all None → UNKNOWN.
+    """
+    judged = [values[it] for it in rules["grade"]["items"]]
+    if any(v is True for v in judged):
+        return "VERIFIED"
+    if any(v is False for v in judged):
+        return "UNSUITABLE"
+    return "UNKNOWN"
+
+
 def raw_json(result: dict, rules: dict) -> str:
     """accessibility.raw: original fields + evidence. No timestamps, so reloading gives the same text."""
     payload = {
@@ -267,7 +281,7 @@ def load(conn: sqlite3.Connection, results: list[dict], rules: dict, retrieved_a
             conn.execute(
                 "INSERT INTO accessibility (place_id, grade, wheelchair, stroller, elevator, "
                 "accessible_toilet, raw, source_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                (pid, rules["grade"]["value"], *(None if v[k] is None else int(v[k]) for k in ITEMS),
+                (pid, grade_of(v, rules), *(None if v[k] is None else int(v[k]) for k in ITEMS),
                  raw_json(r, rules), source_id))
             stats["inserted"] += 1
     return dict(stats)

@@ -1,10 +1,11 @@
 {
   "status": "확정 (DEC-026, 11/19 PM 확인, #58)",
-  "decision": "DEC-026 초안 (무장애 표현 목록)",
+  "decision": "DEC-026",
   "source": "한국관광공사 무장애 여행 정보_GW (KorWithService2) detailWithTour2 응답 문장",
   "grade": {
-    "value": "UNKNOWN",
-    "note": "미산정(#58 등급 규칙 정리 전)"
+    "items": ["wheelchair", "stroller"],
+    "rule": "두 항목 중 true가 하나라도 있으면 VERIFIED, true 없이 false가 하나라도 있으면 UNSUITABLE, 둘 다 null이면 UNKNOWN. 엘리베이터·장애인 화장실은 등급에 넣지 않는다. 등급은 표시용이고 이동제약 판정은 항목값으로 한다(DEC-015)",
+    "note": "DEC-026 등급 규칙(휠체어·유모차 두 항목)"
   },
   "ignored_fields": {
     "fields": ["wheelchair", "stroller"],
