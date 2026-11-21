@@ -190,3 +190,13 @@ $env:BUSANFIT_DB_PATH = (Resolve-Path data/share/haeundae_sample_v1.sqlite3).Pat
 ## #30 검색기·서버 통합 검증 (2026-11-21)
 
 #70 기능 및 별도 미확인 후보 풀을 연결하고 실제 DB의 12개 조합을 검증했다(전체 1510 passed·조건부 7개·하드 위반/미존재 0건). 일반 포함 capability는 false 유지. 상세·결과·일반 활성화 전 남은 항목은 [ISSUE30 최신 연결 기록](ISSUE30_UNKNOWN_ACCESSIBILITY_IMPLEMENTATION.md)을 따른다. 기존 일반 코스 기능의 CS-01~10도 재검증해 9개 통과·실내 미지원 1개 제외를 유지했다.
+
+## 일반 포함 기능 활성화·실제 연결 검증 (2026-11-21, 사용자 요청)
+
+- 사용자 요청으로 일반 #72 `app.main:app` 시작 연결에서 포함 지원을 활성화했다. DB·검색기·계산기·승인 점수 준비가 성공한 뒤 `supportsUnknownAccessibilityInclusion=true`를 반환한다. 기본 동의는 false이며 명시적 전체 PUT 동의 전에는 접근성 null을 코스에 넣지 않는다. 코드 `af9866a85fb5b141a0a03b66895b0a2c52c8f7f9`. 이전 비활성 기록은 당시 상태다.
+- 일반 진입점 4개 모드에서 true PUT 허용·새 revision, null이 없는 코스는 PASSED 유지 및 종료 정리를 확인했다. 관련 **89 passed**, 공유 DB 포함 전체 **1510 passed, 1 warning**, 계약 6 operations·31 schemas·23 examples·15 정책 사례·문서 동기화·diff PASS.
+- `unknown_inclusion.py --runtime-app`은 일반 시작 경로의 실제 서비스를 감사한다. 실제 DB 12개 조합 통과: **7 CONDITIONAL·1 PASSED·4 정상 후보 부족**, 하드 위반·미존재 장소 0건. 장소별 경고·null 보존·동의 초기화·순서 변경 유지·POST 재시도 검증은 일반 지원이 켜진 상태에서 재실행했다.
+- 임시 Uvicorn 실제 HTTP에서도 06~08시 휠체어 입력의 후보 부족/포함 칩 → 동의 PUT → 새 revision POST → CONDITIONAL(미확인 장소 2곳)·상세를 확인했다. 이전 revision 409·POST만 재시도·이동제약 변경 동의 false·세션 삭제를 확인했고 테스트 서버는 종료했다. POST 왕복 53.49ms(로컬)이며 브라우저 인수 결과는 아니다.
+- 근거: `evaluation/courses/results/unknown-inclusion-runtime-real-2026-11-21.json`, `unknown-inclusion-runtime-http-2026-11-21.json`. 실행일 `2026-11-21T13:15:49.178324+09:00`·위 코드 커밋 및 작업 상태를 그대로 기록했다. 기존 격리 앱 보고서는 과거 근거로 보존했다. 일반 코스 CS-01~10도 9통과·실내 1제외·위반/미존재0을 유지했다.
+- DB SHA-256 `c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75` 실행 전후 동일. 실제 모델/데이터 API 호출·키/.env 읽기·DB 커밋·유료 전환·배포·PR 병합 없음. #72는 미병합이므로 이 브랜치에서 서버를 실행해야 한다. 날씨·코스 수정 등 다른 기능 지원은 바꾸지 않았다.
+- 프론트 실제 연결·지도·PC/모바일·수동/전체 인수는 후속이며 acceptanceComplete=false를 유지한다. [실행·API 순서·실패·검증 안내](ISSUE30_FRONTEND_HANDOFF.md)를 진호님께 전달할 수 있게 정리했다. 직접 메시지를 보내지는 않았다.

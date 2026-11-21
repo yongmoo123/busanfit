@@ -2,6 +2,10 @@
 
 2026-11-21. 실제 DB·계산기 자동 검사를 통과한 뒤 사용자 요청으로 일반 해운대·도보 코스 서비스·DEC-029 동행 가중치 연결을 활성화했다. 아래 최신 실행 방법과 ISSUE23 기록을 따른다. 기존 날짜의 대기/비활성·가상 검증 기록은 당시 상태이며, 화면·수동 인수와 PR 병합은 별도다.
 
+## #30 포함 API 실제 연결
+
+일반 포함 지원은 활성화됐다. 서버 재시작 후 새 세션에서 capability=true를 확인한다. 일반 서버 재평가는 `unknown_inclusion.py --runtime-app --expected-db-sha256 <공유SHA> --output <결과JSON>`으로 실행한다. [진호님 연결·검증 안내](../../docs/ISSUE30_FRONTEND_HANDOFF.md)를 따른다. 아래 이전 비활성 기록은 과거 상태다.
+
 ## 일반 서버 연결 활성화 (2026-11-21, 사용자 요청)
 
 - 실제 DB 자동 검사에서 하드 위반·미존재 장소 0건 확인 후 사용자 요청으로 일반 `app.main:app`을 활성화했다. 아래/위 이전 비활성 기록은 당시 상태이며, 현재 일반 진입점은 이 절을 따른다. 구현 코드 `ea7ebe583cd6d28905ad7f47de853feae0dc597e`.
@@ -28,7 +32,7 @@ $env:BUSANFIT_DB_PATH = (Resolve-Path data/share/haeundae_sample_v1.sqlite3).Pat
 .venv/Scripts/python.exe evaluation/courses/run.py --mode real --runtime-app --travel-provider app.travel.walking:create_travel_provider --expected-db-sha256 c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75 --output evaluation/courses/results/runtime-real-local.json
 ```
 
-브라우저 점검자는 우선 `POST /api/sessions`의 HAEUNDAE/WALK 지원을 확인하고 일반·휠체어·유모차·부상, 추천 이유·출처·정보 없음·동행 기본값/칩과 지도·모바일 흐름을 이어서 점검한다. #70 정보 없음 포함은 계속 false이므로 해당 동의 API를 활성화된 것으로 연결하지 않는다. #72 미병합 상태에서는 이 브랜치에서 실행해야 한다.
+브라우저 점검자는 우선 `POST /api/sessions`의 HAEUNDAE/WALK 지원을 확인하고 일반·휠체어·유모차·부상, 추천 이유·출처·정보 없음·동행 기본값/칩과 지도·모바일 흐름을 이어서 점검한다. #30 포함 기능도 사용자 요청으로 활성화했다. 새 세션의 supportsUnknownAccessibilityInclusion=true를 확인한 후 ISSUE30_FRONTEND_HANDOFF.md의 전체 PUT→새 revision POST 순서로 연결한다. #72 미병합 상태에서는 이 브랜치에서 실행해야 한다.
 
 ## 선행 입력
 

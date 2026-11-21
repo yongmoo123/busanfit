@@ -1,6 +1,6 @@
 # #30·#31② 서버 사전 구현 — FR-013·014②
 
-> 최신 상태: #72 실제 검색기 연결과 검증용 실제 DB 동의 흐름을 완료했다. 일반 서버의 포함 기능은 계속 비활성이며 화면 인수·활성화·PR 병합은 별도다. 아래 과거 선행 대기 기록은 당시 상태다.
+> 최신 상태: 사용자 요청으로 #72 일반 서버의 포함 지원을 활성화하고 실제 DB·HTTP 동의/조건부 흐름을 검증했다. 화면·수동 인수와 PR 병합은 별도다. 아래 과거 대기·비활성 기록은 당시 상태이며 마지막 활성화 기록 및 ISSUE30_FRONTEND_HANDOFF.md를 따른다.
 
 2026-11-19. 사용자 요청: 카톡 초안에서 구현 가능한 서버 부분을 먼저 진행하고 프론트 추가 합의 항목은 남긴다. develop `700dcb0`에서 별도 `feature/FR-013-unknown-accessibility` 브랜치로 작업했다. `.env`·키를 읽거나 실 데이터/LLM API를 호출하지 않았다. DECISIONS.md는 변경하지 않았다. 계약 합의·일반 활성화·실데이터 인수·병합과 사전 구현 PR 게시는 구분한다.
 
@@ -130,3 +130,13 @@ git diff --check
 $env:BUSANFIT_DB_PATH = (Resolve-Path data/share/haeundae_sample_v1.sqlite3).Path
 .venv/Scripts/python.exe evaluation/courses/unknown_inclusion.py --expected-db-sha256 c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75 --output evaluation/courses/results/unknown-inclusion-local.json
 ```
+
+## 일반 포함 기능 활성화·실제 연결 검증 (2026-11-21, 사용자 요청)
+
+- 사용자 요청으로 일반 #72 `app.main:app` 시작 연결에서 포함 지원을 활성화했다. DB·검색기·계산기·승인 점수 준비가 성공한 뒤 `supportsUnknownAccessibilityInclusion=true`를 반환한다. 기본 동의는 false이며 명시적 전체 PUT 동의 전에는 접근성 null을 코스에 넣지 않는다. 코드 `af9866a85fb5b141a0a03b66895b0a2c52c8f7f9`. 이전 비활성 기록은 당시 상태다.
+- 일반 진입점 4개 모드에서 true PUT 허용·새 revision, null이 없는 코스는 PASSED 유지 및 종료 정리를 확인했다. 관련 **89 passed**, 공유 DB 포함 전체 **1510 passed, 1 warning**, 계약 6 operations·31 schemas·23 examples·15 정책 사례·문서 동기화·diff PASS.
+- `unknown_inclusion.py --runtime-app`은 일반 시작 경로의 실제 서비스를 감사한다. 실제 DB 12개 조합 통과: **7 CONDITIONAL·1 PASSED·4 정상 후보 부족**, 하드 위반·미존재 장소 0건. 장소별 경고·null 보존·동의 초기화·순서 변경 유지·POST 재시도 검증은 일반 지원이 켜진 상태에서 재실행했다.
+- 임시 Uvicorn 실제 HTTP에서도 06~08시 휠체어 입력의 후보 부족/포함 칩 → 동의 PUT → 새 revision POST → CONDITIONAL(미확인 장소 2곳)·상세를 확인했다. 이전 revision 409·POST만 재시도·이동제약 변경 동의 false·세션 삭제를 확인했고 테스트 서버는 종료했다. POST 왕복 53.49ms(로컬)이며 브라우저 인수 결과는 아니다.
+- 근거: `evaluation/courses/results/unknown-inclusion-runtime-real-2026-11-21.json`, `unknown-inclusion-runtime-http-2026-11-21.json`. 실행일 `2026-11-21T13:15:49.178324+09:00`·위 코드 커밋 및 작업 상태를 그대로 기록했다. 기존 격리 앱 보고서는 과거 근거로 보존했다. 일반 코스 CS-01~10도 9통과·실내 1제외·위반/미존재0을 유지했다.
+- DB SHA-256 `c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75` 실행 전후 동일. 실제 모델/데이터 API 호출·키/.env 읽기·DB 커밋·유료 전환·배포·PR 병합 없음. #72는 미병합이므로 이 브랜치에서 서버를 실행해야 한다. 날씨·코스 수정 등 다른 기능 지원은 바꾸지 않았다.
+- 프론트 실제 연결·지도·PC/모바일·수동/전체 인수는 후속이며 acceptanceComplete=false를 유지한다. [실행·API 순서·실패·검증 안내](ISSUE30_FRONTEND_HANDOFF.md)를 진호님께 전달할 수 있게 정리했다. 직접 메시지를 보내지는 않았다.

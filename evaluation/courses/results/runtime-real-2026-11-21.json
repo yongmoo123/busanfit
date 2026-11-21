@@ -4,8 +4,8 @@
   "realDataVerified": false,
   "realTravelVerified": false,
   "acceptanceComplete": false,
-  "runDate": "2026-11-21T13:07:06.925549+09:00",
-  "codeRevision": "2a91c130915cc797ad63e3dc72044a4283f6b636",
+  "runDate": "2026-11-21T13:15:50.948165+09:00",
+  "codeRevision": "af9866a85fb5b141a0a03b66895b0a2c52c8f7f9",
   "workingTreeModified": true,
   "dbSha256": "c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75",
   "casesSha256": "cdd8d3f75f646707d8bfec65e61af5b894130ef9d47dffafc9011c8fb3213ccb",
@@ -21,7 +21,7 @@
     {
       "id": "CS-01",
       "state": "PASS",
-      "responseMs": 62.24500003736466,
+      "responseMs": 81.6042999504134,
       "hardViolations": 0,
       "missingPlaceIds": 0,
       "manualChecksPending": [],
@@ -41,7 +41,7 @@
     {
       "id": "CS-02",
       "state": "PASS",
-      "responseMs": 49.572400050237775,
+      "responseMs": 66.65900000371039,
       "hardViolations": 0,
       "missingPlaceIds": 0,
       "manualChecksPending": [],
@@ -61,7 +61,7 @@
     {
       "id": "CS-03",
       "state": "PASS",
-      "responseMs": 32.61290001682937,
+      "responseMs": 73.96219996735454,
       "hardViolations": 0,
       "missingPlaceIds": 0,
       "manualChecksPending": [
@@ -84,7 +84,7 @@
     {
       "id": "CS-04",
       "state": "PASS",
-      "responseMs": 32.369099906645715,
+      "responseMs": 74.79139999486506,
       "hardViolations": 0,
       "missingPlaceIds": 0,
       "manualChecksPending": [],
@@ -105,7 +105,7 @@
     {
       "id": "CS-05",
       "state": "PASS",
-      "responseMs": 22.454699967056513,
+      "responseMs": 63.36080003529787,
       "hardViolations": 0,
       "missingPlaceIds": 0,
       "manualChecksPending": [
@@ -142,7 +142,7 @@
     {
       "id": "CS-07",
       "state": "PASS",
-      "responseMs": 49.787300056777894,
+      "responseMs": 65.61750010587275,
       "hardViolations": 0,
       "missingPlaceIds": 0,
       "manualChecksPending": [],
@@ -162,7 +162,7 @@
     {
       "id": "CS-08",
       "state": "PASS",
-      "responseMs": 36.6611999925226,
+      "responseMs": 51.62540008313954,
       "hardViolations": 0,
       "missingPlaceIds": 0,
       "manualChecksPending": [
@@ -185,7 +185,7 @@
     {
       "id": "CS-09",
       "state": "PASS",
-      "responseMs": 77.60930003132671,
+      "responseMs": 95.26340011507273,
       "hardViolations": 0,
       "missingPlaceIds": 0,
       "manualChecksPending": [
@@ -208,7 +208,7 @@
     {
       "id": "CS-10",
       "state": "PASS",
-      "responseMs": 27.481099939905107,
+      "responseMs": 38.15240005496889,
       "hardViolations": 0,
       "missingPlaceIds": 0,
       "manualChecksPending": [],
