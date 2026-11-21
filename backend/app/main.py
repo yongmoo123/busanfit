@@ -36,7 +36,7 @@ def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1
             if connect_real_data:
                 from app.application.course_connection import prepare_runtime_connection
                 prepared = await asyncio.to_thread(prepare_runtime_connection)
-                capabilities = build_profile_capabilities(ProfileSupport(True, frozenset(INITIAL_FIELDS), True))
+                capabilities = build_profile_capabilities(ProfileSupport(True, frozenset(INITIAL_FIELDS), True, True))
                 # Publish support only after DB, exclusions, weights and provider validate.
                 app.state.course_connection = prepared
                 app.state.course_service = prepared.service

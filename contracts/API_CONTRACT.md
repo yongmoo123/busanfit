@@ -88,7 +88,7 @@ budget/mobility/preferenceTags도 최종 프로필 모양에는 있으나 예시
 - 같은 도보 값을 다시 선택하는 명시적 수락은 POST /api/chat에 `message="도보로 이동할게요"`와 최신 `expectedProfileRevision`을 보낸다. 카드 저장 후라면 그 응답의 revision을 사용한다. 프론트는 이 문장을 사용자의 명시적 선택 때만 전송하며 경고 닫기·시간 저장에서 자동 전송하지 않는다. 409·422·503 또는 네트워크 실패를 수락 성공으로 표시하지 않고 서버 최신 status·revision을 따른다. 새 외부 필드는 추가하지 않는다.
 - 채팅에서 미지원 이동수단을 WALK로 자동 변경하거나 새 DEFAULT를 넣어 수락한 것으로 처리하지 않는다. 기존 값이 없다면 transport=null/UNSET, 기존 값이 있으면 보존한다. 사용자가 명시적으로 수락하면 그때 지원되는 값을 USER로 저장하고 해당 확인 대기를 해소한다.
 - 다른 미지원 조건까지 함께 들어온 경우에는 일반 422 규칙을 유지한다. 이동수단 예외가 지역·이동제약 등 모든 미지원 조건을 허용하는 예외는 아니다.
-- 일반 앱은 includeUnknownAccessibility=false만 허용한다. true 요청은 422. FR-013 사전 구현은 검증용 composition root에서 supportsUnknownAccessibilityInclusion을 명시적으로 켰을 때만 PUT true를 허용한다. 일반 활성화·확인된 정책은 아래 FR-013·FR-014② 항목 참조.
+- includeUnknownAccessibility=true는 세션 capabilities.supportsUnknownAccessibilityInclusion=true일 때만 허용한다. #72 일반 서버는 실제 검색기·동의/조건부 검증 후 사용자 요청으로 이를 활성화했다. 미지원 앱에서는 true PUT이 422이며, 지원 앱에서도 명시적 동의·이동제약 변경 시 초기화 정책을 따른다. 아래 FR-013·FR-014② 항목 참조.
 - 권역/이동수단도 capabilities로 검증한다. 구현되지 않은 조건을 지원한다고 표시하지 않는다.
 - 이는 최종 SRS Must 요구사항의 삭제가 아니다. 이후 검증을 마친 기능부터 지원 범위를 넓힌다.
 
@@ -224,9 +224,9 @@ GET /api/places/{placeId}를 기존 PlaceResponse(place/sources/warnings/request
 
 EDIT_PROFILE 칩 선택은 field에 해당하는 카드를 여는 동작이며 자동 변경·저장·하드 완화가 아니다. 사용자가 USER로 저장한 최신 profileRevision으로 재생성하면 해당 제안이 사라진다. 같은 DEFAULT를 유지하면 제안도 유지하며 최신 응답으로 칩을 교체한다. INSUFFICIENT_PLACES는 suggestions=[]이다. 프로필·revision·코스 내용을 제안 생성으로 변경하지 않는다. 체류시간 제안은 기존 프로필 필드가 없어 이번 범위에서 제외하고, 날씨 제안은 후속이다. FR-014① 자체의 외부 JSON 필드·enum 변경은 없으며 FR-013·014② 확장은 다음 절과 구분한다.
 
-## FR-013·FR-014② 사전 구현 (일반 서비스 비활성)
+## FR-013·FR-014② 실제 연결 (일반 포함 지원 활성)
 
-이 절은 프론트 리뷰와 사용자 전달 PM 확인을 반영한 서버 부분을 기술한다. #72 실제 검색기는 접근성 정보만 없어 제외된 장소를 거리 근거와 함께 별도 후보 풀로 전달하며, 실제 DB의 동의 전후 검증은 격리된 검증용 앱에서 수행한다. 일반 app.main:app의 supportsUnknownAccessibilityInclusion은 계속 false이고 PUT true를 거절한다. 후보 검색·mobility 검증과 unknown_accessibility_verified를 명시한 검증용 root에서만 true가 된다. 화면 인수·일반 포함 기능 활성화는 별도다.
+이 절은 프론트 리뷰와 사용자 전달 PM 확인을 반영한 서버 계약이다. #72 실제 검색기는 접근성 정보만 없어 제외된 장소를 거리 근거와 함께 별도 후보 풀로 전달한다. 실제 DB 동의/조건부 검증 후 사용자 요청으로 일반 app.main:app 시작 연결에서 supportsUnknownAccessibilityInclusion=true를 공개하고 true PUT을 허용한다. DB·설정·승인 점수 연결 검증이 실패하면 시작하지 않는다. 동의 전 null은 계속 제외하고 실제 포함 시에만 조건부 경고를 반환한다. 프론트 실제 연결·화면 인수와 PR 병합은 별도다.
 
 Suggestion은 type과 field가 결합된 두 분기다. 기존 EDIT_PROFILE은 기존 ProfileField만, INCLUDE_UNKNOWN_ACCESSIBILITY는 field=includeUnknownAccessibility만 허용하며 두 타입을 서로 바꿔 쓰면 검증 실패다. 새 action의 id는 include-unknown-accessibility, label은 '접근성 정보가 없는 장소도 포함해서 다시 만들까요?'다. id는 수락 토큰이 아니며 POST에 전송하지 않는다.
 

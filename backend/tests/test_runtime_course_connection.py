@@ -33,7 +33,8 @@ def test_runtime_entry_connects_actual_adapters_course_and_detail(stored, monkey
         caps = session['capabilities']
         assert caps['supportedAreas'] == ['HAEUNDAE'] and caps['supportedTransports'] == ['WALK']
         assert set(caps['supportedProfileFields']) == {'area','timeWindow','transport','mobility','companions','excludedCategories'}
-        assert not any(caps[key] for key in ('supportsUnknownAccessibilityInclusion','supportsWeather','supportsCourseAdjustment'))
+        assert caps['supportsUnknownAccessibilityInclusion']
+        assert not any(caps[key] for key in ('supportsWeather','supportsCourseAdjustment'))
         sid = session['sessionId']
         profile = ready(mobility)
         profile['companions'] = {'value': {'type':'FAMILY','count':3,'hasInfant':False},'source':'USER','strength':'SOFT'}
@@ -51,9 +52,13 @@ def test_runtime_entry_connects_actual_adapters_course_and_detail(stored, monkey
         for item in body['course']['items']:
             detail = client.get('/api/places/'+item['place']['id'])
             assert detail.status_code == 200 and detail.json()['place'] == item['place']
-        unsupported = deepcopy(saved.json()['profile'])
-        unsupported['includeUnknownAccessibility'] = True
-        assert client.put(f'/api/sessions/{sid}/profile',json={'profile':unsupported,'expectedProfileRevision':1}).status_code == 422
+        consent = deepcopy(saved.json()['profile'])
+        consent['includeUnknownAccessibility'] = True
+        accepted = client.put(f'/api/sessions/{sid}/profile',json={'profile':consent,'expectedProfileRevision':1})
+        assert accepted.status_code == 200 and accepted.json()['profile']['includeUnknownAccessibility']
+        assert accepted.json()['profileRevision'] == 2
+        regenerated = client.post('/api/courses',json={'sessionId':sid,'profileRevision':2})
+        assert regenerated.status_code == 200 and regenerated.json()['course']['validation']['status'] == 'PASSED'
         assert client.delete(f'/api/sessions/{sid}').status_code == 204
     assert ordinary_app.state.course_service is None and ordinary_app.state.capabilities.supportedAreas == []
     assert hashlib.sha256(stored[0].read_bytes()).hexdigest() == before

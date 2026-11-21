@@ -14,8 +14,8 @@ class ProfileSupport:
     candidate_search_connected: bool = False
     verified_fields: frozenset[str] = field(default_factory=frozenset)
     mobility_verified: bool = False
-    # Remains false in the ordinary root. Set only after #22 integration,
-    # consent/UI policy agreement and conditional validation are verified.
+    # Defaults closed for injected apps. The ordinary root enables it after
+    # actual #22/consent/conditional integration checks and explicit authorization.
     unknown_accessibility_verified: bool = False
 
     def __post_init__(self):

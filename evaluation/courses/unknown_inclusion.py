@@ -1,4 +1,4 @@
-"""Explicit test-only #30 real-DB audit; does not enable ordinary capabilities."""
+"""#30 real-DB audit: injected test app by default; --runtime-app audits ordinary startup."""
 import argparse
 from copy import deepcopy
 from datetime import datetime, timezone, timedelta
@@ -27,7 +27,7 @@ from audit import audit_response
 from database_run import file_sha256,validate_evaluation_scope
 
 
-def run(output,expected_sha):
+def run(output,expected_sha,*,runtime=False):
     if not __debug__:raise ValueError('audit requires Python without -O')
     connection=prepare_runtime_connection()
     validate_evaluation_scope(connection)
@@ -38,15 +38,21 @@ def run(output,expected_sha):
     contract=runpy.run_path(str(ROOT/'contracts/validate_contract.py'))
     with TestClient(create_runtime_app()) as ordinary:
         session=ordinary.post('/api/sessions',json={}).json()
-        assert not session['capabilities']['supportsUnknownAccessibilityInclusion']
+        ordinary_enabled=session['capabilities']['supportsUnknownAccessibilityInclusion']
+        if runtime:assert ordinary_enabled
         ordinary.delete('/api/sessions/'+session['sessionId'])
-    app=create_app(course_service=connection.service,
+    app=create_runtime_app() if runtime else create_app(course_service=connection.service,
         extractor=AIConditionExtractor(AIService(UnconfiguredProvider()),ChatRuleParser()),
         profile_support=ProfileSupport(True,frozenset(INITIAL_FIELDS),True,True))
     rows=[]
     modes=[('WHEELCHAIR',),('STROLLER',),('INJURY',),('WHEELCHAIR','STROLLER')]
     windows=[('13:00','18:00'),('13:00','14:30'),('06:00','08:00')]
     with TestClient(app) as client:
+        if runtime:
+            actual=app.state.course_connection
+            assert actual.repository.path==connection.repository.path
+            validate_evaluation_scope(actual)
+            connection=actual
         for mode in modes:
             for start,end in windows:
                 sid=client.post('/api/sessions',json={}).json()['sessionId']
@@ -124,7 +130,8 @@ def run(output,expected_sha):
     report={'runDate':datetime.now(timezone(timedelta(hours=9))).isoformat(),
         'codeRevision':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
         'workingTreeModified':bool(subprocess.check_output(['git','status','--porcelain'],cwd=ROOT,text=True).strip()),
-        'dbSha256':before,'syntheticOnly':False,'testOnlyApp':True,'ordinaryInclusionEnabled':False,
+        'dbSha256':before,'syntheticOnly':False,'testOnlyApp':not runtime,
+        'appMode':'runtime' if runtime else 'evaluation','ordinaryInclusionEnabled':ordinary_enabled,
         'allChecksPassed':True,'hardViolations':0,'missingPlaceIds':0,'acceptanceComplete':False,'browserVerified':False,
         'scenarioResults':rows,'conditionalScenarios':sum(row['conditional'] for row in rows)}
     output.parent.mkdir(parents=True,exist_ok=True)
@@ -136,5 +143,6 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--expected-db-sha256',required=True)
+    parser.add_argument('--runtime-app',action='store_true')
     args=parser.parse_args()
-    run(args.output,args.expected_db_sha256)
+    run(args.output,args.expected_db_sha256,runtime=args.runtime_app)

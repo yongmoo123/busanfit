@@ -37,7 +37,7 @@ PR #65의 기존 해운대 표본 분석 근거: 반경 1500m 안 SH040300 28곳
 
 사후면세점·권역/반경·제외 카테고리·주소·운영시간/체류 가능 구간·접근성 false·실내 HARD 등 확정 제외나 다른 미확인 조건이 있으면 별도 풀에 넣지 않는다. 동의 여부로 검색기의 일반 후보를 완화하지 않는다. #70 서버는 풀의 Repository 사실과 거리·시간·이동제약을 다시 검사하고, 동의 후 접근성 null만 조건부로 허용한다. 실제로 포함되면 CONDITIONAL과 UNKNOWN_ACCESSIBILITY_INCLUDED.placeIds를 반환한다.
 
-일반 서버의 포함 기능은 계속 비활성이며, 실제 DB 검증은 `evaluation/courses/unknown_inclusion.py`의 격리된 검증용 앱에서만 수행한다.
+실제 DB의 별도 앱 검증 후 사용자 요청으로 #72 일반 서버의 포함 지원을 활성화했다. 일반 시작 경로의 검증은 `evaluation/courses/unknown_inclusion.py --runtime-app`으로 실행한다. capability가 true여도 사용자의 명시적 동의 전에는 이 풀을 코스에 포함하지 않는다.
 
 - 반경이 두 곳에 있다: 검색은 `BUSANFIT_WALK_RADIUS_M`, 검증(`candidate_violations`)은 `config/courses.json` `radiusMeters`. 둘 다 기본 1500이지만, 환경변수만 늘리면 반경 밖 후보가 검증에서 빠진다.
 - 앱 연결(`CourseService`에 주입, capabilities 활성화)은 이 모듈에 없다(김영무, #50 연결).
