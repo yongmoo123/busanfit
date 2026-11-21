@@ -1,0 +1,27 @@
+%% 그림 10-1. 배포 다이어그램 (SDD 10.1) — DB 컨테이너 없이 SQLite 파일 사용 (DEC-005)
+%% PNG 생성 (저장소 루트): npx -p @mermaid-js/mermaid-cli@11.4.2 mmdc -c docs/diagrams/mermaid.config.json -s 2 -b white -i docs/diagrams/sdd-10-1-deployment.mmd -o docs/images/sdd-10-1-deployment.png
+flowchart TB
+  USER["«device»<br/>사용자 PC / 모바일 브라우저"]
+  GH["«node» GitHub<br/>Repository + Actions"]
+
+  subgraph VM["«node» Cloud VM (Ubuntu, Docker Compose)"]
+    direction TB
+    NGINX["«container» nginx<br/>정적 파일(React build) + HTTPS 리버스 프록시"]
+    API["«container» api<br/>FastAPI (uvicorn)"]
+    BATCH["«container» batch<br/>DataCollector (주 1회)"]
+    DB[("SQLite DB 파일")]
+  end
+
+  EXT["«external»<br/>LLM API · 기상청 API<br/>공공데이터 API · 카카오맵"]
+
+  USER -->|HTTPS| NGINX
+  USER -.->|카카오맵 SDK| EXT
+  GH -.->|"배포 (main 머지)"| VM
+  NGINX -->|"HTTP (내부망)"| API
+  API -->|읽기| DB
+  BATCH -->|새 파일 생성 후 교체| DB
+  API -->|HTTPS| EXT
+  BATCH -->|HTTPS| EXT
+
+  classDef node fill:#EEF3FA,stroke:#1F3A5C,stroke-width:1.5px,color:#1F3A5C
+  class USER,GH,NGINX,API,BATCH,DB,EXT node

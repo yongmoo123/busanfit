@@ -1,0 +1,101 @@
+{
+  "verificationScope": "OFFLINE_SYNTHETIC_ROWS_WITH_REAL_SQLITE",
+  "codeRevision": "3aacfb9f18a0617f47e954eac1e42ef90c57cb90",
+  "workingTreeModified": false,
+  "runDate": "2026-11-17T12:56:40.342397+09:00",
+  "allChecksPassed": true,
+  "checks": [
+    {
+      "check": "pytest",
+      "passed": true,
+      "pytestPassed": 729
+    },
+    {
+      "check": "contract",
+      "passed": true
+    },
+    {
+      "check": "source-sync",
+      "passed": true
+    },
+    {
+      "check": "diff-check",
+      "passed": true
+    },
+    {
+      "check": "extraction-rules-reference",
+      "passed": true
+    },
+    {
+      "check": "courses-synthetic-40",
+      "passed": true
+    },
+    {
+      "check": "explanations-synthetic-8",
+      "passed": true
+    },
+    {
+      "check": "suggestions-synthetic-4",
+      "passed": true
+    },
+    {
+      "check": "companions-proposal-synthetic-12",
+      "passed": true
+    }
+  ],
+  "suites": [
+    {
+      "suite": "extraction-rules-reference",
+      "syntheticOnly": true,
+      "fieldAccuracy": {
+        "correct": 234,
+        "total": 279,
+        "ratio": 0.8387096774193549
+      },
+      "strengthAccuracy": {
+        "correct": 72,
+        "total": 73,
+        "ratio": 0.9863013698630136
+      },
+      "missingQuestionCases": {
+        "correct": 1,
+        "total": 4
+      },
+      "questionOverflowCount": 0,
+      "llmAccuracyMeasured": false
+    },
+    {
+      "suite": "courses-synthetic-40",
+      "syntheticOnly": true,
+      "totalRequests": 40,
+      "hardViolations": 0,
+      "maxResponseMs": 12.246700003743172,
+      "scenarios": 4
+    },
+    {
+      "suite": "explanations-synthetic-8",
+      "syntheticOnly": true,
+      "scenarios": 8
+    },
+    {
+      "suite": "suggestions-synthetic-4",
+      "syntheticOnly": true,
+      "scenarios": 4
+    },
+    {
+      "suite": "companions-proposal-synthetic-12",
+      "syntheticOnly": true,
+      "httpScenarios": 12,
+      "scenarios": 6
+    }
+  ],
+  "sqliteImplementationIntegrated": true,
+  "sqliteRowsSyntheticOnly": true,
+  "realHaeundaeDataVerified": false,
+  "realRetrievalAndTravelVerified": false,
+  "liveLlmStatus": "DEFERRED_BY_USER",
+  "frontendStatus": "HANDOFF_TO_FRONTEND_OWNER",
+  "companionWeightsPmApproved": false,
+  "companionWeightsOrdinaryActivated": false,
+  "existingVirtualChatScreenshotsPresent": true
+}

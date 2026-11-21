@@ -1,0 +1,68 @@
+%% 그림 2-1. 부산핏 전체 아키텍처 (SDD 2.1)
+%% PNG 생성 (저장소 루트): npx -p @mermaid-js/mermaid-cli@11.4.2 mmdc -c docs/diagrams/mermaid.config.json -s 2 -b white -i docs/diagrams/sdd-2-1-architecture.mmd -o docs/images/sdd-2-1-architecture.png
+flowchart TB
+  subgraph CLIENT["Client (Browser)"]
+    direction LR
+    FE["<b>COMP-01 Frontend</b><br/>React SPA · 채팅 · 제약 카드 · 타임라인"]
+    KAKAO["<b>카카오맵 JS SDK</b><br/>지도 · 마커 · 동선"]
+  end
+
+  subgraph BACKEND["Backend Server (Python FastAPI · Docker)"]
+    direction TB
+    subgraph APP["API / Application 계층"]
+      direction LR
+      ORCH["<b>COMP-02 API Gateway / Orchestrator</b><br/>REST 라우터 · 파이프라인 제어 · 세션"]
+      SESSION["<b>SessionStore</b><br/>인메모리 · TTL 30분"]
+    end
+    subgraph DOMAIN["Domain 계층 (AI 처리 · 코스 엔진)"]
+      direction LR
+      C03["<b>COMP-03</b><br/>ConstraintAnalyzer"]
+      C08["<b>COMP-08</b><br/>ExplanationGenerator"]
+      C04["<b>COMP-04</b><br/>PlaceRetriever"]
+      C07["<b>COMP-07</b><br/>CourseValidator"]
+      C06["<b>COMP-06</b><br/>TravelTimeEstimator"]
+      C05["<b>COMP-05</b><br/>CourseScheduler"]
+    end
+    subgraph INFRA["Infrastructure 계층"]
+      direction LR
+      C09["<b>COMP-09 AIService</b><br/>«interface» + Provider (Strategy)"]
+      C10["<b>COMP-10 PlaceRepository</b><br/>SQL · 공간 질의"]
+      C11["<b>COMP-11 DataCollector</b>"]
+      C12["<b>COMP-12 WeatherProvider</b>"]
+    end
+  end
+
+  subgraph EXT["External Services / Data"]
+    direction LR
+    LLM["<b>LLM API</b><br/>Gemini Flash / Claude Haiku 5.5 / GPT-5 mini"]
+    DB[("<b>SQLite DB 파일</b><br/>장소 · 접근성 · 역 · 편의시설 · 출처")]
+    PUB["<b>공공데이터포털<br/>TourAPI</b>"]
+    KMA["<b>기상청<br/>단기예보 API</b>"]
+  end
+
+  FE -->|"HTTPS · JSON (REST)"| ORCH
+  ORCH --> SESSION
+  ORCH --> C03 & C08 & C04 & C07 & C06 & C05
+  ORCH -->|날씨 조회| C12
+  C05 --> C06
+  C03 --> C09
+  C08 --> C09
+  C04 --> C10
+  C07 --> C10
+  C06 --> C10
+  C09 -->|HTTPS| LLM
+  C10 -->|SQL| DB
+  C11 -->|적재| DB
+  C11 -->|"HTTPS · 파일"| PUB
+  C12 -->|HTTPS| KMA
+
+  classDef comp fill:#EEF3FA,stroke:#1F3A5C,stroke-width:1.5px,color:#1F3A5C
+  classDef ai fill:#FBE9E7,stroke:#1F3A5C,stroke-width:1.5px,color:#1F3A5C
+  classDef sdk fill:#FFF4DC,stroke:#1F3A5C,stroke-width:1.5px,color:#1F3A5C
+  classDef data fill:#E5EDE4,stroke:#1F3A5C,stroke-width:1.5px,color:#1F3A5C
+  classDef ext fill:#FFFFFF,stroke:#1F3A5C,stroke-width:1.5px,color:#1F3A5C
+  class FE,ORCH,SESSION,C03,C08,C04,C07,C06,C05,C10,C11,C12 comp
+  class C09,LLM ai
+  class KAKAO sdk
+  class DB data
+  class PUB,KMA ext
