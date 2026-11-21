@@ -186,3 +186,7 @@ $env:BUSANFIT_DB_PATH = (Resolve-Path data/share/haeundae_sample_v1.sqlite3).Pat
 ```
 
 브라우저 점검자는 우선 `POST /api/sessions`의 HAEUNDAE/WALK 지원을 확인하고 일반·휠체어·유모차·부상, 추천 이유·출처·정보 없음·동행 기본값/칩과 지도·모바일 흐름을 이어서 점검한다. #70 정보 없음 포함은 계속 false이므로 해당 동의 API를 활성화된 것으로 연결하지 않는다. #72 미병합 상태에서는 이 브랜치에서 실행해야 한다.
+
+## #30 검색기·서버 통합 검증 (2026-11-21)
+
+#70 기능 및 별도 미확인 후보 풀을 연결하고 실제 DB의 12개 조합을 검증했다(전체 1510 passed·조건부 7개·하드 위반/미존재 0건). 일반 포함 capability는 false 유지. 상세·결과·일반 활성화 전 남은 항목은 [ISSUE30 최신 연결 기록](ISSUE30_UNKNOWN_ACCESSIBILITY_IMPLEMENTATION.md)을 따른다. 기존 일반 코스 기능의 CS-01~10도 재검증해 9개 통과·실내 미지원 1개 제외를 유지했다.
