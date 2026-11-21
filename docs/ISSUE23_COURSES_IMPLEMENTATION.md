@@ -200,3 +200,14 @@ $env:BUSANFIT_DB_PATH = (Resolve-Path data/share/haeundae_sample_v1.sqlite3).Pat
 - 근거: `evaluation/courses/results/unknown-inclusion-runtime-real-2026-11-21.json`, `unknown-inclusion-runtime-http-2026-11-21.json`. 실행일 `2026-11-21T13:15:49.178324+09:00`·위 코드 커밋 및 작업 상태를 그대로 기록했다. 기존 격리 앱 보고서는 과거 근거로 보존했다. 일반 코스 CS-01~10도 9통과·실내 1제외·위반/미존재0을 유지했다.
 - DB SHA-256 `c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75` 실행 전후 동일. 실제 모델/데이터 API 호출·키/.env 읽기·DB 커밋·유료 전환·배포·PR 병합 없음. #72는 미병합이므로 이 브랜치에서 서버를 실행해야 한다. 날씨·코스 수정 등 다른 기능 지원은 바꾸지 않았다.
 - 프론트 실제 연결·지도·PC/모바일·수동/전체 인수는 후속이며 acceptanceComplete=false를 유지한다. [실행·API 순서·실패·검증 안내](ISSUE30_FRONTEND_HANDOFF.md)를 진호님께 전달할 수 있게 정리했다. 직접 메시지를 보내지는 않았다.
+
+## #72 승인 리뷰 후 깨끗한 상태 최종 검증 (2026-11-21)
+
+찬용의 e2304a9 승인 리뷰를 확인하고 실행 안내의 DB 절대 경로·제출용 문서와 검색기 README 구조를 보완했다. 프로그램 코드·하드 정책·승인 설정은 바꾸지 않았다. AGENTS.md의 공통 지침은 “이 파일을 바꾸는 것은 팀 규칙을 바꾸는 것이므로 PM 리뷰를 받는다”에 따라 유지하고, 현재 바로 실행할 절차는 README/SUBMISSION_RUN에 명시했다. AGENTS 실행 예시의 동기화는 리뷰에서 언급한 11/27 공동 실행 방법 정리/PM 검토 후속으로 남긴다.
+
+수정 없는 별도 작업 폴더의 커밋 `003a38e6107f1a88e300c9fc92f7494e88c1b30d`에서 공유 DB를 절대 경로로 지정했다. 출력은 해당 작업 폴더 밖에 저장해 시작/종료 git status가 모두 비었고 보고서 두 건 모두 `workingTreeModified=false`다. 전체 **1510 passed, 1 warning** 및 계약 6 operations·31 schemas·23 examples·15 정책 사례·문서 JSON 동기화 PASS. 경고는 기존 Starlette/httpx 경고1건이다.
+
+- 일반 CS: 9개 자동 통과·실내 HARD 1개 제외, 위반/미존재0·15초 이내9/9. [깨끗한 커밋 보고서](../evaluation/courses/results/pr72-final-clean-runtime-real-2026-11-21.json).
+- 일반 포함 지원: 12개 조합 통과, 7 CONDITIONAL·1 PASSED·4 정상 후보 부족, 위반/미존재0·동의 초기화/재시도 확인. [깨끗한 커밋 보고서](../evaluation/courses/results/pr72-final-clean-unknown-inclusion-runtime-real-2026-11-21.json).
+- CS-03·04의 excludedUnknown=66은 시간창/요일별 확정 제외 결과로 승인 리뷰에서 의도된 동작임을 확인했다. 숫자를 맞추려고 검색기·평가셋·DB를 바꾸지 않았다.
+- 이 자동 검증은 브라우저/지도/모바일/수동 extraChecks 및 최종 인수 완료를 의미하지 않는다. DB·키를 커밋하거나 새 모델 API를 호출하지 않았다. 실행 커밋을 이후 보고서 저장 커밋으로 소급 변경하지 않았다.
