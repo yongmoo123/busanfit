@@ -78,7 +78,7 @@
         "timeWindow": {"value": {"startAt": "2026-11-14T14:00:00+09:00", "endAt": "2026-11-14T17:00:00+09:00"}, "source": "USER", "strength": "HARD"},
         "mobility": {"value": ["INJURY"], "source": "USER", "strength": "HARD"}
       },
-      "expected": {"outcome": "SUCCESS_OR_INSUFFICIENT", "extraChecks": ["보행 속도 3 km/h로 계산", "계단 회피 대리 판정(wheelchair true) 적용", "부상 규칙 안내 경고"]},
+      "expected": {"outcome": "SUCCESS_OR_INSUFFICIENT", "extraChecks": ["보행 속도 3 km/h로 계산", "계단 회피 대리 판정(wheelchair true) 적용", "부상 규칙 안내 경고(택시·대중교통 권장 문구 포함, DEC-016 11/20)", "구간당 도보 10분 이하(직선거리 추정)"]},
       "notes": "[가상] 부상. 장소 수를 줄이고 체류를 늘리는 쪽이 우선이다(DEC-016).",
       "result": null
     },
