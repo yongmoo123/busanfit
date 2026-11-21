@@ -57,6 +57,27 @@ def test_missing_accessibility_and_price_stay_unknown(detail):
     assert body['place']['price']['status'] == 'UNKNOWN'
 
 
+@pytest.mark.parametrize('wheelchair,stroller,stored_grade', [
+    (False, None, 'UNSUITABLE'),
+    (None, False, 'UNSUITABLE'),
+    (False, False, 'UNSUITABLE'),
+    (True, False, 'VERIFIED'),
+    (None, None, 'UNKNOWN'),
+    # An older DB may still have UNKNOWN: presentation must not infer a grade.
+    (True, True, 'UNKNOWN'),
+])
+def test_detail_preserves_stored_grade_and_nullable_items(detail, wheelchair, stroller, stored_grade):
+    _, repository, place = detail
+    repository.places[place.id] = replace(place, accessibility=replace(
+        place.accessibility, grade=stored_grade, wheelchair=wheelchair, stroller=stroller))
+    body = fetch(detail).json()
+    CONTRACT['check'](body, CONTRACT['schemas']['PlaceResponse'])
+    access = body['place']['accessibility']
+    assert access['grade'] == stored_grade
+    assert access['wheelchair'] is wheelchair
+    assert access['stroller'] is stroller
+
+
 def test_multiple_sources_are_complete_ordered_and_deduplicated(detail):
     _, repository, place = detail
     source = replace(synthetic_source(), id='access-source', code='synthetic-access')

@@ -131,6 +131,22 @@ def test_unknown_accessibility_is_excluded_by_item_not_grade(env):
     assert body['excludedUnknown'] == {'count': 1, 'fields': ['mobility.wheelchair']}
 
 
+def test_course_preserves_stored_grade_without_recomputing_or_using_it_as_a_filter(env):
+    seed(env)
+    for place in env['places']:
+        env['repository'].places[place.id] = replace(place, accessibility=replace(
+            place.accessibility, grade='UNSUITABLE', wheelchair=False, stroller=None))
+    response = generate(env)
+    check_contract(response)
+    body = response.json()
+    assert body['status'] == 'SUCCESS'
+    for item in body['course']['items']:
+        access = item['place']['accessibility']
+        assert access['grade'] == 'UNSUITABLE'
+        assert access['wheelchair'] is False
+        assert access['stroller'] is None
+
+
 def test_unknown_exclusions_are_unique_across_retriever_and_validator(env):
     seed(env, ready(['STROLLER']))
     p = env['places'][0]
