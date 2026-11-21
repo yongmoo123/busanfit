@@ -402,7 +402,3 @@ COMP-02/03의 application/condition_policy.py는 부분 추출을 기존 프로�
 ## FR-018 구현 추적 (2026-11-17, 이슈 #27)
 
 동행 카테고리 점수 함수와 가중치 제안 설정을 구현해 가상 후보로 검증했다. 가족 관광·전시·공원 우대 방향은 DEC-013을 따르지만 수치·다른 동행 매핑·실내 대비 계수는 PM 미확정이다. 일반 경로에는 활성화하지 않고 기존 default_score를 유지한다. 가격·분위기·야경·활동성·인원 적합성을 추정하지 않으며 하드 필터·검증기·영유아 유모차·부상 규칙을 유지한다. [제안 표](proposals/issue-27-companion-weights.md), [구현·검증 기록](ISSUE27_COMPANION_SCORING_IMPLEMENTATION.md).
-
-## FR-009·FR-018 연결 준비 (2026-11-20)
-
-`application/course_connection.py`는 읽기 전용 SQLite Repository·#65 검색기·외부 주입 COMP-06·승인된 DEC-029 scorer를 CourseService에 조립한다. 검색 반경을 Scheduler·Validator에도 전달한다. 일반 앱·capabilities는 변경하지 않는다. #53 사례를 읽는 평가용 TestClient 모드는 실행일·커밋·DB/사례 SHA-256·응답시간과 자동 감사 결과를 기록한다. 실제 DB·계산기·화면 검증은 미완료이며 #70 활성화는 별도다. [선행 입력·실행·결과 해석](../evaluation/courses/DATABASE_RUN.md).
