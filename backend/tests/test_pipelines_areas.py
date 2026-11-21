@@ -125,25 +125,10 @@ def test_accessibility_cli_db_default_follows_area(monkeypatch):
     assert seen["db"] == str(areas.get("HAEUNDAE").default_db) and seen["raw"] == str(areas.RAW_ROOT)
 
 
-def test_duty_free_paths_by_area():
-    assert duty_free_ids.raw_list_of("HAEUNDAE") == duty_free_ids.RAW_LIST
-    assert duty_free_ids.RAW_LIST == REPO_ROOT / "data/raw/tourapi/list/areaBasedList2_p1.json"
-    assert duty_free_ids.output_of("HAEUNDAE") == duty_free_ids.OUTPUT
-    assert duty_free_ids.raw_list_of("NAMPO") == REPO_ROOT / "data/raw/tourapi/NAMPO/list/areaBasedList2_p1.json"
-    assert duty_free_ids.output_of("NAMPO") == REPO_ROOT / "data/processed/duty-free-exclusion.NAMPO.json"
-    assert duty_free_ids.relative(duty_free_ids.RAW_LIST) == "data/raw/tourapi/list/areaBasedList2_p1.json"
-
-
-def test_duty_free_build_records_source_path():
-    raw = {"response": {"body": {"items": {"item": [
-        {"contentid": "9", "contenttypeid": "38", "lclsSystm3": "SH040300"},
-        {"contentid": "10", "contenttypeid": "38", "lclsSystm3": "SH010100"},
-        {"contentid": "11", "contenttypeid": "39", "lclsSystm3": "SH040300"}]}}}}
-    default = duty_free_ids.build(raw)
-    assert default["generatedFrom"] == "data/raw/tourapi/list/areaBasedList2_p1.json (pipelines/duty_free_ids.py)"
-    assert default["placeIds"] == ["tourapi-kor:9"] and default["shoppingTotal"] == 2
-    other = duty_free_ids.build(raw, "data/raw/tourapi/NAMPO/list/areaBasedList2_p1.json")
-    assert other["generatedFrom"].startswith("data/raw/tourapi/NAMPO/")
+def test_duty_free_paths():
+    # 4개 권역 원 기준 한 파일 (권역 원 판정·예외 테스트는 test_pipelines_circles.py)
+    assert duty_free_ids.OUTPUT == REPO_ROOT / "config/duty-free-exclusion.proposal.json"
+    assert duty_free_ids.EXCEPTIONS == REPO_ROOT / "config/duty-free-exceptions.json"
 
 
 # ---------------------------------------------------------------- fetch

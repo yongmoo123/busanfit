@@ -256,7 +256,7 @@ def test_merged_pr65_default_settings_and_four_mode_http_flow(stored, tmp_path, 
     monkeypatch.delenv('BUSANFIT_WALK_RADIUS_M', raising=False)
     connection = prepare_course_connection(stored[0], travel_provider=FakeTravel())
     assert isinstance(connection.service.retriever, PlaceRetriever)
-    assert len(connection.retrieval_settings.excluded_place_ids) == 112
+    assert len(connection.retrieval_settings.excluded_place_ids) == 342  # 4개 권역 원 기준 (FR-020, PM 11/21)
     assert connection.retrieval_settings.radius_m == connection.settings.radius_meters == 1500
     assert connection.retrieval_settings.area_centers['HAEUNDAE'] == runner.EVALUATION_CENTER
     report = runner.evaluate_database(connection, dataset(tmp_path), synthetic=True)

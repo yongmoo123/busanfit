@@ -4,8 +4,9 @@
 - 법정동 코드: TourAPI ldongCode2 응답 (부산광역시 lDongRegnCd=26, 시군구 lDongSignguCd).
 - 원본 폴더: 해운대는 기존 경로 data/raw/tourapi/ 를 그대로 쓰고(옮기지 않음),
   다른 권역은 data/raw/tourapi/<권역 코드>/ 아래에 같은 구조(list/, common/, intro/, ...)로 둔다.
-- 보고용 기준점(report_center): 해운대만 정해져 있다(해운대해수욕장, DEC-023 ①).
-  다른 권역은 중심 좌표가 아직 정해지지 않아 None이다. 런타임 중심 좌표는 config/retrieval.json이 기준이다.
+- 보고용 기준점(report_center): accessibility_judge report용이며 해운대만 있다(해운대해수욕장, DEC-023 ①).
+  4개 권역 중심 좌표(PM 결정 11/21)는 config/retrieval.json areaCenters에만 두고, 런타임과 v3 build
+  (pipelines/circles.py)가 모두 그 파일을 읽는다. 여기에는 따로 적지 않는다.
 """
 from __future__ import annotations
 
