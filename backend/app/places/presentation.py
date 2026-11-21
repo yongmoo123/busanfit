@@ -12,9 +12,8 @@ def place_payload(record):
     access = record.accessibility
     wheelchair = access.wheelchair if access else None
     stroller = access.stroller if access else None
-    grade = ('UNKNOWN' if wheelchair is None and stroller is None else
-             'UNSUITABLE' if wheelchair is False and stroller is False else
-             'VERIFIED' if wheelchair is True or stroller is True else 'UNKNOWN')
+    # DEC-026 is applied during ingestion; preserve the stored display grade.
+    grade = access.grade if access is not None else 'UNKNOWN'
     values = {'wheelchair': wheelchair, 'stroller': stroller,
               'elevator': access.elevator if access else None,
               'accessibleToilet': access.accessible_toilet if access else None}
