@@ -79,10 +79,10 @@ def load_travel_provider(spec):
     return provider
 
 
-def evaluate_database(connection, cases_path, *, synthetic=False):
+def evaluate_database(connection, cases_path, *, synthetic=False, runtime_app=None):
     """Use synthetic=True for fixture tests; never write results into input cases.
 
-    The HTTP app lives only inside TestClient. Ordinary app/main is untouched.
+    The HTTP app lives inside TestClient; runtime_app audits the ordinary startup.
     Results omit profiles, session tokens and raw response bodies.
     """
     if not __debug__:
@@ -94,11 +94,19 @@ def evaluate_database(connection, cases_path, *, synthetic=False):
     before = file_sha256(db_path)
     contract = runpy.run_path(str(ROOT / 'contracts/validate_contract.py'))
     audit = runpy.run_path(str(Path(__file__).with_name('audit.py')))['audit_response']
-    app = create_app(course_service=connection.service,
+    app = runtime_app if runtime_app is not None else create_app(course_service=connection.service,
         extractor=AIConditionExtractor(AIService(UnconfiguredProvider()), ChatRuleParser()),
         profile_support=ProfileSupport(True, frozenset(INITIAL_FIELDS), True))
     results = []
     with TestClient(app, raise_server_exceptions=False) as client:
+        if runtime_app is not None:
+            actual = app.state.course_connection
+            if (actual is None or actual.repository.path.resolve() != db_path.resolve()
+                    or actual.weights_version != connection.weights_version
+                    or type(actual.service.travel_provider) is not type(connection.service.travel_provider)):
+                raise ValueError('runtime dependencies differ from evaluation inputs')
+            validate_evaluation_scope(actual)
+            connection = actual
         for case in dataset['cases']:
             result = {'id': case['id'], 'state': 'FAIL', 'responseMs': None,
                       'hardViolations': None, 'missingPlaceIds': None,
@@ -173,7 +181,8 @@ def evaluate_database(connection, cases_path, *, synthetic=False):
     passed = bool(executed) and all(r['state'] == 'PASS' for r in executed)
     within_target = sum(r['responseMs'] is not None and r['responseMs'] <= 15000 for r in executed)
     ratio = within_target / len(executed) if executed else None
-    return {'syntheticOnly': synthetic, 'realDataVerified': False, 'realTravelVerified': False,
+    return {'syntheticOnly': synthetic, 'appMode': 'runtime' if runtime_app is not None else 'evaluation',
+            'realDataVerified': False, 'realTravelVerified': False,
             'acceptanceComplete': False, 'runDate': datetime.now(timezone(timedelta(hours=9))).isoformat(),
             'codeRevision': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
             'workingTreeModified': bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True).strip()),
@@ -200,7 +209,13 @@ def run_database(args):
         raise ValueError('DB SHA-256 does not match the shared file')
     load_cases(args.cases)  # Missing #53 is a dependency error, never synthetic fallback.
     connection = prepare_course_connection(path, travel_provider=load_travel_provider(args.travel_provider))
-    report = evaluate_database(connection, args.cases)
+    runtime_app = None
+    if getattr(args, 'runtime_app', False):
+        if args.travel_provider != 'app.travel.walking:create_travel_provider':
+            raise ValueError('runtime uses the actual COMP-06 factory')
+        from app.main import create_runtime_app
+        runtime_app = create_runtime_app()
+    report = evaluate_database(connection, args.cases, runtime_app=runtime_app)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(json.dumps({key: report[key] for key in ('syntheticOnly', 'executedScenarios', 'excludedScenarios',

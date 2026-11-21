@@ -77,6 +77,7 @@ example.invalid는 의도적으로 사용할 수 없는 출처 주소다. 실제
 - 질문은 최대 2개씩 한다. 불확실한 중요한 조건을 기본값으로 덮어쓰지 않는다.
 
 ## 5. capabilities와 첫 주 지원
+일반 `app.main:app` 서버는 시작 시 `BUSANFIT_DB_PATH`의 읽기 전용 DB·#65 검색기·실제 COMP-06·DEC-029 승인 동행 점수 연결이 성공하면 HAEUNDAE/WALK 및 area,timeWindow,transport,mobility,companions,excludedCategories를 지원한다. DB/설정/승인 가중치 오류는 시작 실패이며 가상 데이터나 빈 DB로 대체하지 않는다. indoorPreference/budget/preferenceTags 및 정보 없음 포함·날씨·코스 수정은 지원하지 않는다. 실제 호출은 세션 응답의 capabilities를 따른다.
 예시 capabilities는 HAEUNDAE/WALK 및 area,timeWindow,transport,indoorPreference,companions,excludedCategories를 지원한다.
 budget/mobility/preferenceTags도 최종 프로필 모양에는 있으나 예시 서버의 첫 주 활성 조건 지원 범위에는 없다.
 - 미지원 필드가 null/빈 목록이면 미설정으로 취급할 수 있다.
@@ -224,8 +225,8 @@ GET /api/places/{placeId}를 기존 PlaceResponse(place/sources/warnings/request
 칩 선택은 field에 해당하는 카드를 여는 동작이며 자동 변경·저장·하드 완화가 아니다. 사용자가 USER로 저장한 최신 profileRevision으로 재생성하면 해당 제안이 사라진다. 같은 DEFAULT를 유지하면 제안도 유지하며 최신 응답으로 칩을 교체한다. INSUFFICIENT_PLACES는 suggestions=[]이다. 프로필·revision·코스 내용을 제안 생성으로 변경하지 않는다. 체류시간 제안은 기존 프로필 필드가 없어 이번 범위에서 제외하고, 정보 없음·날씨 제안은 후속이다. 외부 JSON 필드·enum 변경은 없다. 프론트 칩 연결·캡처는 후속이며 현재는 가상 HTTP 흐름으로 검증한다.
 
 
-## FR-018 제안 검증 상태 (2026-11-17, 이슈 #27)
+## FR-018 연결 상태 (이슈 #27 / DEC-029)
 
-동행 카테고리 가중치와 실내 선호 합산은 미승인 제안 설정으로 별도 가상 앱에서만 검증했다. 일반 코스 생성은 기존 점수 함수를 유지하며 외부 JSON·capabilities·API 동작에 가중치를 활성화하지 않았다. 하드 동행은 기존 미지원 처리이고 동행 점수가 하드 제약을 완화하지 않는다. 분위기·야경·가성비·인원 적합성 추론은 하지 않으며 PM 확인과 별도 활성화 변경 전에는 일반 경로에 주입하지 않는다.
+일반 서버는 DEC-029 APPROVED/pmApproved=true 설정만 허용한 동행 카테고리 scorer를 코스 생성에 주입한다. 동행 미입력은 0점이며 기존 코드/필드 구조를 유지한다. 하드 동행은 미지원이고 동행 점수가 하드 제약을 완화하지 않는다. 분위기·야경·가성비·인원 적합성 추론은 하지 않는다. 실내 선호 지원은 별도로 닫혀 있다.
 
-2026-11-20 연결 준비: 별도 준비 함수에서 DEC-029 APPROVED/true scorer와 #65 검색기·외부 COMP-06을 조합한다. 검색/검증 반경은 같은 값을 전달하며, 기존 외부 API JSON·revision·일반 capabilities는 바꾸지 않는다. 평가용 TestClient 앱만 기존 지원 필드를 사용한다. 일반 활성화·실제 DB 인수·#70 활성화는 수행하지 않는다. [실행기와 선행 입력](../evaluation/courses/DATABASE_RUN.md).
+2026-11-21: 실제 공유 DB의 CS-01~10 자동 검사에서 하드 위반·미존재 장소 0건을 확인한 뒤 사용자 요청으로 일반 연결을 활성화했다. 검색/검증 반경은 같은 값을 전달하고 기존 외부 JSON·revision·하드 필터는 유지한다. #70 정보 없음 포함 기능과 화면/수동 인수는 별도다. [실행기와 선행 입력](../evaluation/courses/DATABASE_RUN.md).

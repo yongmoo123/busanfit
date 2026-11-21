@@ -1,4 +1,4 @@
-"""Integration seam for #22 validation evidence; closed in the ordinary server."""
+"""Enable only verified #22 fields after composition-root connection succeeds."""
 from dataclasses import dataclass, field
 
 from app.api.session_models import Capabilities

@@ -182,7 +182,7 @@ def test_cli_refuses_real_mode_without_comp06_and_writes_no_success_report(tmp_p
     assert 'prerequisites failed' in run.stderr and not output.exists()
 
 
-def test_preparation_keeps_ordinary_app_closed(stored):
+def test_preparation_keeps_unconnected_factory_closed(stored):
     app = create_app()
     with TestClient(app) as client:
         caps = client.post('/api/sessions', json={}).json()['capabilities']

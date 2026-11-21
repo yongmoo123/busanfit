@@ -145,7 +145,7 @@ def test_injury_cannot_be_softened_on_the_card(client):
     assert response.json()['error']['details'][0]['field'] == 'mobility'
 
 
-def test_ordinary_application_does_not_activate_the_synthetic_seam():
+def test_unconnected_factory_does_not_activate_the_synthetic_seam():
     with TestClient(create_app()) as ordinary:
         session = ordinary.post('/api/sessions', json={}).json()
         assert not any(session['capabilities'].values())

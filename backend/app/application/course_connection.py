@@ -57,3 +57,10 @@ def prepare_course_connection(db_path, *, travel_provider, retrieval_settings=No
         repository, settings=settings,
         scheduler=CourseScheduler(settings, scorer=ProposalCompanionScorer(weights)))
     return PreparedCourseConnection(service, repository, retrieval_settings, settings, weights.version)
+
+
+def prepare_runtime_connection():
+    """Ordinary server: require the configured DB and the actual COMP-06 provider."""
+    from app.data.db import get_db_path
+    from app.travel.walking import create_travel_provider
+    return prepare_course_connection(get_db_path(), travel_provider=create_travel_provider())

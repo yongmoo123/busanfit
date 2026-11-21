@@ -30,7 +30,10 @@ def main():
     parser.add_argument('--cases', type=Path, default=ROOT / 'evaluation/courses/cases.json')
     parser.add_argument('--travel-provider', help='agreed COMP-06 zero-argument module:factory')
     parser.add_argument('--expected-db-sha256')
+    parser.add_argument('--runtime-app', action='store_true', help='audit the ordinary app.main startup connection in real mode')
     args = parser.parse_args()
+    if args.runtime_app and args.mode != 'real':
+        parser.error('--runtime-app requires --mode real')
     if not __debug__:
         parser.error('Contract assertions require Python without -O.')
     if args.mode == 'real':

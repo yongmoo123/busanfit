@@ -298,7 +298,7 @@ def test_global_validation_failure_is_never_passed_and_retries_only_three_times(
     assert validator.calls == 4  # initial + 3 repairs
 
 
-def test_ordinary_server_does_not_use_synthetic_ports():
+def test_unconnected_factory_does_not_use_synthetic_ports():
     with TestClient(create_app()) as client:
         session = client.post('/api/sessions', json={}).json()
         assert not any(session['capabilities'].values())
