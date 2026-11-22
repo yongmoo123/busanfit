@@ -77,12 +77,15 @@ class RuleBasedParser:
         def mark(name):
             result.unconfirmed_fields.add(name)
 
-        areas = relevant_clauses(text, ('해운대', '서면', '광안리', '남포', '서울', '부산 외'))
+        # Area names only (FR-020). '남포' also covers '남포동'. Place names are not mapped.
+        area_map = {'해운대': 'HAEUNDAE', '서면': 'SEOMYEON', '광안리': 'GWANGALLI', '남포': 'NAMPO'}
+        areas = relevant_clauses(text, (*area_map, '서울', '부산 외'))
         if areas:
-            if not uncertain(areas) and all('해운대' in c for c in areas) and not any(
-                key in ' '.join(areas) for key in ('서면', '광안리', '남포', '서울', '부산 외')
-            ):
-                assign('area', 'HAEUNDAE')
+            joined = ' '.join(areas)
+            named = [key for key in area_map if key in joined]
+            if (not uncertain(areas) and len(named) == 1 and all(named[0] in c for c in areas)
+                    and not any(key in joined for key in ('서울', '부산 외'))):
+                assign('area', area_map[named[0]])
             else:
                 mark('area')
 

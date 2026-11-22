@@ -48,7 +48,8 @@ def test_activation_remains_closed_without_connection_and_core_verification(supp
 def test_mobility_requires_its_own_integration_verification():
     support = ProfileSupport(candidate_search_connected=True, verified_fields=frozenset(INITIAL_FIELDS))
     caps = build_profile_capabilities(support)
-    assert caps.supportedAreas == ['HAEUNDAE'] and caps.supportedTransports == ['WALK']
+    assert caps.supportedAreas == ['HAEUNDAE', 'SEOMYEON', 'GWANGALLI', 'NAMPO']
+    assert caps.supportedTransports == ['WALK']
     assert 'mobility' not in caps.supportedProfileFields
     assert not caps.supportsUnknownAccessibilityInclusion
     assert not caps.supportsCourseAdjustment and not caps.supportsWeather

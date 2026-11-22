@@ -1,9 +1,13 @@
-"""해운대구 표본 수집(fetch)과 적재(build) — 이슈 #7 작업 C, FR-020.
+"""권역별 표본 수집(fetch)과 적재(build) — 이슈 #7 작업 C, 이슈 #36, FR-020.
 
     python -m pipelines.haeundae_sample check                 # 서비스마다 1건 호출, HTTP 상태·resultCode만 출력
     python -m pipelines.haeundae_sample fetch --max-calls 200 # 원본을 data/raw/tourapi/ 에 저장 (이어받기)
+    python -m pipelines.haeundae_sample --area SEOMYEON fetch --list-only   # areaBasedList2만
+    python -m pipelines.haeundae_sample fetch-sigungu-list --all            # 부산 시군구별 목록만 (11/21 PM 결정)
     python -m pipelines.haeundae_sample build --db data/busanfit.sqlite3 [--report data/processed/report.json]
 
+--area 기본값은 HAEUNDAE (권역 표: pipelines/areas.py). --raw를 주지 않으면 권역의 원본 폴더를 쓴다
+(해운대 data/raw/tourapi/, 다른 권역 data/raw/tourapi/<권역>/).
 fetch만 네트워크를 쓴다. build는 data/raw/만 읽어 새 DB 파일을 만들며, 같은 원본이면 같은 DB가 나온다.
 키는 .env 또는 환경변수에서만 읽고(pipelines.env), 출력하는 URL은 serviceKey를 가린다.
 """
@@ -22,16 +26,15 @@ BACKEND = REPO_ROOT / "backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from pipelines import mapping  # noqa: E402
+from pipelines import areas, mapping  # noqa: E402
 from pipelines.env import load_service_keys  # noqa: E402
 from pipelines.tourapi_client import (KOR_BASE, WITH_BASE, CallBudgetExceeded,  # noqa: E402
                                       TourApiClient, TourApiError)
 
-RAW_DIR = REPO_ROOT / "data" / "raw" / "tourapi"
+RAW_DIR = areas.RAW_ROOT  # 해운대 원본 폴더 (= areas.get("HAEUNDAE").raw_dir)
 KST = timezone(timedelta(hours=9))
 OK = "0000"
-BUSAN_NAME = "부산광역시"
-HAEUNDAE_NAME = "해운대구"
+BUSAN_NAME = areas.BUSAN_NAME
 LIST_ROWS = 1000
 CHECK_WITH_CONTENT_ID = "988449"  # 포털 Swagger의 무장애정보조회 예시 contentId
 
@@ -120,43 +123,71 @@ def find_code(items: list[dict], name: str) -> str:
     return str(found[0])
 
 
-def run_fetch(fetcher: Fetcher) -> dict:
-    regions = fetcher.get("ldongCode2", {"lDongListYn": "N", "numOfRows": 100, "pageNo": 1},
-                          "ldong", "regions.json")
-    busan = find_code(items_of(regions), BUSAN_NAME)
-    sigungu = fetcher.get("ldongCode2", {"lDongRegnCd": busan, "lDongListYn": "N",
-                                         "numOfRows": 100, "pageNo": 1},
-                          "ldong", f"{busan}.json")
-    haeundae = find_code(items_of(sigungu), HAEUNDAE_NAME)
-
-    page = 1
-    while True:
-        params = {"lclsSystmListYn": "Y", "numOfRows": LIST_ROWS, "pageNo": page}
-        data = fetcher.get("lclsSystmCode2", params, "lcls", f"list_p{page}.json")
-        if page * LIST_ROWS >= int(data["response"]["body"].get("totalCount") or 0):
-            break
-        page += 1
-
+def fetch_list(fetcher: Fetcher, busan: str, sigungu_cd: str) -> list[dict]:
+    """areaBasedList2 every page for one 시군구 (resumable; stored pages are not requested again)."""
     page, listed = 1, []
     while True:
-        params = {"lDongRegnCd": busan, "lDongSignguCd": haeundae, "arrange": "A",
+        params = {"lDongRegnCd": busan, "lDongSignguCd": sigungu_cd, "arrange": "A",
                   "numOfRows": LIST_ROWS, "pageNo": page}
         data = fetcher.get("areaBasedList2", params, "list", f"areaBasedList2_p{page}.json")
         listed.extend(items_of(data))
         if page * LIST_ROWS >= int(data["response"]["body"].get("totalCount") or 0):
             break
         page += 1
+    return listed
 
+
+def busan_sigungu(ldong_path: Path = areas.LDONG_BUSAN) -> dict[str, str]:
+    """{시군구 코드: 이름} from the stored ldongCode2 부산 file (no network)."""
+    data = json.loads(ldong_path.read_text(encoding="utf-8"))
+    return {str(it["code"]): str(it["name"]) for it in items_of(data)}
+
+
+def run_fetch(fetcher: Fetcher, area: str = areas.DEFAULT_AREA, *, list_only: bool = False) -> dict:
+    """Fetch one area's raw files into ``fetcher.store`` (resumable).
+
+    list_only: call areaBasedList2 only, with the codes from the area table (no ldongCode2,
+    lclsSystmCode2, detailCommon2, detailIntro2). Otherwise the codes are looked up by name and
+    must equal the area table, or the fetch stops.
+    """
+    spec = areas.get(area)
+    if list_only:
+        busan, sigungu_cd = spec.ldong_regn_cd, spec.ldong_signgu_cd
+    else:
+        regions = fetcher.get("ldongCode2", {"lDongListYn": "N", "numOfRows": 100, "pageNo": 1},
+                              "ldong", "regions.json")
+        busan = find_code(items_of(regions), BUSAN_NAME)
+        sigungu = fetcher.get("ldongCode2", {"lDongRegnCd": busan, "lDongListYn": "N",
+                                             "numOfRows": 100, "pageNo": 1},
+                              "ldong", f"{busan}.json")
+        sigungu_cd = find_code(items_of(sigungu), spec.sigungu_name)
+        if (busan, sigungu_cd) != (spec.ldong_regn_cd, spec.ldong_signgu_cd):
+            raise FetchStopped(f"{area} 법정동 코드가 권역 표와 다름: 응답 {busan}/{sigungu_cd}, "
+                               f"표 {spec.ldong_regn_cd}/{spec.ldong_signgu_cd}")
+
+        page = 1
+        while True:
+            params = {"lclsSystmListYn": "Y", "numOfRows": LIST_ROWS, "pageNo": page}
+            data = fetcher.get("lclsSystmCode2", params, "lcls", f"list_p{page}.json")
+            if page * LIST_ROWS >= int(data["response"]["body"].get("totalCount") or 0):
+                break
+            page += 1
+
+    listed = fetch_list(fetcher, busan, sigungu_cd)
     targets = sorted({(str(it["contentid"]), str(it["contenttypeid"])) for it in listed
                       if str(it.get("contenttypeid")) in mapping.TARGET_CONTENT_TYPES},
                      key=lambda pair: (len(pair[0]), pair[0]))
+    info = {"area": area, "busan": busan, "sigungu": sigungu_cd, "listed": len(listed),
+            "targets": len(targets)}
+    if list_only:
+        return info
     for content_id, type_id in targets:
         if not mapping.valid_source_place_id(content_id):
             continue  # build reports it; never request with an ID we would refuse to store
         fetcher.get("detailCommon2", {"contentId": content_id}, "common", f"{content_id}.json")
         fetcher.get("detailIntro2", {"contentId": content_id, "contentTypeId": type_id},
                     "intro", f"{content_id}.json")
-    return {"busan": busan, "haeundae": haeundae, "listed": len(listed), "targets": len(targets)}
+    return info
 
 
 def cmd_fetch(args) -> int:
@@ -167,7 +198,7 @@ def cmd_fetch(args) -> int:
     status = "complete"
     info: dict = {}
     try:
-        info = run_fetch(fetcher)
+        info = run_fetch(fetcher, args.area, list_only=args.list_only)
     except CallBudgetExceeded:
         status = f"stopped: --max-calls {args.max_calls} reached (run again to continue)"
     except (FetchStopped, TourApiError) as error:
@@ -177,8 +208,46 @@ def cmd_fetch(args) -> int:
     print(f"calls this run: {client.calls}, files saved this run: {fetcher.saved}, "
           f"elapsed {elapsed:.1f}s, key name: {keys.kor_name}")
     if info:
-        print(f"busan lDongRegnCd={info['busan']}, haeundae lDongSignguCd={info['haeundae']}, "
-              f"listed={info['listed']}, detail targets={info['targets']}")
+        print(f"area={info['area']}, busan lDongRegnCd={info['busan']}, "
+              f"lDongSignguCd={info['sigungu']}, listed={info['listed']}, detail targets={info['targets']}"
+              + (" (list only: details not fetched)" if args.list_only else ""))
+    return 0 if status == "complete" or status.startswith("stopped: --max-calls") else 1
+
+
+def run_sigungu_lists(client: TourApiClient, codes: list[str], known: dict[str, str],
+                      out=print) -> list[dict]:
+    """areaBasedList2 only, for each 시군구 code in order. Stops at the first error (raises)."""
+    unknown = [c for c in codes if c not in known]
+    if unknown:
+        raise FetchStopped(f"부산 시군구 목록(ldong/{areas.BUSAN_LDONG_REGN_CD}.json)에 없는 코드: {unknown}")
+    done = []
+    for code in codes:
+        fetcher = Fetcher(client, RawStore(areas.sigungu_raw_dir(code)), out=out)
+        before = client.calls
+        listed = fetch_list(fetcher, areas.BUSAN_LDONG_REGN_CD, code)
+        done.append({"sigungu": code, "name": known[code], "listed": len(listed),
+                     "calls": client.calls - before, "raw": str(fetcher.store.root)})
+        out(f"{code} {known[code]}: listed={len(listed)}, calls={client.calls - before}, "
+            f"raw={fetcher.store.root}")
+    return done
+
+
+def cmd_fetch_sigungu_list(args) -> int:
+    known = busan_sigungu()
+    codes = list(known) if args.all else args.sigungu
+    if not codes:
+        print("give --sigungu CODE ... or --all")
+        return 2
+    keys = load_service_keys()
+    client = TourApiClient(keys.kor, KOR_BASE, max_calls=args.max_calls)
+    status = "complete"
+    try:
+        run_sigungu_lists(client, codes, known)
+    except CallBudgetExceeded:
+        status = f"stopped: --max-calls {args.max_calls} reached (run again to continue)"
+    except (FetchStopped, TourApiError) as error:
+        status = f"stopped on error: {error}"
+    print(f"fetch-sigungu-list {status}; calls this run: {client.calls}, key name: {keys.kor_name}")
     return 0 if status == "complete" or status.startswith("stopped: --max-calls") else 1
 
 
@@ -248,7 +317,7 @@ def cmd_build(args) -> int:
 
     started = time.monotonic()
     raw = load_raw(RawStore(Path(args.raw)))
-    result = mapping.build_rows(raw)
+    result = mapping.build_rows(raw, area=args.area)
     path = db.create_database(Path(args.db))  # refuses to overwrite an existing file
     conn = db.connect(path)
     try:
@@ -270,18 +339,41 @@ def cmd_build(args) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m pipelines.haeundae_sample")
-    parser.add_argument("--raw", default=str(RAW_DIR), help="원본 폴더 (기본 data/raw/tourapi)")
+    add_area_args(parser)
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("check", help="서비스마다 1건 호출해 HTTP 상태·resultCode만 출력")
-    fetch = sub.add_parser("fetch", help="해운대구 원본 수집 (이어받기)")
+    fetch = sub.add_parser("fetch", help="권역 원본 수집 (이어받기)")
     fetch.add_argument("--max-calls", type=int, default=200)
+    fetch.add_argument("--list-only", action="store_true",
+                       help="areaBasedList2만 호출 (상세 detailCommon2·detailIntro2 호출 안 함)")
+    sig = sub.add_parser("fetch-sigungu-list",
+                         help="부산 시군구별 areaBasedList2만 수집 (권역 원에 걸치는 옆 구, 이어받기)")
+    sig.add_argument("--sigungu", nargs="*", default=[], help="시군구 코드 (ldong/26.json)")
+    sig.add_argument("--all", action="store_true", help="ldong/26.json의 부산 시군구 전부")
+    sig.add_argument("--max-calls", type=int, default=30)
     build = sub.add_parser("build", help="원본에서 새 SQLite DB 만들기 (네트워크 없음)")
     build.add_argument("--db", required=True)
     build.add_argument("--report", default=None)
-    args = parser.parse_args(argv)
+    args = parse_area_args(parser, argv)
     if getattr(args, "max_calls", 1) < 1:
         parser.error("--max-calls must be >= 1")
-    return {"check": cmd_check, "fetch": cmd_fetch, "build": cmd_build}[args.cmd](args)
+    return {"check": cmd_check, "fetch": cmd_fetch, "fetch-sigungu-list": cmd_fetch_sigungu_list,
+            "build": cmd_build}[args.cmd](args)
+
+
+def add_area_args(parser: argparse.ArgumentParser) -> None:
+    """--area (기본 HAEUNDAE)와 --raw (기본: 그 권역의 원본 폴더)."""
+    parser.add_argument("--area", default=areas.DEFAULT_AREA, choices=areas.AREA_CODES,
+                        help="권역 코드 (pipelines/areas.py, 기본 HAEUNDAE)")
+    parser.add_argument("--raw", default=None,
+                        help="원본 폴더 (기본: 해운대 data/raw/tourapi, 다른 권역 data/raw/tourapi/<권역>)")
+
+
+def parse_area_args(parser: argparse.ArgumentParser, argv: list[str] | None) -> argparse.Namespace:
+    args = parser.parse_args(argv)
+    if args.raw is None:
+        args.raw = str(areas.get(args.area).raw_dir)
+    return args
 
 
 if __name__ == "__main__":

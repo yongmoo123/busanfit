@@ -2,6 +2,7 @@
 
     python -m pipelines.accessibility_judge load   [--db data/haeundae_sample.sqlite3]
     python -m pipelines.accessibility_judge report [--db ...] [--out data/processed/accessibility_judgement.json]
+    python -m pipelines.accessibility_judge --area SEOMYEON load   # 권역 (기본 HAEUNDAE, pipelines/areas.py)
 
 - 판정 규칙은 pipelines/accessibility_rules.json에만 있다. 이 모듈은 그 파일을 읽어 적용할 뿐이다.
 - 네트워크를 쓰지 않는다. 원본은 data/raw/tourapi/accessibility/<contentid>.json만 읽는다.
@@ -22,14 +23,14 @@ import re
 import shutil
 import sqlite3
 
-from pipelines.haeundae_sample import RAW_DIR, REPO_ROOT, RawStore, items_of
+from pipelines.haeundae_sample import REPO_ROOT, RawStore, add_area_args, items_of, parse_area_args
 from pipelines.accessibility_collect import listed_from_raw, normalize, targets_from_raw
-from pipelines import mapping
+from pipelines import areas, mapping
 from app.data import db as appdb  # noqa: E402  (backend/ 경로는 haeundae_sample이 넣음)
 from app.data.geo import haversine_m  # noqa: E402
 
 RULES_PATH = Path(__file__).with_name("accessibility_rules.json")
-DEFAULT_DB = REPO_ROOT / "data" / "haeundae_sample.sqlite3"
+DEFAULT_DB = areas.get(areas.DEFAULT_AREA).default_db  # 권역별 기본값: areas.Area.default_db
 DEFAULT_OUT = REPO_ROOT / "data" / "processed" / "accessibility_judgement.json"
 ITEMS = ("wheelchair", "stroller", "elevator", "accessible_toilet")
 
@@ -42,8 +43,8 @@ SOURCE = {
     "base_date": None,    # 문서에 없음
 }
 TYPE_NAMES = {"12": "관광지", "14": "문화시설", "28": "레포츠", "38": "쇼핑", "39": "음식점"}
-# 11/20 보고용 반경 기준점: 해운대해수욕장
-CENTER = (35.159084, 129.160279)
+# 보고용 반경 기준점은 권역 표(areas.Area.report_center)에 둔다. 해운대: 해운대해수욕장(11/20 보고)
+CENTER = areas.get(areas.DEFAULT_AREA).report_center
 RADIUS_M = 1500
 
 
@@ -318,7 +319,9 @@ def cmd_load(args) -> int:
 
 # ---------------------------------------------------------------- report
 
-def build_report(results: list[dict], rules: dict, db_path: Path | None) -> dict:
+def build_report(results: list[dict], rules: dict, db_path: Path | None,
+                 center: tuple[float, float] | None = CENTER) -> dict:
+    """center=None (기준점이 정해지지 않은 권역)이면 candidates_in_radius는 None."""
     counts = {it: Counter() for it in ITEMS}
     for r in results:
         conflicted = {c["item"] for c in r["conflicts"]}
@@ -353,7 +356,7 @@ def build_report(results: list[dict], rules: dict, db_path: Path | None) -> dict
             by_type[TYPE_NAMES.get(r["contenttypeid"], r["contenttypeid"])] += 1
 
     candidates = None
-    if db_path is not None and db_path.is_file():
+    if center is not None and db_path is not None and db_path.is_file():
         conn = sqlite3.connect(f"file:{db_path.as_posix()}?mode=ro", uri=True)
         try:
             rows = conn.execute(
@@ -363,8 +366,8 @@ def build_report(results: list[dict], rules: dict, db_path: Path | None) -> dict
                 "WHERE p.open_hours IS NOT NULL", (mapping.SOURCE["code"],)).fetchall()
         finally:
             conn.close()
-        inside = [r for r in rows if haversine_m(CENTER[0], CENTER[1], r[1], r[2]) <= RADIUS_M]
-        candidates = {"center": CENTER, "radius_m": RADIUS_M,
+        inside = [r for r in rows if haversine_m(center[0], center[1], r[1], r[2]) <= RADIUS_M]
+        candidates = {"center": center, "radius_m": RADIUS_M,
                       "open_hours_not_null_in_radius": len(inside),
                       "wheelchair_true": sum(1 for r in inside if r[3] == 1),
                       "stroller_true": sum(1 for r in inside if r[4] == 1)}
@@ -402,7 +405,8 @@ def build_report(results: list[dict], rules: dict, db_path: Path | None) -> dict
 def cmd_report(args) -> int:
     rules = load_rules()
     report = build_report(judge_all(Path(args.raw), rules), rules,
-                          Path(args.db) if args.db else None)
+                          Path(args.db) if args.db else None,
+                          center=areas.get(args.area).report_center)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -412,16 +416,18 @@ def cmd_report(args) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m pipelines.accessibility_judge")
-    parser.add_argument("--raw", default=str(RAW_DIR), help="원본 폴더 (기본 data/raw/tourapi)")
+    add_area_args(parser)
     sub = parser.add_subparsers(dest="cmd", required=True)
     load_p = sub.add_parser("load", help="판정 결과를 accessibility 테이블에 적재 (멱등)")
-    load_p.add_argument("--db", default=str(DEFAULT_DB))
+    load_p.add_argument("--db", default=None, help="기본 data/<권역>_sample.sqlite3")
     load_p.add_argument("--backup", default=None,
                         help="적재 전 복사본 (기본 <db 이름>.pre_access.sqlite3, 있으면 덮어쓰지 않음)")
     report_p = sub.add_parser("report", help="판정 집계 보고서 (네트워크 없음)")
-    report_p.add_argument("--db", default=str(DEFAULT_DB))
+    report_p.add_argument("--db", default=None, help="기본 data/<권역>_sample.sqlite3")
     report_p.add_argument("--out", default=str(DEFAULT_OUT))
-    args = parser.parse_args(argv)
+    args = parse_area_args(parser, argv)
+    if args.db is None:
+        args.db = str(areas.get(args.area).default_db)
     return {"load": cmd_load, "report": cmd_report}[args.cmd](args)
 
 

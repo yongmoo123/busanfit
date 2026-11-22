@@ -268,7 +268,7 @@ def test_configured_excluded_ids_are_dropped_and_not_counted_as_unknown():
 def test_shipped_duty_free_list_is_loaded():
     loaded = load_retrieval_settings()
     assert loaded.area_centers['HAEUNDAE'] == CENTER
-    assert len(loaded.excluded_place_ids) == 112
+    assert len(loaded.excluded_place_ids) == 342  # 4개 권역 원 안 SH040300 343 − 백화점 예외 1 (FR-020, PM 11/21)
     assert all(value.startswith('tourapi-kor:') for value in loaded.excluded_place_ids)
 
 

@@ -31,7 +31,8 @@ def test_runtime_entry_connects_actual_adapters_course_and_detail(stored, monkey
         assert service.settings.radius_meters == service.validator.settings.radius_meters == 1500
         session = client.post('/api/sessions', json={}).json()
         caps = session['capabilities']
-        assert caps['supportedAreas'] == ['HAEUNDAE'] and caps['supportedTransports'] == ['WALK']
+        assert caps['supportedAreas'] == ['HAEUNDAE', 'SEOMYEON', 'GWANGALLI', 'NAMPO']
+        assert caps['supportedTransports'] == ['WALK']
         assert set(caps['supportedProfileFields']) == {'area','timeWindow','transport','mobility','companions','excludedCategories'}
         assert caps['supportsUnknownAccessibilityInclusion']
         assert not any(caps[key] for key in ('supportsWeather','supportsCourseAdjustment'))

@@ -532,7 +532,7 @@ def test_fetch_resumes_without_refetching(tmp_path):
     second = ScriptedOpener()
     info = haeundae_sample.run_fetch(fetcher_with(second, raw, max_calls=100))
     assert second.ops == ["detailIntro2", "detailCommon2", "detailIntro2"]  # 받은 것은 다시 받지 않음
-    assert info == {"busan": "26", "haeundae": "350", "listed": 3, "targets": 2}
+    assert info == {"area": "HAEUNDAE", "busan": "26", "sigungu": "350", "listed": 3, "targets": 2}
     assert not (raw / "common" / "104.json").exists()   # 숙박(대상 아님)은 상세를 받지 않음
     third = ScriptedOpener()
     haeundae_sample.run_fetch(fetcher_with(third, raw, max_calls=100))
