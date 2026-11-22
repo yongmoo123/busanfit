@@ -8,7 +8,7 @@ Software Design Document (SDD)
 |----|----|
 | 팀명 | 5팀 |
 | 팀원 | 김세민 / PM<br>이찬용 / 백엔드(데이터)<br>김영무 / 백엔드(AI·코스엔진)<br>배진호 / 프론트엔드 |
-| 버전 | v0.2 |
+| 버전 | v0.3 |
 | 작성일 | 2026-10-24 |
 | 담당교수 | 임한신 교수님 |
 
@@ -16,8 +16,9 @@ Software Design Document (SDD)
 
 | **버전** | **날짜** | **작성자** | **변경 내용** | **관련 결정** | **관련 PR** |
 |----|----|----|----|----|----|
-| 0.1 | 2026-10-24 | 김세민 | 초안 작성 (중간발표: 1~3장 확정, 4장 이후 초안) | \- | \- |
-| 0.2 | 2026-11-09 | 김세민 | 요구사항-설계 추적성 강화, 상세 설계 보완. 결정 반영: 1.4 단계별 지원 범위 신설, SQLite 전환(ADR-008, 5.2 타입, 그림 2-1·5-1·10-1 재작성), 장소 출처 복수(accessibility·stations source_id), 입력 오류 코드, LLM 실패·건강 정보 처리, 세션 종료 API-011 | DEC-001, DEC-003, DEC-004, DEC-005, DEC-006, DEC-007, DEC-008, DEC-009, DEC-012 | #5 |
+| 0.1 | 2026-10-24 | 김세민, 이찬용, 김영무, 배진호 | 초안 작성 (중간발표: 1~3장 확정, 4장 이후 초안) | \- | \- |
+| 0.2 | 2026-11-09 | 김세민, 이찬용, 김영무, 배진호 | 요구사항-설계 추적성 강화, 상세 설계 보완. 결정 반영: 1.4 단계별 지원 범위 신설, SQLite 전환(ADR-008, 5.2 타입, 그림 2-1·5-1·10-1 재작성), 장소 출처 복수(accessibility·stations source_id), 입력 오류 코드, LLM 실패·건강 정보 처리, 세션 종료 API-011 | DEC-001, DEC-003, DEC-004, DEC-005, DEC-006, DEC-007, DEC-008, DEC-009, DEC-012 | #5 |
+| 0.3 | 2026-11-21 | 김세민, 이찬용, 김영무, 배진호 | 스프린트 2 종료. 결정 반영: 1.4 단계별 지원 범위(제출본·향후), 5.2 카테고리·가격·원본 ID·필수 여부, 7.2 LLM 선정·수정 해석 규칙, 7.3 이동제약·부상·등급 판정, 7.4 503·NEEDS_INPUT 판정표, 10.1 로컬 시연 | DEC-013~030 | #16, #40, #53, #58, #60, #69 |
 | 1.0 | \[예정\] |  | 최종본 |  |  |
 
 # 1. 설계 개요 (Design Overview)
@@ -51,10 +52,10 @@ Software Design Document (SDD)
 
 최종 범위(SRS 1.2, FR-005)에 이르기 전, 단계별로 지원하는 권역과 이동수단은 다음과 같다(DEC-001, DEC-008, DEC-028). 기능별 스프린트 배치는 프로젝트 계획서 8장(DEC-010)을 따른다.
 
-| 구분 | 스프린트 2 (11/10~11/22) | 제출본 v1.0 (11/27 개발 완료) | 향후 확장 |
+| 구분 | 스프린트 2 (11/10~11/22) | 제출본 (11/30 제출) | 향후 확장 |
 |----|----|----|----|
-| 권역 | 해운대 | 해운대 + 서면·광안리·남포 (권역 확장 완료 시) | 부산 전역 |
-| 이동수단 | 도보(WALK)만 지원 | 도보(WALK)만 지원 | 대중교통(PUBLIC), 자차(CAR) (SRS FR-002) |
+| 권역 | 해운대 | 해운대, 일정상 가능하면 서면·광안리·남포 추가 | 서면·해운대·광안리·남포 (SRS 1.2) 중 제출본에 없는 권역 |
+| 이동수단 | 도보(WALK)만 지원 | 도보(WALK)만 지원 | 도보·대중교통(PUBLIC)·자차(CAR) (SRS FR-002) |
 | 자차 | 자차 표현도 추출하되 `capabilities` 기준 미지원으로 안내 | 같음 | 주차장 표시(FR-017)·검색 반경 5km와 함께 추가 |
 | 기본 이동수단 | WALK (`source=DEFAULT`로 카드에 표시) | WALK | 대중교통(PUBLIC) (SRS FR-005, DEC-001) |
 | 지원 범위 안내 | 응답의 `capabilities`로 화면에 표시 | 같음 | 같음 |
@@ -176,7 +177,7 @@ Software Design Document (SDD)
 | places | source_id | INTEGER | FK | N | data_sources.id | NFR-009 |
 | places | updated_at | TEXT | \- | N | 이 장소 레코드의 최종 수집 시각 (ISO 8601 시각). 출처 단위 조회 시각은 data_sources.retrieved_at | FR-020 |
 | accessibility | place_id | INTEGER | PK, FK | N | places.id (1:0..1) | FR-008 |
-| accessibility | grade | TEXT | \- | N | VERIFIED / UNKNOWN / UNSUITABLE. 항목값을 요약한 **표시용 등급**: 정보 없음 → UNKNOWN, 휠체어·유모차 모두 false → UNSUITABLE, 둘 중 하나라도 true → VERIFIED. 하드 제약은 등급이 아니라 항목별 값으로 판정한다(WHEELCHAIR → wheelchair = true, STROLLER → stroller = true만 통과, null은 기본 후보에서 제외하고 FR-013 제안 대상, false는 제외, 7.3). 기본 정보와 원본 ID(source_place_id)로 짝지은 무장애 정보가 없으면 행을 만들지 않고 API에서 UNKNOWN으로 내보낸다 (DEC-015) | FR-008, FR-013 |
+| accessibility | grade | TEXT | \- | N | VERIFIED / UNKNOWN / UNSUITABLE. 항목값을 요약한 **표시용 등급**: 휠체어·유모차 두 항목 중 하나라도 true → VERIFIED, true 없이 false가 하나라도 있으면 UNSUITABLE, 둘 다 null → UNKNOWN (DEC-026). 적재 단계에서 계산한 DB 등급을 API가 그대로 전달하며 재계산하지 않는다. 하드 제약은 등급이 아니라 항목별 값으로 판정한다(WHEELCHAIR → wheelchair = true, STROLLER → stroller = true만 통과, null은 기본 후보에서 제외하고 FR-013 제안 대상, false는 제외, 7.3). 기본 정보와 원본 ID(source_place_id)로 짝지은 무장애 정보가 없으면 행을 만들지 않고 API에서 UNKNOWN으로 내보낸다 (DEC-015) | FR-008, FR-013 |
 | accessibility | wheelchair / stroller / elevator / accessible_toilet | INTEGER | \- | Y | 항목별 무장애 정보 (0/1 불리언) | FR-008 |
 | accessibility | raw | TEXT | \- | Y | 원본 무장애 정보 (JSON 문자열) | NFR-009 |
 | accessibility | source_id | INTEGER | FK | N | data_sources.id (무장애 정보 출처) | NFR-009 |
@@ -206,7 +207,7 @@ Software Design Document (SDD)
 | API-002 | POST | /api/chat | 조건 입력·제약 분석 | {sessionId, message} | {reply, questions\[\], profile, status} | FR-001~005 |
 | API-003 | PUT | /api/sessions/{id}/profile | 제약 확인·수정 | {profile} | {profile} | FR-006 |
 | API-004 | POST | /api/courses | 코스 생성 | {sessionId} | {course, suggestions\[\], warnings\[\], excludedUnknown} | FR-007~012, FR-016 |
-| API-005 | POST | /api/courses/{courseId}/adjust | 조정 제안·대화형 수정 | {sessionId, chipId \| message} | {course, changes\[\], suggestions\[\]} | FR-013~015 |
+| API-005 | POST | /api/courses/{courseId}/adjust | 조정 제안·대화형 수정 (계획; FR-013·FR-014②는 API-003 전체 PUT → API-004 POST 사용) | {sessionId, chipId \| message} | {course, changes\[\], suggestions\[\]} | FR-013~015 |
 | API-006 | GET | /api/places/{placeId} | 장소 상세·출처 | \- | {place, sources\[\], warnings\[\]} | FR-008, FR-012 |
 | API-007 | GET | /api/facilities?bbox=&types= | 주변 편의시설 | query | {facilities\[\]} | FR-017 |
 | API-008 | POST | /api/courses/{courseId}/share | 코스 공유 링크 생성 | {sessionId} | {shareUrl, expiresAt} | FR-019 |
@@ -228,7 +229,7 @@ Software Design Document (SDD)
 
 | **AI 요소** | **모델/서비스** | **역할** | **입력/출력** | **교체 가능성/추상화** | **관련 요구사항** |
 |----|----|----|----|----|----|
-| LLM (추출) | 개발: Gemini Flash 계열(무료 티어) / 시연: Claude Haiku 5.5 또는 GPT-5 mini | 제약 프로필 추출, 하드/소프트 태깅 | 대화 이력 Text → JSON(ConstraintProfile) | AIService.complete(), Provider 설정으로 교체 | FR-002, FR-003, AI-REQ-04, AI-REQ-06 |
+| LLM (추출) | 개발·시연·평가: Gemini Flash 계열(무료 티어, 가상 입력만) / 향후 배포: Claude Haiku 5.5 또는 GPT-5 mini (DEC-030) | 제약 프로필 추출, 하드/소프트 태깅 | 대화 이력 Text → JSON(ConstraintProfile) | AIService.complete(), Provider 설정으로 교체 | FR-002, FR-003, AI-REQ-04, AI-REQ-06 |
 | LLM (수정 해석) | 동일 | 수정 요청 → 변경 연산 | 메시지 + 코스 요약(건강 정보는 범주값만, DEC-006) → JSON(ChangeOp) | 동일 | FR-015, AI-REQ-07 |
 | LLM (설명) | 동일 | 장소별 추천 이유 1~2문장 | 장소 정보 Context → Text | 동일, 실패 시 템플릿 대체 | FR-012, AI-REQ-01 |
 | VLM | 구현 범위 제외 (향후 동일 제공자의 멀티모달 모델) | 사진 분위기 분석 → 유사 장소 검색 | Image + Text → JSON(분위기 태그) | AIService에 completeWithImage() 추가로 확장 | 향후 확장 |
@@ -241,13 +242,15 @@ FR-005·006 보완: config/defaults.json을 서버 기본 체류시간 함수와
 
 이슈 #20 구현: 추출 Provider는 취소 가능한 Gemini generateContent REST 어댑터이며 JSON 스키마·업무 의미를 검증한다. 실패 시 각 10초·1회 재시도 후 ChatRuleParser로 대체하고 COMP-02가 정책·revision을 처리한다. 기준 한국 날짜를 프롬프트에 제공하며 평가 시에는 평가셋 referenceNow를 고정한다. DEC-022의 영유아 질문 표시 이력·부분 동행은 메모리 세션에만 저장한다. 프론트는 실제 chat/profile API를 순차 호출한다. 일반 capabilities 활성화는 #21·#22의 기존 합의를 유지한다. [실행·검증 기록](ISSUE20_CHAT_IMPLEMENTATION.md).
 
-- System Prompt 목적: 용도별 3종으로 분리한다. ① 추출: "부산 놀거리 코스 서비스의 조건 분석기" 역할로, 지정 JSON 스키마의 필드만 채우고 언급 없는 필드는 null, 장소 추천 금지, "꼭·절대·못" 표현은 strength=HARD. ② 수정 해석: 코스 요약과 메시지를 받아 ChangeOp(REMOVE·REPLACE·EXTEND_STAY·INDOOR·INCLUDE_UNKNOWN) 하나로만 응답. ③ 설명: 제공된 장소 필드만 근거로 1~2문장 작성, 새 장소·가격·시간 언급 금지.
+- System Prompt 목적: 용도별 3종으로 분리한다. ① 추출: "부산 놀거리 코스 서비스의 조건 분석기" 역할로, 지정 JSON 스키마의 필드만 채우고 언급 없는 필드는 null, 장소 추천 금지, "꼭·절대·못" 표현은 strength=HARD. ② 수정 해석: 코스 요약과 메시지를 받아 ChangeOp(REMOVE·REPLACE·EXTEND_STAY·INDOOR·INCLUDE_UNKNOWN) 하나로만 응답. 수정이 여러 개면 첫 번째만 만들고 나머지는 확인 질문으로 넘긴다(DEC-024). 조건 자체를 바꾸는 요청은 ChangeOp 대신 조건 변경으로 분류해 추출 경로로 보낸다(DEC-025). ③ 설명: 제공된 장소 필드만 근거로 1~2문장 작성, 새 장소·가격·시간 언급 금지.
 
 - 검색 대상 데이터/Chunk 전략: 문서 청크 대신 구조화 DB 레코드를 사용한다. 장소 1개 = 컨텍스트 1단위(이름, 카테고리, 개요 200자 이내, 접근성 등급, 운영시간, 실내 여부)로 구성한다.
 
 - Top-k 또는 Retrieval 기준: 하드 필터(권역, 영업시간, 접근성, 예산, 제외 카테고리, 날씨) 통과 후 소프트 점수 상위 20개를 스케줄러에 투입한다. 검색 반경은 도보 권역 중심 기준 1.5km(설정값, 데이터 확인 후 조정, DEC-001), 대중교통 2km, 자차 5km이며, 설명 생성 LLM에는 최종 코스 장소(3~6개)만 전달한다.
 
-- 이동제약 판정(DEC-015·016): 하드 필터의 접근성은 접근성 등급(grade)이 아니라 사용자 이동제약에 맞는 **항목별 값**으로 판정한다. WHEELCHAIR는 `wheelchair = true`, STROLLER는 `stroller = true`, INJURY의 계단 회피는 `wheelchair = true`를 대리 지표로 사용한다. 값이 null이면 기본 후보에서 제외하고 `excludedUnknown`으로 집계해 포함 재생성 제안(FR-013) 대상으로 두며, false면 제외한다. 등급은 표시용 요약이다(정보 없음 UNKNOWN, 휠체어·유모차 모두 false UNSUITABLE, 하나라도 true VERIFIED).
+- 이동제약 판정(DEC-015·016): 하드 필터의 접근성은 접근성 등급(grade)이 아니라 사용자 이동제약에 맞는 **항목별 값**으로 판정한다. WHEELCHAIR는 `wheelchair = true`, STROLLER는 `stroller = true`, INJURY의 계단 회피는 `wheelchair = true`를 대리 지표로 사용한다. 값이 null이면 기본 후보에서 제외하고 `excludedUnknown`으로 집계해 포함 재생성 제안(FR-013) 대상으로 두며, false면 제외한다. 등급은 표시용 요약이며 휠체어·유모차 두 항목만 본다(둘 중 하나라도 true면 VERIFIED, true 없이 false가 있으면 UNSUITABLE, 둘 다 null이면 UNKNOWN, DEC-026).
+
+FR-007·008 구현(#22): `retrieval/PlaceRetriever`가 CandidateRetriever를 구현한다. PlaceRepository 반경 질의(권역 중심 DEC-023 ①은 `config/retrieval.json`, 반경 `BUSANFIT_WALK_RADIUS_M`) 뒤 사후면세점 ID 제외(DEC-023 ④, 판별 기준: 분류 코드 SH040300 (찬용 결정, 11/19)), 주소, 운영시간(이용 시간대 안에 기본 체류시간만큼 영업, NULL·요일 누락은 미확인으로 제외 DEC-023 ③), 이동제약 항목별 판정, HARD 실내·실외를 적용하고 거리순 상위 20개를 돌려준다. 정보 없음으로만 제외된 장소는 `excludedUnknown` ID·항목(`openHours`, `mobility.wheelchair` 등)으로 넘긴다. 소프트 점수화는 아직 없다. [구현 기준](../backend/app/retrieval/README.md).
 
 - 부상(INJURY) 규칙(DEC-016): 보행 속도를 낮추고(초기값 4→3km/h), 장소 사이 구간당 도보가 초기값 10분을 넘으면 그 구간을 쓰지 않는다(HARD). 수치는 설정값이며 데이터 확인 후 조정한다. 이동 경로의 계단·경사는 데이터가 없어 확인하지 못하므로 `routeAccessibility: UNVERIFIED`와 경고로 알린다. 후보가 부족해도 계단 조건을 자동으로 빼지 않고 사용자에게 해제를 제안한다.
 

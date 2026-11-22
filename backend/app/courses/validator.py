@@ -9,7 +9,18 @@ from app.domain.course import CourseSettings, Plan, ValidationResult, Violation
 from app.domain.place import PlaceCandidate
 
 
-def candidate_violations(candidate: PlaceCandidate, profile: Profile, settings: CourseSettings):
+def unknown_accessibility_fields(place, profile):
+    return tuple(sorted({
+        'mobility.' + ('stroller' if mode == 'STROLLER' else 'wheelchair')
+        for mode in profile.mobility.value or ()
+        if getattr(place.accessibility, 'stroller' if mode == 'STROLLER' else 'wheelchair', None) is None
+    }))
+
+
+def candidate_violations(candidate: PlaceCandidate, profile: Profile, settings: CourseSettings,
+                         *, allow_unknown_accessibility=False):
+    if allow_unknown_accessibility and not profile.includeUnknownAccessibility:
+        raise ValueError('explicit inclusion consent required')
     place, distance = candidate.place, candidate.distance_m
     result = []
     def fail(code, field, unknown=False):
@@ -30,6 +41,8 @@ def candidate_violations(candidate: PlaceCandidate, profile: Profile, settings: 
     for mode in profile.mobility.value or ():
         field = 'stroller' if mode == 'STROLLER' else 'wheelchair'
         value = getattr(place.accessibility, field, None)
+        if value is None and allow_unknown_accessibility:
+            continue
         if value is not True:
             fail('ACCESSIBILITY_UNKNOWN' if value is None else 'ACCESSIBILITY_REJECTED', 'mobility.' + field, value is None)
     preference = profile.indoorPreference
@@ -46,8 +59,10 @@ class CourseValidator:
     def __init__(self, repository: PlaceRepository, settings: CourseSettings = CourseSettings()):
         self.repository, self.settings = repository, settings
 
-    def validate(self, plan: Plan, profile: Profile, distances: dict[str, float], travel) -> ValidationResult:
+    def validate(self, plan: Plan, profile: Profile, distances: dict[str, float], travel,
+                 *, allow_unknown_accessibility=False) -> ValidationResult:
         violations = []
+        unverified = set()
         checked = ['placeIds', 'area', 'timeWindow', 'openHours', 'transport', 'searchRadius', 'excludedCategories']
         if profile.mobility.value:
             checked.append('mobility')
@@ -75,7 +90,10 @@ class CourseValidator:
             # Facts changing during scheduling cannot be returned from a stale snapshot.
             if record != visit.place:
                 fail('PLACE_FACTS_CHANGED', ('placeIds',), (place_id,))
-            violations.extend(candidate_violations(PlaceCandidate(record, distances.get(place_id)), profile, self.settings))
+            violations.extend(candidate_violations(PlaceCandidate(record, distances.get(place_id)), profile, self.settings,
+                                                   allow_unknown_accessibility=allow_unknown_accessibility))
+            if allow_unknown_accessibility:
+                unverified.update(unknown_accessibility_fields(record, profile))
             if visit.start_at < window.startAt or visit.end_at > window.endAt or visit.start_at >= visit.end_at:
                 fail('OUTSIDE_TIME_WINDOW', ('timeWindow',), (place_id,))
             if type(visit.stay_minutes) is not int or visit.stay_minutes <= 0 or (visit.end_at - visit.start_at).total_seconds() != visit.stay_minutes * 60:
@@ -98,4 +116,4 @@ class CourseValidator:
                 fail('INJURY_WALK_LIMIT', ('mobility',), ids_pair)
         if profile.transport.value != 'WALK':
             fail('UNSUPPORTED_TRANSPORT', ('transport',))
-        return ValidationResult(tuple(violations), tuple(checked))
+        return ValidationResult(tuple(violations), tuple(checked), tuple(sorted(unverified)))

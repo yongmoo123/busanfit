@@ -1,5 +1,6 @@
 """Offline proof of resource reuse, cleanup and unchanged schema semantics."""
 import asyncio
+from contextlib import asynccontextmanager
 import json
 
 import httpx
@@ -8,6 +9,7 @@ import pytest
 
 from app.ai.gemini import GeminiProvider
 from app.ai.service import AIService, Purpose
+from test_server_sqlite_integration import stored
 
 
 class Output(BaseModel):
@@ -141,6 +143,63 @@ def test_app_lifespan_keeps_pool_until_shutdown_without_changing_capabilities():
             assert not any(app.state.capabilities.model_dump().values())
         assert provider.clients[0].is_closed
     asyncio.run(scenario())
+
+
+def test_runtime_connection_and_ai_pool_share_lifespan_and_both_close(stored, monkeypatch):
+    from app.application.extraction import AIConditionExtractor
+    from app.constraints.chat_parser import ChatRuleParser
+    from app.main import create_app
+    monkeypatch.setenv('BUSANFIT_DB_PATH', str(stored[0]))
+    provider = CountingProvider(httpx.MockTransport(lambda request: response()))
+    ai = AIService(provider)
+    app = create_app(connect_real_data=True, extractor=AIConditionExtractor(ai, ChatRuleParser()))
+
+    async def scenario():
+        async with app.router.lifespan_context(app):
+            assert app.state.course_service is not None
+            assert app.state.course_connection.repository.read_only
+            assert app.state.capabilities.supportedAreas == ['HAEUNDAE']
+            for _ in range(2):
+                assert (await call(ai)).data.count == 1
+            assert len(provider.clients) == 1 and not provider.clients[0].is_closed
+        assert provider.clients[0].is_closed
+        assert app.state.course_service is None and app.state.course_connection is None
+        assert app.state.capabilities.supportedAreas == []
+
+    asyncio.run(scenario())
+
+
+def test_runtime_startup_failure_unwinds_ai_resource_scope(tmp_path, monkeypatch):
+    from app.application.extraction import AIConditionExtractor
+    from app.constraints.chat_parser import ChatRuleParser
+    from app.main import create_app
+    events = []
+
+    class TrackedProvider(CountingProvider):
+        @asynccontextmanager
+        async def session(self):
+            events.append('enter')
+            try:
+                async with super().session():
+                    yield self
+            finally:
+                events.append('exit')
+
+    monkeypatch.setenv('BUSANFIT_DB_PATH', str(tmp_path / 'missing.sqlite3'))
+    provider = TrackedProvider(httpx.MockTransport(lambda request: response()))
+    app = create_app(connect_real_data=True,
+                     extractor=AIConditionExtractor(AIService(provider), ChatRuleParser()))
+
+    async def scenario():
+        with pytest.raises(ValueError):
+            async with app.router.lifespan_context(app):
+                pytest.fail('missing DB must prevent startup')
+
+    asyncio.run(scenario())
+    assert events == ['enter', 'exit']
+    assert provider._client_users == 0 and provider._client is None
+    assert app.state.course_service is None and app.state.capabilities.supportedAreas == []
+    assert not (tmp_path / 'missing.sqlite3').exists()
 
 
 def test_schema_generation_cached_but_each_request_has_an_independent_copy(monkeypatch):

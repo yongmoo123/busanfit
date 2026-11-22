@@ -1,0 +1,81 @@
+{
+  "status": "확정 (DEC-026, 11/19 PM 확인, #58)",
+  "decision": "DEC-026",
+  "source": "한국관광공사 무장애 여행 정보_GW (KorWithService2) detailWithTour2 응답 문장",
+  "grade": {
+    "items": ["wheelchair", "stroller"],
+    "rule": "두 항목 중 true가 하나라도 있으면 VERIFIED, true 없이 false가 하나라도 있으면 UNSUITABLE, 둘 다 null이면 UNKNOWN. 엘리베이터·장애인 화장실은 등급에 넣지 않는다. 등급은 표시용이고 이동제약 판정은 항목값으로 한다(DEC-015)",
+    "note": "DEC-026 등급 규칙(휠체어·유모차 두 항목)"
+  },
+  "ignored_fields": {
+    "fields": ["wheelchair", "stroller"],
+    "reason": "TourAPI의 wheelchair·stroller 필드는 대여 정보(\"대여가능(…)\", \"안내소에 N대\")라 접근 가능 판정에 쓰지 않는다 (규칙 5)"
+  },
+  "clause_split": "<br\\s*/?>|[.*\\n]",
+  "clause_split_note": "문장 조각은 <br/>·마침표·*·줄바꿈으로 나눈다. 쉼표로는 나누지 않는다(\"휠체어, 전동 스쿠터 진입 쉬움\"이 한 조각이어야 R1b가 맞음)",
+  "positive": [
+    {
+      "id": "R1",
+      "items": ["wheelchair", "stroller"],
+      "fields": ["exit", "route"],
+      "any": ["턱이 없", "단차가 없", "경사로", "휠체어 접근 가능", "휠체어가 통과 가능",
+              "턱 없", "문턱없", "문턱 없", "휠체어 통과 가능", "휠체어 접근 및 이동 가능"],
+      "reason": "무장애 여행 정보의 경사로·턱 없음은 휠체어 접근용 편의시설로 보고, 휠체어가 지나갈 수 있으면 유모차도 지나갈 수 있다고 본다"
+    },
+    {
+      "id": "R1b",
+      "items": ["wheelchair", "stroller"],
+      "fields": ["exit", "route"],
+      "all": ["휠체어"],
+      "any": ["진입 쉬움", "이용 가능"],
+      "reason": "같은 문장 조각에 \"휠체어\"와 \"진입 쉬움\" 또는 \"이용 가능\"이 함께 있으면 휠체어가 들어가 쓸 수 있다는 뜻으로 본다. 부정어가 같은 조각에 있으면 제외(negated_positive)"
+    },
+    {
+      "id": "R2",
+      "items": ["elevator"],
+      "fields": ["elevator"],
+      "any": ["엘리베이터 있", "엘리베이터가 있"]
+    },
+    {
+      "id": "R3",
+      "items": ["accessible_toilet"],
+      "fields": ["restroom"],
+      "all": ["장애인", "화장실"]
+    }
+  ],
+  "negative": {
+    "id": "R4",
+    "words": ["없음", "불가", "어려움"],
+    "item_keywords": {
+      "wheelchair": ["휠체어"],
+      "stroller": ["유모차"],
+      "elevator": ["엘리베이터", "승강기"],
+      "accessible_toilet": ["화장실"]
+    },
+    "barrier_absence_phrases": ["턱이 없음", "턱 없음", "문턱 없음", "단차가 없음", "단차 없음", "계단이 없음", "계단 없음"],
+    "note": "모든 필드(대여 필드 제외)를 절(clause_split으로 나눔) 단위로 본다. 한 절에 부정어와 항목 키워드가 함께 있으면 그 항목의 false 후보. 장벽이 없다는 표현(barrier_absence_phrases)은 부정어 검사 전에 지운다. 긍정 표현이 부정어와 같은 절에 있으면(예: \"경사로 없음\") 긍정으로 세지 않고 negated_positive로 기록만 한다. 같은 항목에 긍정·부정이 모두 있으면 null + 충돌"
+  },
+  "manual_review": {
+    "id": "R4-manual",
+    "fields": ["handicapetc"],
+    "keyword": "전동휠체어",
+    "note": "\"전동휠체어 탑승 불가\" 같은 절은 자동 판정하지 않고 원문과 장소명을 보고만 한다"
+  },
+  "door_only": {
+    "fields": ["exit", "route"],
+    "prefixes": ["문의 형태 :", "출입통로 형태 :"],
+    "values": ["자동문", "여닫이문", "미닫이문", "회전문", "수동문", "상시 개방형"],
+    "note": "문 종류만 있는 문장 조각은 판정하지 않는다(값 없음). 보고서에는 door_only로 따로 남긴다"
+  },
+  "overrides": [
+    {
+      "content_id": "2672393",
+      "name": "해운대 블루라인파크",
+      "set": {"wheelchair": false},
+      "field": "handicapetc",
+      "evidence": "* 전동휠체어 탑승 불가* 수동휠체어는 도움을 받아 휠체어를 접어서 탑승가능",
+      "note": "자동 규칙으로는 exit·route의 \"턱이 없어\" 때문에 true. 시설 본체(열차) 이용이 휠체어 탄 채로는 불가하므로 false. stroller·accessible_toilet은 자동 판정 그대로. evidence가 원문에 없으면 적용하지 않고 보고서에 남긴다"
+    }
+  ],
+  "unknown":"응답이 비었거나 어떤 규칙에도 맞지 않으면 null(정보 없음). false로 채우지 않는다 (규칙 6)"
+}

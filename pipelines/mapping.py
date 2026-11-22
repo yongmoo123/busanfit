@@ -26,11 +26,15 @@ TARGET_CONTENT_TYPES = {"12", "14", "28", "38", "39"}
 CONTENT_TYPE_NAMES = {"12": "관광지", "14": "문화시설", "15": "축제공연행사", "25": "여행코스",
                       "28": "레포츠", "32": "숙박", "38": "쇼핑", "39": "음식점"}
 
+# data_sources.license (NFR-009). 공공데이터포털 "이용허락범위" 항목: 국문 관광정보·무장애 여행 정보 모두
+# "제한 없음" (pipelines/README.md "출처·이용조건"). 두 출처(tourapi-kor, tourapi-barrierfree)가 이 값만 쓴다.
+PORTAL_LICENSE = "이용허락범위 제한 없음(공공데이터포털)"
+
 SOURCE = {
     "code": "tourapi-kor",
     "provider": "한국관광공사",
     "dataset_name": "국문 관광정보 서비스_GW (KorService2)",
-    "license": None,      # 이용허락범위: 담당자가 포털에서 확인 후 기록 (README "확인 필요")
+    "license": PORTAL_LICENSE,
     "url": "https://www.data.go.kr/data/15101578/openapi.do",
     "base_date": None,    # 제공기관 기준일: 문서에 없음
 }

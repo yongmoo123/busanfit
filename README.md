@@ -3,7 +3,9 @@
 사용자의 지역·시간·이동수단·이동제약·예산·선호·동행 조건에 맞춰 실제 부산 공공데이터로 놀거리 코스를 구성하는 소프트웨어공학 팀프로젝트입니다.
 LLM은 조건 해석과 설명, DB와 규칙 엔진은 장소 선택·시간 계산·필수 조건 검증을 담당합니다. VLM은 범위 밖입니다.
 
-**현재 상태: 세션·조건 카드·채팅 API, Gemini 추출 어댑터와 규칙 대체 경로, 채팅/카드 화면 연결 구현.** 일반 서버는 #21·#22 검증 전까지 빈 capabilities를 유지합니다. 코스 엔진·추천 이유·장소 상세 API를 구현했으며 실제 DB·검색·이동시간·지도는 미연결입니다. #25는 별도 가상 DB·가상 모델로 검증합니다([실행·검증 기록](docs/ISSUE25_EXPLANATIONS_IMPLEMENTATION.md)). #26의 기본값 항목 EDIT_PROFILE 제안 생성도 구현했습니다([검증·프론트 인계](docs/ISSUE26_SUGGESTIONS_IMPLEMENTATION.md)). 체류시간 제안은 제외합니다. #27 동행 가중치는 미승인 제안으로 가상 검증했으며 일반 경로는 비활성입니다([제안 표](docs/proposals/issue-27-companion-weights.md)). 키 없는 화면 검증은 별도 가상 시나리오 서버를 사용합니다. [이슈 #20 실행·검증 기록](docs/ISSUE20_CHAT_IMPLEMENTATION.md)을 참고하세요. 가상 예시를 실제 부산 데이터로 사용하지 않습니다.
+**현재 #72 작업 브랜치 상태(2026-11-21): 실제 해운대 DB·검색기·도보 계산기·승인 동행 가중치·정보 없는 장소 포함 API를 일반 서버에 연결했습니다.** 서버는 DB 경로를 지정해야 시작하며, 준비가 성공하면 HAEUNDAE/WALK와 포함 capability를 공개합니다. 초기 동의는 false이고 실제 null 장소는 명시적 동의 후에만 CONDITIONAL로 허용합니다. 실제 화면·지도·PC/모바일 및 최종 인수는 후속입니다. 가상 미리보기를 실제 여행 데이터나 인수 결과로 사용하지 않습니다.
+
+[제출용 설치·실행 안내](docs/SUBMISSION_RUN.md)와 [테스트 보고서용 검증 근거](docs/TEST_EVIDENCE_2026-11-21.md)를 정리했습니다. 제출 확정본은 승인된 통합 커밋과 화면 인수 결과로 다시 확인합니다. 별도 #73의 AI 계측·연결 재사용 변경은 이 구현에 포함되지 않았습니다.
 
 ## 팀 작업 영역
 
@@ -45,31 +47,18 @@ deployment/           공동 — 원본 배포 초안의 구현 예정 위치
 
 ## 시작하기
 
-원본 SRS 목표는 Python 3.11/Linux/Docker이며 현재 로컬 검증 환경은 Python 3.12.14입니다. CI는 두 버전을 검사하도록 정의했습니다. 정의와 실제 통과 여부는 구분합니다.
+설치·공유 DB/SHA 확인·키 없는 기본 재현·프론트 프록시·문제 확인은 [제출용 실행 안내](docs/SUBMISSION_RUN.md)를 따릅니다. 일반 앱은 `.env`를 자동으로 읽지 않으며, DB 없이 빈 데이터로 시작하지 않습니다.
 
-저장소 루트에서 실행합니다. 아래는 Windows PowerShell 기준이며 가상환경 활성화는 필요하지 않습니다.
+의존성 설치를 마친 뒤 저장소 루트의 PowerShell에서:
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r backend/requirements-lock.txt
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir backend --reload --no-access-log --no-proxy-headers
+$env:BUSANFIT_DB_PATH = (Resolve-Path data/share/haeundae_sample_v1.sqlite3).Path
+$env:GEMINI_API_KEY = $null
+$env:GEMINI_MODEL = $null
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 --no-access-log
 ```
 
-Linux/macOS에서는 `.venv/Scripts/python.exe` 대신 `.venv/bin/python`을 사용합니다.
-브라우저에서 http://127.0.0.1:8000/docs 를 열고 **POST /api/sessions → Try it out → 본문 `{}` → Execute**를 누릅니다. 201 응답의 sessionId·expiresAt·requestId를 확인합니다. 추천 기능이 연결되지 않아 capabilities의 배열은 비어 있고 지원 여부는 false입니다.
-계약 초안은 [contracts/openapi.json](contracts/openapi.json)이며, 서버 문서에는 구현한 경로만 표시합니다. 단일 worker로 실행하며 재시작·reload 시 세션이 사라집니다. 프록시 연결 전에는 신뢰할 프록시와 IP 제한 정책을 별도 설정해야 합니다.
-서버 종료는 Ctrl+C입니다. 프론트엔드 실행 명령은 배진호 담당 구현 후 추가합니다.
-
-### 조건 카드 수정 확인
-
-1. 먼저 POST /api/sessions로 새 세션을 만들고 sessionId를 복사합니다. 서버 reload 전 세션은 재사용하지 않습니다.
-2. PUT /api/sessions/{sessionId}/profile → Try it out → sessionId에 복사한 값을 입력합니다.
-3. 기본 요청 예시(모든 값 null/UNSET, expectedProfileRevision=0)를 Execute합니다. 200·NEEDS_INPUT·profileRevision=1·누락 질문 2개가 나옵니다.
-4. 다음 수정에서는 직전 응답의 profileRevision을 expectedProfileRevision에 넣습니다. 0으로 다시 보내면 409입니다. 응답 유실 시 무조건 재전송하지 않습니다.
-5. area를 `{ "value": "HAEUNDAE", "source": "USER", "strength": "HARD" }`로 바꾸면 현재 지원 범위가 비어 있어 422 UNSUPPORTED_CONSTRAINT입니다. 실패 시 기존 프로필·revision·만료 시각은 유지됩니다.
-
-PUT은 전체 교체이므로 모든 필드를 보내야 합니다. 삭제할 조건은 null/UNSET, 직접 지정한 값은 USER입니다. 기존 서버 DEFAULT는 값·강도를 그대로 유지하는 경우에만 보낼 수 있습니다. 현재 서버는 기본값을 생성하지 않습니다.
-지원 여부는 세션 생성과 수정 검증이 같은 capabilities를 사용합니다. HAEUNDAE/WALK 계약 예시는 가상 시연 자료이며 현재 지원을 뜻하지 않습니다. READY 경로는 테스트 전용 지원 설정으로 검증했으며 운영 앱에서는 아직 반환하지 않습니다.
+API 문서는 http://127.0.0.1:8000/docs 입니다. 단일 worker를 사용하고 재시작 후에는 새 세션을 만듭니다. 새 POST /api/sessions에서 지원 범위를 확인하고 최신 프로필 전체 PUT → READY의 새 revision POST 순서로 연결합니다. 동의 변경·후보 부족·조건부 경고와 프론트 실행은 [실제 연결 안내](docs/ISSUE30_FRONTEND_HANDOFF.md)를 참고하세요.
 
 ## 검사
 
@@ -79,24 +68,14 @@ PUT은 전체 교체이므로 모든 필드를 보내야 합니다. 삭제할 �
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
-계약 검사는 전체 OpenAPI 표준 검증이 아닙니다. 테스트는 공통 오류·세션 생성 응답·만료·revision 동시성·요청 제한을 검증하며 LLM·DB 성공을 뜻하지 않습니다. `python -O`는 기존 assert 검사를 끄므로 사용하지 않습니다.
+계약 검사는 전체 OpenAPI 표준 검증이 아닙니다. 테스트는 공통 오류·세션·revision·요청 제한과 코스/동의 정책 등을 검사합니다. 실제 DB 검사는 BUSANFIT_DB_PATH에 공유 파일을 지정해야 하며 CI에는 DB가 없습니다. 실제 DB 및 별도 Gemini 지연 근거의 실행 범위는 검증 근거 문서를 따릅니다. `python -O`는 기존 assert 검사를 끄므로 사용하지 않습니다.
 GitHub Actions는 main/develop push와 PR에서 같은 검사를 실행합니다. 원격 CI의 실제 결과는 Actions에서 확인합니다.
 
 ## 다음 작업
 
-이슈 #23의 스케줄러·검증기·코스 API는 [가상 연동 구현·검증 기록](docs/ISSUE23_COURSES_IMPLEMENTATION.md)을 참고하세요. 실제 후보 검색·도보 이동시간·DB 연결과 실데이터 인수는 남아 있으며, 일반 서버 지원 범위는 계속 비활성입니다.
+진호의 실제 화면 연결·지도·PC/모바일·수동 인수와 #72·#73 리뷰 대응이 남아 있습니다. 코드/API 검증 완료와 최종 사용자 인수는 구분합니다. #32 부분 수정은 11/22 범위 판단 후 계약부터 진행하고 날씨·고정 일정은 11/25 판단 전 착수하지 않습니다.
 
-이슈 #21 기본값·카드 보완과 #22 후속 연결 지점은 [구현 기록](docs/ISSUE21_DEFAULTS_IMPLEMENTATION.md)에 정리했습니다. 체류시간·부상 안내는 공통 설정을 사용하며 일반 서버 활성화·실제 스케줄러 연결은 아직 하지 않았습니다.
-
-1. 팀원 초대·리뷰 규칙 및 첫 주 범위 검토: 김세민 + 전체.
-2. 실제 LLM 추출 정확도 측정: 김영무. 실제 추천 검증 구현 후 이찬용과 #21·#22 capabilities 활성화 검토.
-3. 실제 데이터 표본·이용조건·DB 매핑: 이찬용.
-4. 실제 데이터·코스 결과 화면 연결: 배진호.
-5. 가상 평가 초안 교차 검토·확정: 김세민 + 김영무.
-
-[연결 지점과 작업 목록](docs/INTEGRATION.md), [결정 및 현재 상태](docs/DECISIONS.md)를 읽고 시작합니다.
-비밀 키는 실행 환경에 설정하고 커밋하지 않습니다. 건강 원문·세션·프로필은 저장소·로그·브라우저 영구 저장소에 보관하지 않습니다.
-프로젝트 라이선스는 아직 선택하지 않았으며, 데이터 이용조건은 데이터별로 확인합니다.
+[연결 기록](docs/ISSUE23_COURSES_IMPLEMENTATION.md), [포함 기능 기록](docs/ISSUE30_UNKNOWN_ACCESSIBILITY_IMPLEMENTATION.md), [기준 결정](docs/DECISIONS.md)을 참고하세요. 아래 날짜가 붙은 과거 기록의 비활성·미연결 표기는 당시 상태입니다.
 
 ## 2026-11-11 조건 처리 보완 (기존 PR #13·#17)
 

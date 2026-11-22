@@ -64,7 +64,7 @@ def _invalid_constant(value):
     raise ValueError('non-finite JSON number')
 
 
-def load_companion_proposal(path=None) -> CompanionProposal:
+def load_companion_proposal(path=None, *, approved_only=False) -> CompanionProposal:
     """Load draft or approved weights without activating ordinary scoring."""
     path = Path(path) if path is not None else Path(__file__).resolve().parents[3] / 'config/companion-weights.proposal.json'
     data = json.loads(path.read_text(encoding='utf-8'), object_pairs_hook=_unique_object, parse_constant=_invalid_constant)
@@ -74,6 +74,8 @@ def load_companion_proposal(path=None) -> CompanionProposal:
     if not ((data['status'] == 'PROPOSAL' and data['pmApproved'] is False)
             or (data['status'] == 'APPROVED' and data['pmApproved'] is True)):
         raise ValueError('expected PROPOSAL/false or APPROVED/true approval metadata')
+    if approved_only and data['status'] != 'APPROVED':
+        raise ValueError('approved companion weights required for data connection')
     return CompanionProposal(data['version'], data['indoorPreferenceWeight'],
                              data['companionCategoryWeight'], data['categoryWeights'])
 

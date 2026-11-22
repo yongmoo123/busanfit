@@ -21,6 +21,17 @@ def normalize(profile, hints):
     return normalize_mobility(profile, has_infant=hints.get('hasInfant'))
 
 
+def reset_changed_mobility_consent(profile: Profile, previous: dict | None) -> Profile:
+    """Compare normalized values; ordering/source changes do not revoke consent."""
+    if previous is not None:
+        before = previous['mobility']['value']
+        after = profile.mobility.value
+        if ((before is None) != (after is None)
+                or set(before or ()) != set(after or ())):
+            return profile.model_copy(update={'includeUnknownAccessibility': False})
+    return profile
+
+
 def questions_for(profile, pending):
     fields = [name for name in ('area', 'timeWindow') if profile[name]['value'] is None]
     fields += [name for name in FIELD_ORDER if name in pending and name not in fields]
@@ -120,7 +131,7 @@ def analyze_chat(current, analysis: Analysis, capabilities):
                 companion_warnings.append(warning('UNCONFIRMED_CHANGE', '영유아 동반이면 조건 카드에서 바꿔 주세요.'))
 
     profile, warnings = normalize(profile, hints)
-    typed = Profile.model_validate(profile)
+    typed = reset_changed_mobility_consent(Profile.model_validate(profile), current.profile)
     # Same semantic and capability validation as PUT, after server defaults.
     validate_profile(typed, profile, capabilities)
     unavailable = analysis.fallback and all(profile[name]['value'] is None for name in ('area', 'timeWindow'))
@@ -156,7 +167,7 @@ def replace_card(current, profile: Profile, capabilities):
              else deepcopy(values['companions']['value'] or {}))
     values = apply_walk_default(values, capabilities, pending)
     values, warnings = normalize(values, hints)
-    typed = Profile.model_validate(values)
+    typed = reset_changed_mobility_consent(Profile.model_validate(values), current.profile)
     validate_profile(typed, values, capabilities)
     questions = questions_for(values, pending)
     if any(q['field'] == 'companions' for q in questions) and pending.get('companions') == 'INFANT_CONFIRMATION':

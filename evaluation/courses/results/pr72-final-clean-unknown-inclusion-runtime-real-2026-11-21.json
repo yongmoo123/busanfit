@@ -1,0 +1,201 @@
+{
+  "runDate": "2026-11-21T15:02:39.560623+09:00",
+  "codeRevision": "003a38e6107f1a88e300c9fc92f7494e88c1b30d",
+  "workingTreeModified": false,
+  "dbSha256": "c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75",
+  "syntheticOnly": false,
+  "testOnlyApp": false,
+  "appMode": "runtime",
+  "ordinaryInclusionEnabled": true,
+  "allChecksPassed": true,
+  "hardViolations": 0,
+  "missingPlaceIds": 0,
+  "acceptanceComplete": false,
+  "browserVerified": false,
+  "scenarioResults": [
+    {
+      "mode": [
+        "WHEELCHAIR"
+      ],
+      "window": "13:00-18:00",
+      "pool": 20,
+      "beforeOutcome": "SUCCESS",
+      "proposal": true,
+      "postMs": 114.23260008450598,
+      "afterOutcome": "SUCCESS",
+      "conditional": true,
+      "consentedUnknownPlaces": 4,
+      "resetVerified": true,
+      "postOnlyRetryVerified": true
+    },
+    {
+      "mode": [
+        "WHEELCHAIR"
+      ],
+      "window": "13:00-14:30",
+      "pool": 20,
+      "beforeOutcome": "INSUFFICIENT_PLACES",
+      "proposal": true,
+      "postMs": 65.11760002467781,
+      "afterOutcome": "INSUFFICIENT_PLACES",
+      "conditional": false,
+      "consentedUnknownPlaces": 0,
+      "resetVerified": true,
+      "postOnlyRetryVerified": true
+    },
+    {
+      "mode": [
+        "WHEELCHAIR"
+      ],
+      "window": "06:00-08:00",
+      "pool": 8,
+      "beforeOutcome": "INSUFFICIENT_PLACES",
+      "proposal": true,
+      "postMs": 39.526599925011396,
+      "afterOutcome": "SUCCESS",
+      "conditional": true,
+      "consentedUnknownPlaces": 2,
+      "resetVerified": true,
+      "postOnlyRetryVerified": true
+    },
+    {
+      "mode": [
+        "STROLLER"
+      ],
+      "window": "13:00-18:00",
+      "pool": 20,
+      "beforeOutcome": "SUCCESS",
+      "proposal": true,
+      "postMs": 96.71449998859316,
+      "afterOutcome": "SUCCESS",
+      "conditional": true,
+      "consentedUnknownPlaces": 4,
+      "resetVerified": true,
+      "postOnlyRetryVerified": true
+    },
+    {
+      "mode": [
+        "STROLLER"
+      ],
+      "window": "13:00-14:30",
+      "pool": 20,
+      "beforeOutcome": "INSUFFICIENT_PLACES",
+      "proposal": true,
+      "postMs": 65.32719999086112,
+      "afterOutcome": "INSUFFICIENT_PLACES",
+      "conditional": false,
+      "consentedUnknownPlaces": 0,
+      "resetVerified": true,
+      "postOnlyRetryVerified": true
+    },
+    {
+      "mode": [
+        "STROLLER"
+      ],
+      "window": "06:00-08:00",
+      "pool": 8,
+      "beforeOutcome": "INSUFFICIENT_PLACES",
+      "proposal": true,
+      "postMs": 40.05079995840788,
+      "afterOutcome": "SUCCESS",
+      "conditional": true,
+      "consentedUnknownPlaces": 2,
+      "resetVerified": true,
+      "postOnlyRetryVerified": true
+    },
+    {
+      "mode": [
+        "INJURY"
+      ],
+      "window": "13:00-18:00",
+      "pool": 20,
+      "beforeOutcome": "SUCCESS",
+      "proposal": true,
+      "postMs": 81.15520002320409,
+      "afterOutcome": "SUCCESS",
+      "conditional": false,
+      "consentedUnknownPlaces": 0,
+      "resetVerified": true,
+      "postOnlyRetryVerified": true
+    },
+    {
+      "mode": [
+        "INJURY"
+      ],
+      "window": "13:00-14:30",
+      "pool": 20,
+      "beforeOutcome": "INSUFFICIENT_PLACES",
+      "proposal": true,
+      "postMs": 67.16710003092885,
+      "afterOutcome": "INSUFFICIENT_PLACES",
+      "conditional": false,
+      "consentedUnknownPlaces": 0,
+      "resetVerified": true,
+      "postOnlyRetryVerified": true
+    },
+    {
+      "mode": [
+        "INJURY"
+      ],
+      "window": "06:00-08:00",
+      "pool": 8,
+      "beforeOutcome": "INSUFFICIENT_PLACES",
+      "proposal": true,
+      "postMs": 45.062200049869716,
+      "afterOutcome": "SUCCESS",
+      "conditional": true,
+      "consentedUnknownPlaces": 2,
+      "resetVerified": true,
+      "postOnlyRetryVerified": true
+    },
+    {
+      "mode": [
+        "WHEELCHAIR",
+        "STROLLER"
+      ],
+      "window": "13:00-18:00",
+      "pool": 20,
+      "beforeOutcome": "SUCCESS",
+      "proposal": true,
+      "postMs": 103.4348999382928,
+      "afterOutcome": "SUCCESS",
+      "conditional": true,
+      "consentedUnknownPlaces": 4,
+      "resetVerified": true,
+      "postOnlyRetryVerified": true
+    },
+    {
+      "mode": [
+        "WHEELCHAIR",
+        "STROLLER"
+      ],
+      "window": "13:00-14:30",
+      "pool": 20,
+      "beforeOutcome": "INSUFFICIENT_PLACES",
+      "proposal": true,
+      "postMs": 66.99510000180453,
+      "afterOutcome": "INSUFFICIENT_PLACES",
+      "conditional": false,
+      "consentedUnknownPlaces": 0,
+      "resetVerified": true,
+      "postOnlyRetryVerified": true
+    },
+    {
+      "mode": [
+        "WHEELCHAIR",
+        "STROLLER"
+      ],
+      "window": "06:00-08:00",
+      "pool": 8,
+      "beforeOutcome": "INSUFFICIENT_PLACES",
+      "proposal": true,
+      "postMs": 40.15539993997663,
+      "afterOutcome": "SUCCESS",
+      "conditional": true,
+      "consentedUnknownPlaces": 2,
+      "resetVerified": true,
+      "postOnlyRetryVerified": true
+    }
+  ],
+  "conditionalScenarios": 7
+}

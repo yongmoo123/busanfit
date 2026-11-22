@@ -54,7 +54,7 @@ SRS 8장은 별도 Must/Should 열을 두지 않는다. AI-REQ-07은 FR-015 Shou
 | AI-REQ-01 | DB 장소만, 근거 기반 설명·출처 | 김영무 courses/explanations, 이찬용 data | 코스 10개 DB 미존재 ID 0건 |
 | AI-REQ-02 | 지연/스키마 실패 1회 재시도·대체 안내 | 김영무 ai/application | 장애 주입·HARD 보존·시간 예산 |
 | AI-REQ-03 | 건강 범주값만 외부 전송·원문 로그 금지·무료 개발 가상 데이터 | 김영무 ai/constraints | 전송 전 범주화·로그 검토 |
-| AI-REQ-04 | 추출 문장 30개, 필드 정확도 85% | 김영무 constraints, 김세민 evaluation | 정답 대비 항목별 평가 |
+| AI-REQ-04 | 추출 문장 30개 이상(현재 31개), 필드 정확도 85% | 김영무 constraints, 김세민 evaluation | 정답 대비 항목별 평가 |
 | AI-REQ-05 | 코스 HARD 위반 0% | 김영무 courses | 고정 입력 자동 검증 |
 | AI-REQ-06 | 강도 85%·누락 되묻기 100%·2개 초과 질문 0 | 김영무 constraints, 김세민 evaluation | 강도/질문 세트 평가 |
 | AI-REQ-07 | 수정 20개, 의도 정확도 80% | 김영무 constraints, 김세민 evaluation | 대상·변경 내용 평가, FR-015 Should |

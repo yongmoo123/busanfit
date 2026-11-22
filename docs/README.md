@@ -9,6 +9,9 @@
 | `srs.md` | 기준 문서 | 요구사항의 유일한 기준 (FR·NFR·AI-REQ·UC·AC) |
 | `sdd.md` | 기준 문서 | 설계의 유일한 기준 (아키텍처·컴포넌트·DB·API 개요) |
 | `plan.md` | 기준 문서 | 프로젝트 계획서 (범위·일정·역할·위험) |
+| `test-report.md` | 제출 문서 | 테스트 및 품질 보고서 (TC·인수 테스트·비기능 측정 결과, DEC-031) |
+| `SUBMISSION_RUN.md` | 실행 안내 초안 | 제출 압축 구성·의존성·DB/SHA·로컬 실행·재현 명령 |
+| `TEST_EVIDENCE_2026-11-21.md` | 검증 근거 | 실제 DB·동의/조건부 API·별도 AI 지연·TC/AC/NFR 반영 범위 |
 | `../contracts/openapi.json` + `API_CONTRACT.md` | 기준 문서 | API 형식(OpenAPI)과 의미 규칙의 유일한 기준 |
 | `DECISIONS.md` | 기록 | 결정 로그. 기준 문서와 다르면 확정 결정이 우선 |
 | `meetings/YYYY-MM-DD.md` | 기록 | 회의록 (참석자·안건·결정·할 일) |
@@ -27,7 +30,7 @@ SDD 6장 API 표는 개요만 두고, 필드·상태·오류의 상세는 API �
 | v1.0 | 최종 제출 (11/30) | 최종 제출본 |
 
 - **버전 번호는 마일스톤에서만 올린다.** 그 사이의 수정은 Git 커밋 이력으로 추적한다.
-- 각 문서 상단의 "문서 관리" 표에 버전마다 한 행을 추가한다: 버전·날짜·작성자·주요 변경·관련 결정(DEC-xxx)·관련 PR.
+- 각 문서 상단의 "문서 관리" 표에 버전마다 한 행을 추가한다: 버전·날짜·작성자·주요 변경·관련 결정(DEC-xxx)·관련 PR. **작성자에는 실제로 쓴 사람만이 아니라 그 버전의 작업(결정·구현·검토)에 참여한 팀원을 모두 적는다**(담당교수 안내, 2026-11-19).
 - 마일스톤 시점의 main 커밋에 **저장소 태그**(`v0.2`, `v0.3`, `v1.0`)를 붙인다. 문서와 코드가 같은 태그로 묶이므로 "v0.2 설계서가 기준으로 삼은 코드"를 언제든 꺼내볼 수 있다.
 - 태그마다 GitHub Release를 만들고, 제출용 docx/PDF와 그 시점 테스트 결과를 첨부한다.
 
@@ -38,6 +41,7 @@ SDD 6장 API 표는 개요만 두고, 필드·상태·오류의 상세는 API �
 3. 리뷰: 요구사항 변경은 PM + 해당 구현 담당, 설계·API 변경은 영향받는 담당자 전원.
 4. **코드가 요구사항·설계·API와 달라지는 PR은 해당 문서 수정을 같은 PR에 포함한다.** 문서 수정이 빠지면 리뷰에서 반려한다.
 5. 병합 후 `DECISIONS.md`의 "반영 위치" 체크박스를 표시한다.
+6. **구현 기록(무엇을 어떻게 구현·검증했는지)은 SRS·SDD에 넣지 않는다.** PR 본문과 `docs/ISSUExx_*_IMPLEMENTATION.md`에 남긴다. SRS·SDD는 요구사항·설계·API가 실제로 바뀔 때만 고친다. 이미 들어간 구현 기록 단락은 v1.0 정리 때 해당 문서로 옮긴다(2026-11-20).
 
 ## 4. ID 규칙
 
@@ -58,6 +62,16 @@ SDD 6장 API 표는 개요만 두고, 필드·상태·오류의 상세는 API �
 ```text
 pandoc docs/sdd.md -f gfm -o build/02_설계서SDD_5팀_부산핏_v0.2.docx --reference-doc=docs/templates/reference.docx --resource-path=docs --lua-filter=docs/templates/br-to-linebreak.lua
 ```
+
+제출 파일 이름: `01_요구사항명세서SRS_5팀_부산핏.docx`, `02_설계서SDD_5팀_부산핏.docx`, `03_테스트보고서TQR_5팀_부산핏.docx`, `프로젝트 계획서 — 부산핏(BusanFit).docx`(DEC-031). 테스트 보고서는 교수님 템플릿(`03_테스트_보고서_템플릿.docx`)을 서식 기준으로 쓴다.
+
+서식 기준(`--reference-doc`)은 저장소 밖의 기존 제출 docx를 쓴다(학번이 들어 있어 커밋하지 않음). 변환 뒤 Windows + Word에서 표 후처리를 한다. pandoc 결과의 표에는 테두리가 없고 칸 너비가 같게 나오기 때문이다.
+
+```text
+powershell -ExecutionPolicy Bypass -File docs/templates/format-tables.ps1 build/01_요구사항명세서SRS_5팀_부산핏.docx build/02_설계서SDD_5팀_부산핏.docx ...
+```
+
+후처리는 모든 표에 테두리·머리글 음영을 넣고, ID 칸(TC-001 등)을 줄바꿈하지 않게 한 뒤 칸 너비를 내용과 페이지 폭에 맞춘다. 2026-11-19 시험 변환 결과: SRS 20쪽, SDD 30쪽, 테스트 보고서 7쪽, 계획서 11쪽.
 
 `br-to-linebreak.lua`는 표 셀 안의 `<br>`을 Word 줄바꿈으로 바꾼다. 이 필터를 빼면 pandoc이 `<br>`을 버려 여러 줄 셀이 한 줄로 붙는다.
 

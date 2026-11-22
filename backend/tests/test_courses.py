@@ -98,6 +98,27 @@ def test_four_scenarios_have_only_verified_places_and_keep_profile_revision(env,
     assert result['sessionExpiresAt'] != before['sessionExpiresAt']
 
 
+@pytest.mark.parametrize('mobility', [None, [], ['WHEELCHAIR'], ['STROLLER'], ['INJURY'], ['INJURY', 'WHEELCHAIR']])
+@pytest.mark.parametrize('insufficient', [False, True])
+def test_injury_rules_warning_matches_saved_mobility_and_survives_insufficient(env, mobility, insufficient):
+    seed(env, ready(mobility))
+    if insufficient:
+        env['retriever'].places = ()
+    response = generate(env)
+    check_contract(response)
+    body = response.json()
+    assert body['status'] == ('INSUFFICIENT_PLACES' if insufficient else 'SUCCESS')
+    injury_warnings = [w for w in body['warnings'] if w['code'] == 'INJURY_RULES']
+    if 'INJURY' in (mobility or ()):
+        assert injury_warnings == [{'code': 'INJURY_RULES', 'placeIds': [],
+            'message': '부상 조건으로 구간당 도보 10분 이내만 연결해요. 이동이 힘들면 택시·대중교통 이용을 권해요.'}]
+        if body['course'] is not None:
+            assert all(leg['minutes'] <= 10 for leg in body['course']['legs'])
+    else:
+        assert injury_warnings == []
+    assert any(w['code'] == 'ROUTE_ACCESSIBILITY_UNVERIFIED' for w in body['warnings'])
+
+
 def test_unknown_accessibility_is_excluded_by_item_not_grade(env):
     seed(env, ready(['WHEELCHAIR']))
     p1, p2 = env['places'][:2]
@@ -108,6 +129,22 @@ def test_unknown_accessibility_is_excluded_by_item_not_grade(env):
     body = response.json()
     assert body['status'] == 'SUCCESS' and len(body['course']['items']) == 2
     assert body['excludedUnknown'] == {'count': 1, 'fields': ['mobility.wheelchair']}
+
+
+def test_course_preserves_stored_grade_without_recomputing_or_using_it_as_a_filter(env):
+    seed(env)
+    for place in env['places']:
+        env['repository'].places[place.id] = replace(place, accessibility=replace(
+            place.accessibility, grade='UNSUITABLE', wheelchair=False, stroller=None))
+    response = generate(env)
+    check_contract(response)
+    body = response.json()
+    assert body['status'] == 'SUCCESS'
+    for item in body['course']['items']:
+        access = item['place']['accessibility']
+        assert access['grade'] == 'UNSUITABLE'
+        assert access['wheelchair'] is False
+        assert access['stroller'] is None
 
 
 def test_unknown_exclusions_are_unique_across_retriever_and_validator(env):
@@ -277,7 +314,7 @@ def test_global_validation_failure_is_never_passed_and_retries_only_three_times(
     assert validator.calls == 4  # initial + 3 repairs
 
 
-def test_ordinary_server_does_not_use_synthetic_ports():
+def test_unconnected_factory_does_not_use_synthetic_ports():
     with TestClient(create_app()) as client:
         session = client.post('/api/sessions', json={}).json()
         assert not any(session['capabilities'].values())
@@ -297,20 +334,16 @@ def test_legacy_infant_profile_does_not_bypass_stroller_default(env):
     assert response.json()['excludedUnknown']['count'] == 3
 
 
-@pytest.mark.parametrize('field', ['budget', 'preferenceTags', 'companions', 'includeUnknownAccessibility'])
+@pytest.mark.parametrize('field', ['budget', 'preferenceTags', 'companions'])
 def test_unsupported_active_constraints_do_not_get_ignored_to_make_a_course(env, field):
     seed(env)
     state = env['store'].check_current(env['sid'], 1)
     profile = state.profile
-    if field == 'includeUnknownAccessibility':
-        profile[field] = True
-        env['app'].state.capabilities.supportsUnknownAccessibilityInclusion = True
-    else:
-        values = {'budget': {'amount': 0, 'currency': 'KRW', 'basis': 'TOTAL', 'includes': ['FOOD']},
-                  'preferenceTags': ['가상 선호'], 'companions': {'type': 'FRIENDS', 'count': 2, 'hasInfant': False}}
-        profile[field] = {'value': values[field], 'source': 'USER', 'strength': 'HARD'}
-        if field not in env['app'].state.capabilities.supportedProfileFields:
-            env['app'].state.capabilities.supportedProfileFields.append(field)
+    values = {'budget': {'amount': 0, 'currency': 'KRW', 'basis': 'TOTAL', 'includes': ['FOOD']},
+              'preferenceTags': ['가상 선호'], 'companions': {'type': 'FRIENDS', 'count': 2, 'hasInfant': False}}
+    profile[field] = {'value': values[field], 'source': 'USER', 'strength': 'HARD'}
+    if field not in env['app'].state.capabilities.supportedProfileFields:
+        env['app'].state.capabilities.supportedProfileFields.append(field)
     env['store'].commit_profile(env['sid'], 1, profile=profile, history=[])
     response = generate(env, 2)
     assert response.status_code == 422
