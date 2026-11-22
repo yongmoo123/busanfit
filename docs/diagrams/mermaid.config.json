@@ -1,0 +1,9 @@
+{
+  "theme": "default",
+  "themeVariables": {
+    "fontFamily": "Malgun Gothic, Apple SD Gothic Neo, Noto Sans KR, sans-serif",
+    "fontSize": "16px"
+  },
+  "flowchart": { "htmlLabels": true, "curve": "basis" },
+  "er": { "useMaxWidth": false }
+}

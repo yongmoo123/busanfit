@@ -1,0 +1,10 @@
+{
+  "walk": {
+    "detourFactor": 1.0,
+    "roundingToleranceMinutes": 1e-9
+  },
+  "status": {
+    "detourFactor": "PROPOSAL: 1.0 (#23 PM comment: start at 1.0 if hard to decide). Awaiting 김영무 confirmation.",
+    "roundingToleranceMinutes": "PROPOSAL: ceil after subtracting float noise only. Awaiting 김영무 confirmation."
+  }
+}

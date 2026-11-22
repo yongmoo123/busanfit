@@ -1,4 +1,4 @@
-"""HTTP boundary tests; no LLM, DB, or session implementation is claimed."""
+"""Common HTTP boundary tests; no LLM or DB calls."""
 from uuid import UUID
 
 import pytest
@@ -40,9 +40,13 @@ def check_error(response, status, code):
 
 
 def test_only_implemented_routes_are_documented():
-    with TestClient(create_app()) as client:
+    app = create_app()
+    with TestClient(app) as client:
         assert client.get("/docs").status_code == 200
-        assert client.get("/openapi.json").json()["paths"] == {}
+        expected = {'/api/sessions', '/api/sessions/{sessionId}/profile', '/api/courses', '/api/places/{placeId}', '/api/sessions/{sessionId}'}
+        if app.state.extractor is not None:
+            expected.add('/api/chat')
+        assert set(client.get("/openapi.json").json()["paths"]) == expected
 
 
 def test_missing_route_and_unique_request_id(client):

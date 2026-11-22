@@ -1,0 +1,14 @@
+{
+  "version": "draft-2026-11-17",
+  "status": "APPROVED",
+  "pmApproved": true,
+  "indoorPreferenceWeight": 2,
+  "companionCategoryWeight": 1,
+  "categoryWeights": {
+    "COUPLE": {"CAFE": 3, "FOOD": 1, "EXHIBITION": 2, "ATTRACTION": 1, "PARK": 1, "SHOPPING": 0, "OTHER": 0},
+    "FAMILY": {"CAFE": 0, "FOOD": 0, "EXHIBITION": 3, "ATTRACTION": 3, "PARK": 3, "SHOPPING": 0, "OTHER": 0},
+    "FRIENDS": {"CAFE": 1, "FOOD": 0, "EXHIBITION": 0, "ATTRACTION": 3, "PARK": 2, "SHOPPING": 1, "OTHER": 0},
+    "SOLO": {"CAFE": 0, "FOOD": 0, "EXHIBITION": 0, "ATTRACTION": 0, "PARK": 0, "SHOPPING": 0, "OTHER": 0},
+    "OTHER": {"CAFE": 0, "FOOD": 0, "EXHIBITION": 0, "ATTRACTION": 0, "PARK": 0, "SHOPPING": 0, "OTHER": 0}
+  }
+}

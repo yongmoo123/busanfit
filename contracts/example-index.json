@@ -18,5 +18,8 @@
   "examples/error-400-request.response.json": "ErrorResponse",
   "examples/error-404-place.response.json": "ErrorResponse",
   "examples/error-429-limit.response.json": "ErrorResponse",
-  "examples/error-500-internal.response.json": "ErrorResponse"
+  "examples/error-500-internal.response.json": "ErrorResponse",
+  "examples/06-course.unknown-proposal.response.json": "CourseResponse",
+  "examples/06-profile.include-unknown.request.json": "ProfileUpdateRequest",
+  "examples/06-course.conditional.response.json": "CourseResponse"
 }

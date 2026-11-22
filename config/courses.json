@@ -1,0 +1,6 @@
+{
+  "radiusMeters": 1500,
+  "maxCandidates": 20,
+  "maxItems": 6,
+  "maxRepairAttempts": 3
+}

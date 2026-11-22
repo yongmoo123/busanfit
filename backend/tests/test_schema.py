@@ -1,0 +1,469 @@
+"""schema.sql against SDD 5.2 (DEC-005). Temporary DB files only; rows are [가상]."""
+import sqlite3
+
+import pytest
+
+from app.data import db, place_id
+
+# (column, type, NOT NULL, PK position) — SDD 5.2 table (DEC-014, DEC-017, DEC-018)
+EXPECTED = {
+    "data_sources": [
+        ("id", "INTEGER", 0, 1), ("code", "TEXT", 1, 0),
+        ("provider", "TEXT", 1, 0), ("dataset_name", "TEXT", 1, 0),
+        ("license", "TEXT", 0, 0), ("url", "TEXT", 1, 0), ("base_date", "TEXT", 0, 0),
+        ("retrieved_at", "TEXT", 1, 0),
+    ],
+    "places": [
+        ("id", "INTEGER", 0, 1), ("source_place_id", "TEXT", 1, 0),
+        ("name", "TEXT", 1, 0), ("category", "TEXT", 1, 0), ("area", "TEXT", 1, 0),
+        ("address", "TEXT", 0, 0), ("latitude", "REAL", 1, 0), ("longitude", "REAL", 1, 0),
+        ("indoor", "INTEGER", 0, 0), ("open_hours", "TEXT", 0, 0),
+        ("open_hours_text", "TEXT", 0, 0),
+        ("price_amount", "INTEGER", 0, 0), ("price_basis", "TEXT", 0, 0),
+        ("price_text", "TEXT", 0, 0), ("default_stay_min", "INTEGER", 1, 0),
+        ("overview", "TEXT", 0, 0),
+        ("source_id", "INTEGER", 1, 0), ("updated_at", "TEXT", 1, 0),
+    ],
+    "accessibility": [
+        ("place_id", "INTEGER", 0, 1), ("grade", "TEXT", 1, 0), ("wheelchair", "INTEGER", 0, 0),
+        ("stroller", "INTEGER", 0, 0), ("elevator", "INTEGER", 0, 0),
+        ("accessible_toilet", "INTEGER", 0, 0), ("raw", "TEXT", 0, 0),
+        ("source_id", "INTEGER", 1, 0),
+    ],
+    "stations": [
+        ("id", "TEXT", 1, 1), ("name", "TEXT", 1, 0), ("line", "TEXT", 1, 0),
+        ("latitude", "REAL", 1, 0), ("longitude", "REAL", 1, 0),
+        ("has_elevator", "INTEGER", 1, 0), ("has_locker", "INTEGER", 1, 0),
+        ("source_id", "INTEGER", 1, 0),
+    ],
+    "station_travel": [
+        ("from_station", "TEXT", 1, 1), ("to_station", "TEXT", 1, 2),
+        ("minutes", "INTEGER", 1, 0), ("transfer", "INTEGER", 1, 0),
+    ],
+    "facilities": [
+        ("id", "INTEGER", 0, 1), ("type", "TEXT", 1, 0), ("name", "TEXT", 0, 0),
+        ("latitude", "REAL", 0, 0), ("longitude", "REAL", 0, 0), ("open_hours", "TEXT", 0, 0),
+        ("disabled_parking", "INTEGER", 0, 0), ("fee_info", "TEXT", 0, 0),
+        ("station_id", "TEXT", 0, 0), ("source_id", "INTEGER", 1, 0),
+    ],
+    "shared_courses": [
+        ("id", "TEXT", 1, 1), ("course_json", "TEXT", 1, 0), ("created_at", "TEXT", 1, 0),
+        ("expires_at", "TEXT", 1, 0),
+    ],
+    "batch_logs": [
+        ("id", "INTEGER", 0, 1), ("job", "TEXT", 1, 0), ("started_at", "TEXT", 1, 0),
+        ("success_count", "INTEGER", 0, 0), ("fail_count", "INTEGER", 0, 0),
+        ("message", "TEXT", 0, 0),
+    ],
+}
+
+FOREIGN_KEYS = {
+    ("places", "source_id", "data_sources", "id"),
+    ("accessibility", "place_id", "places", "id"),
+    ("accessibility", "source_id", "data_sources", "id"),
+    ("stations", "source_id", "data_sources", "id"),
+    ("station_travel", "from_station", "stations", "id"),
+    ("station_travel", "to_station", "stations", "id"),
+    ("facilities", "station_id", "stations", "id"),
+    ("facilities", "source_id", "data_sources", "id"),
+}
+
+NOW = "2026-11-09T09:00:00+09:00"
+
+
+@pytest.fixture
+def conn(tmp_path):
+    path = db.create_database(tmp_path / "test.sqlite3")
+    connection = db.connect(path)
+    yield connection
+    connection.close()
+
+
+def add_source(conn, code=None):
+    if code is None:
+        code = f"mock-src-{conn.execute('SELECT count(*) FROM data_sources').fetchone()[0] + 1}"
+    return conn.execute(
+        "INSERT INTO data_sources (code, provider, dataset_name, url, retrieved_at) "
+        "VALUES (?, ?, ?, ?, ?)",
+        (code, "[가상] 기관", "[가상] 데이터", "https://example.invalid/busanfit", NOW)).lastrowid
+
+
+def add_place(conn, source_id=None, **overrides):
+    values = dict(source_place_id="mock-1", name="[가상] 장소", category="CAFE", area="HAEUNDAE",
+                  latitude=35.16, longitude=129.16, default_stay_min=60, source_id=source_id,
+                  updated_at=NOW)
+    values.update(overrides)
+    columns = ", ".join(values)
+    marks = ", ".join("?" for _ in values)
+    return conn.execute(f"INSERT INTO places ({columns}) VALUES ({marks})",
+                        tuple(values.values())).lastrowid
+
+
+def test_tables_and_columns_match_sdd(conn):
+    tables = {row[0] for row in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'")}
+    assert tables == set(EXPECTED)
+    for table, columns in EXPECTED.items():
+        actual = [(r["name"], r["type"], r["notnull"], r["pk"])
+                  for r in conn.execute(f"PRAGMA table_info({table})")]
+        assert actual == columns, table
+
+
+def test_foreign_keys(conn):
+    actual = set()
+    for table in EXPECTED:
+        for row in conn.execute(f"PRAGMA foreign_key_list({table})"):
+            actual.add((table, row["from"], row["table"], row["to"]))
+    assert actual == FOREIGN_KEYS
+
+
+def test_schema_version_and_foreign_keys_enabled(conn):
+    assert conn.execute("PRAGMA user_version").fetchone()[0] == 1
+    assert conn.execute("PRAGMA foreign_keys").fetchone()[0] == 1
+
+
+def test_coordinate_index_used_for_bounding_box(conn):
+    plan = " ".join(row["detail"] for row in conn.execute(
+        "EXPLAIN QUERY PLAN SELECT id FROM places "
+        "WHERE latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ?", (35.1, 35.2, 129.1, 129.2)))
+    assert "idx_places_lat_lon" in plan
+
+
+def test_unknown_values_stored_as_null(conn):
+    place_id = add_place(conn, add_source(conn))
+    row = conn.execute("SELECT * FROM places WHERE id = ?", (place_id,)).fetchone()
+    for column in ("address", "indoor", "open_hours", "open_hours_text", "price_amount",
+                   "price_basis", "price_text", "overview"):
+        assert row[column] is None, column
+    conn.execute("INSERT INTO accessibility (place_id, grade, source_id) VALUES (?, 'UNKNOWN', ?)",
+                 (place_id, row["source_id"]))
+    access = conn.execute("SELECT * FROM accessibility").fetchone()
+    assert [access[c] for c in ("wheelchair", "stroller", "elevator", "accessible_toilet")] \
+        == [None] * 4
+
+
+@pytest.mark.parametrize("category", [
+    "CAFE", "FOOD", "EXHIBITION", "ATTRACTION", "PARK", "SHOPPING", "OTHER",
+])
+def test_contract_categories_accepted(conn, category):
+    add_place(conn, add_source(conn), category=category)
+
+
+@pytest.mark.parametrize("basis", ["PER_PERSON", "TOTAL"])
+def test_price_fields_stored(conn, basis):
+    place_id = add_place(conn, add_source(conn), price_amount=5000, price_basis=basis,
+                         price_text="[가상] 5,000원")
+    row = conn.execute("SELECT * FROM places WHERE id = ?", (place_id,)).fetchone()
+    assert (row["price_amount"], row["price_basis"], row["price_text"]) \
+        == (5000, basis, "[가상] 5,000원")
+
+
+@pytest.mark.parametrize("overrides", [
+    {"indoor": 2}, {"category": "[가상] 체험"}, {"category": "cafe"}, {"category": None},
+    {"price_basis": "UNKNOWN"}, {"source_place_id": None}, {"default_stay_min": 0},
+    {"latitude": 91}, {"longitude": -181}, {"open_hours": "not json"}, {"name": None},
+    {"latitude": None}, {"source_id": 999},
+    {"default_stay_min": 1.5}, {"default_stay_min": "unknown"},
+    {"price_amount": 1.5}, {"price_amount": "unknown"},
+    {"source_place_id": ""}, {"source_place_id": "mock/1"},
+])
+def test_invalid_place_rejected(conn, overrides):
+    values = {"source_id": add_source(conn), **overrides}
+    with pytest.raises(sqlite3.IntegrityError):
+        add_place(conn, **values)
+
+
+def add_station(conn, station_id, source_id):
+    conn.execute("INSERT INTO stations (id, name, line, latitude, longitude, has_elevator, "
+                 "has_locker, source_id) VALUES (?, '[가상] 역', '[가상] 호선', 35.16, 129.16, 0, 0, ?)",
+                 (station_id, source_id))
+
+
+TRAVEL_SQL = "INSERT INTO station_travel (from_station, to_station, minutes, transfer) " \
+             "VALUES ('A', 'B', ?, 0)"
+
+
+def test_station_travel_minutes_accepts_integer(conn):
+    source_id = add_source(conn)
+    add_station(conn, "A", source_id)
+    add_station(conn, "B", source_id)
+    conn.execute(TRAVEL_SQL, (5,))
+    row = conn.execute("SELECT minutes, typeof(minutes) AS kind FROM station_travel").fetchone()
+    assert (row["minutes"], row["kind"]) == (5, "integer")
+
+
+@pytest.mark.parametrize("minutes", [1.5, "unknown", -1])
+def test_station_travel_minutes_must_be_integer(conn, minutes):
+    source_id = add_source(conn)
+    add_station(conn, "A", source_id)
+    add_station(conn, "B", source_id)
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(TRAVEL_SQL, (minutes,))
+
+
+@pytest.mark.parametrize("sql", [
+    "INSERT INTO stations (id, name, line, latitude, longitude, has_elevator, has_locker, source_id) "
+    "VALUES (NULL, '[가상]', '[가상]', 35.16, 129.16, 0, 0, :s)",
+    "INSERT INTO stations (name, line, latitude, longitude, has_elevator, has_locker, source_id) "
+    "VALUES ('[가상]', '[가상]', 35.16, 129.16, 0, 0, :s)",
+    "INSERT INTO shared_courses (id, course_json, created_at, expires_at) "
+    "VALUES (NULL, '{}', 'x', 'y')",
+    "INSERT INTO shared_courses (course_json, created_at, expires_at) VALUES ('{}', 'x', 'y')",
+])
+def test_text_primary_key_rejects_null_and_omitted(conn, sql):
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(sql, {"s": add_source(conn)})
+
+
+BATCH_SQL = "INSERT INTO batch_logs (job, started_at, success_count, fail_count) " \
+            "VALUES ('[가상]', 'x', ?, ?)"
+
+
+def test_batch_log_counts_accept_null_and_integer(conn):
+    conn.execute(BATCH_SQL, (None, None))
+    conn.execute(BATCH_SQL, (3, 0))
+
+
+@pytest.mark.parametrize("counts", [(1.5, 0), ("unknown", 0), (0, 1.5), (0, "unknown")])
+def test_batch_log_counts_must_be_integer(conn, counts):
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(BATCH_SQL, counts)
+
+
+def test_duplicate_source_place_id_rejected(conn):
+    source_id = add_source(conn)
+    add_place(conn, source_id)
+    with pytest.raises(sqlite3.IntegrityError):
+        add_place(conn, source_id)
+    add_place(conn, add_source(conn))  # same original ID from another source is allowed
+
+
+@pytest.mark.parametrize("sql", [
+    "INSERT INTO accessibility (place_id, grade, source_id) VALUES (:p, 'GOOD', :s)",
+    "INSERT INTO accessibility (place_id, grade, wheelchair, source_id) VALUES (:p, 'VERIFIED', 2, :s)",
+    "INSERT INTO accessibility (place_id, grade, source_id) VALUES (999, 'UNKNOWN', :s)",
+    "INSERT INTO accessibility (place_id, grade, source_id) VALUES (:p, 'UNKNOWN', 999)",
+    "INSERT INTO data_sources (code, provider, dataset_name, url) "
+    "VALUES ('mock-x', '[가상]', '[가상]', 'https://example.invalid')",
+    "INSERT INTO data_sources (code, provider, dataset_name, retrieved_at) "
+    "VALUES ('mock-x', '[가상]', '[가상]', 'x')",
+    "INSERT INTO data_sources (code, provider, dataset_name, url, retrieved_at) "
+    "VALUES ('mock-x', '[가상]', '[가상]', NULL, 'x')",
+])
+def test_invalid_accessibility_and_source_rejected(conn, sql):
+    source_id = add_source(conn)
+    params = {"p": add_place(conn, source_id), "s": source_id}
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(sql, params)
+
+
+SOURCE_SQL = "INSERT INTO data_sources (code, provider, dataset_name, url, retrieved_at) " \
+             "VALUES (?, '[가상]', '[가상]', 'https://example.invalid', 'x')"
+
+
+def test_source_code_is_unique_index(conn):
+    unique_columns = [
+        [col["name"] for col in conn.execute(f"PRAGMA index_info('{idx['name']}')")]
+        for idx in conn.execute("PRAGMA index_list(data_sources)") if idx["unique"]]
+    assert ["code"] in unique_columns
+
+
+def test_source_code_unique(conn):
+    conn.execute(SOURCE_SQL, ("tourapi-kor",))
+    with pytest.raises(sqlite3.IntegrityError, match="UNIQUE"):
+        conn.execute(SOURCE_SQL, ("tourapi-kor",))
+    conn.execute(SOURCE_SQL, ("tourapi-barrierfree",))
+
+
+def test_source_code_not_null(conn):
+    with pytest.raises(sqlite3.IntegrityError, match="NOT NULL"):
+        conn.execute(SOURCE_SQL, (None,))
+    with pytest.raises(sqlite3.IntegrityError, match="NOT NULL"):
+        conn.execute("INSERT INTO data_sources (provider, dataset_name, url, retrieved_at) "
+                     "VALUES ('[가상]', '[가상]', 'https://example.invalid', 'x')")
+
+
+@pytest.mark.parametrize("code", ["", "tourapi:kor", "TourAPI-kor", "tourapi kor", "tourapi/kor",
+                                  "tourapi_kor", "투어"])
+def test_source_code_rejects_unsafe_characters(conn, code):
+    with pytest.raises(sqlite3.IntegrityError, match="CHECK"):
+        conn.execute(SOURCE_SQL, (code,))
+    with pytest.raises(ValueError):
+        place_id.validate_source_code(code)
+
+
+@pytest.mark.parametrize("code", ["tourapi-kor", "tourapi-barrierfree", "busan-2026"])
+def test_source_code_rule_matches_python(conn, code):
+    conn.execute(SOURCE_SQL, (code,))
+    assert place_id.validate_source_code(code) == code
+
+
+# [가상] 두 출처·세 장소. 적재 순서를 바꿔 DB 내부 정수 ID가 달라져도 API place.id는 같아야 한다.
+RELOAD_SOURCES = ["tourapi-kor", "tourapi-barrierfree"]
+RELOAD_PLACES = [("tourapi-kor", "900001", "[가상] 카페"), ("tourapi-kor", "900002", "[가상] 공원"),
+                 ("tourapi-barrierfree", "900001", "[가상] 전시")]
+
+
+def load_and_read_ids(path, sources, places):
+    connection = db.connect(db.create_database(path))
+    try:
+        source_ids = {code: add_source(connection, code) for code in sources}
+        for code, original_id, name in places:
+            add_place(connection, source_ids[code], source_place_id=original_id, name=name)
+        rows = connection.execute(
+            "SELECT p.id, p.name, s.code, p.source_place_id FROM places p "
+            "JOIN data_sources s ON s.id = p.source_id").fetchall()
+    finally:
+        connection.close()
+    return ({row["name"]: place_id.make_place_id(row["code"], row["source_place_id"])
+             for row in rows}, {row["name"]: row["id"] for row in rows})
+
+
+def test_place_id_stable_across_reload(tmp_path):
+    first, first_internal = load_and_read_ids(tmp_path / "a.sqlite3", RELOAD_SOURCES,
+                                              RELOAD_PLACES)
+    # 다시 적재: 출처·장소 순서를 뒤집고, 앞에 다른 장소를 하나 더 넣어 내부 ID를 밀어낸다.
+    extra = [("tourapi-kor", "900999", "[가상] 추가")]
+    second, second_internal = load_and_read_ids(
+        tmp_path / "b.sqlite3", RELOAD_SOURCES[::-1], extra + RELOAD_PLACES[::-1])
+    assert any(first_internal[name] != second_internal[name] for name in first_internal)
+    assert first == {name: second[name] for name in first}
+    assert first == {"[가상] 카페": "tourapi-kor:900001", "[가상] 공원": "tourapi-kor:900002",
+                     "[가상] 전시": "tourapi-barrierfree:900001"}
+
+
+def test_place_id_round_trip():
+    assert place_id.parse_place_id("tourapi-kor:900001") == ("tourapi-kor", "900001")
+    assert place_id.parse_place_id("tourapi-kor:Mock_ID-01") == ("tourapi-kor", "Mock_ID-01")
+    for bad in ["", "tourapi-kor", ":900001", "tourapi-kor:", "Tour:1", "tourapi-kor:1/2",
+                "tourapi-kor:a:b", None]:
+        with pytest.raises(ValueError):
+            place_id.parse_place_id(bad)
+
+
+# 원본 ID 규칙: 영문 대소문자·숫자·_·- 만, 1~64자. SQL CHECK와 파이썬 검증이 같은 값을 거절·허용해야 한다.
+REJECTED_SOURCE_PLACE_IDS = [
+    "mock?part", "mock#part", "mock%part", "mock%2Fpart", "mock%61", "mock/part", "a/b",
+    "mock part", " 126508", "126508 ", "", "a" * 65, "장소1", "한글", "1.5", "mock:part",
+    "mock\npart", "mock\tpart", "ｍｏｃｋ",
+]
+ALLOWED_SOURCE_PLACE_IDS = [
+    "126508", "0", "Mock_ID-01", "A", "_", "-", "abc_DEF-123", "a" * 64, "9" * 64,
+]
+
+
+@pytest.mark.parametrize("bad", REJECTED_SOURCE_PLACE_IDS)
+def test_source_place_id_rejected_by_schema_and_python(conn, bad):
+    with pytest.raises(sqlite3.IntegrityError, match="CHECK"):
+        add_place(conn, add_source(conn), source_place_id=bad)
+    with pytest.raises(ValueError):
+        place_id.validate_source_place_id(bad)
+    with pytest.raises(ValueError):
+        place_id.make_place_id("tourapi-kor", bad)
+
+
+@pytest.mark.parametrize("good", ALLOWED_SOURCE_PLACE_IDS)
+def test_source_place_id_allowed_by_schema_and_python(conn, good):
+    row_id = add_place(conn, add_source(conn), source_place_id=good)
+    stored = conn.execute("SELECT source_place_id, typeof(source_place_id) AS kind FROM places "
+                          "WHERE id = ?", (row_id,)).fetchone()
+    assert (stored["source_place_id"], stored["kind"]) == (good, "text")
+    made = place_id.make_place_id("tourapi-kor", good)
+    assert made == f"tourapi-kor:{good}"
+    assert place_id.parse_place_id(made) == ("tourapi-kor", good)
+
+
+def test_numeric_source_place_id_stored_as_text(conn):
+    # A loader passing an int still stores TEXT (column affinity) and passes the CHECK.
+    row_id = add_place(conn, add_source(conn), source_place_id=126508)
+    row = conn.execute("SELECT source_place_id, typeof(source_place_id) AS kind FROM places "
+                       "WHERE id = ?", (row_id,)).fetchone()
+    assert (row["source_place_id"], row["kind"]) == ("126508", "text")
+
+
+def test_blob_source_place_id_rejected(conn):
+    with pytest.raises(sqlite3.IntegrityError, match="CHECK"):
+        add_place(conn, add_source(conn), source_place_id=b"126508")
+
+
+def test_db_path_comes_from_environment(tmp_path):
+    with pytest.raises(db.DatabaseConfigError):
+        db.get_db_path({})
+    with pytest.raises(db.DatabaseConfigError):
+        db.get_db_path({db.ENV_DB_PATH: "  "})
+    assert db.get_db_path({db.ENV_DB_PATH: str(tmp_path / "x.sqlite3")}) == tmp_path / "x.sqlite3"
+
+
+def test_connect_does_not_create_missing_file(tmp_path):
+    with pytest.raises(sqlite3.OperationalError):
+        db.connect(tmp_path / "missing.sqlite3")
+    assert not (tmp_path / "missing.sqlite3").exists()
+
+
+def test_create_database_refuses_existing_file(tmp_path):
+    path = db.create_database(tmp_path / "a.sqlite3")
+    with pytest.raises(FileExistsError):
+        db.create_database(path)
+
+
+GOOD_SCHEMA = db.SCHEMA_PATH
+
+
+@pytest.fixture
+def broken_schema(tmp_path, monkeypatch):
+    path = tmp_path / "broken.sql"
+    path.write_text("PRAGMA user_version = 1; CREATE TABLE partial (id INTEGER); INVALID SQL;",
+                    encoding="utf-8")
+    monkeypatch.setattr(db, "SCHEMA_PATH", path)
+
+
+def test_failed_creation_leaves_no_file_and_can_retry(tmp_path, monkeypatch, broken_schema):
+    target = tmp_path / "db" / "x.sqlite3"
+    with pytest.raises(sqlite3.OperationalError):
+        db.create_database(target)
+    assert list(target.parent.iterdir()) == []
+
+    monkeypatch.setattr(db, "SCHEMA_PATH", GOOD_SCHEMA)
+    connection = db.connect(db.create_database(target))
+    try:
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 1
+        assert connection.execute(
+            "SELECT count(*) FROM sqlite_master WHERE name = 'partial'").fetchone()[0] == 0
+    finally:
+        connection.close()
+    assert list(target.parent.iterdir()) == [target]
+
+
+def test_failed_creation_keeps_existing_file(tmp_path, broken_schema):
+    target = tmp_path / "db" / "x.sqlite3"
+    target.parent.mkdir()
+    target.write_bytes(b"[mock] existing")
+    with pytest.raises(FileExistsError):
+        db.create_database(target)
+    assert target.read_bytes() == b"[mock] existing"
+    assert list(target.parent.iterdir()) == [target]
+
+
+def test_file_created_meanwhile_is_not_overwritten(tmp_path, monkeypatch):
+    target = tmp_path / "db" / "x.sqlite3"
+    real_create_schema = db.create_schema
+
+    def create_schema_while_another_call_finishes(connection):
+        real_create_schema(connection)
+        target.write_bytes(b"[mock] other call")
+
+    monkeypatch.setattr(db, "create_schema", create_schema_while_another_call_finishes)
+    with pytest.raises(FileExistsError):
+        db.create_database(target)
+    assert target.read_bytes() == b"[mock] other call"
+    assert list(target.parent.iterdir()) == [target]
+
+
+def test_cli_create_uses_environment(tmp_path, monkeypatch, capsys):
+    monkeypatch.delenv(db.ENV_DB_PATH, raising=False)
+    assert db.main(["create"]) == 1
+    monkeypatch.setenv(db.ENV_DB_PATH, str(tmp_path / "cli.sqlite3"))
+    assert db.main(["create"]) == 0
+    assert (tmp_path / "cli.sqlite3").exists()
+    assert db.main(["create"]) == 1
+    assert db.main([]) == 2
