@@ -1,6 +1,6 @@
 """Single-worker API with ephemeral sessions."""
 import asyncio
-from contextlib import asynccontextmanager, suppress
+from contextlib import AsyncExitStack, asynccontextmanager, suppress
 from fastapi import FastAPI
 
 from app.api.errors import install_error_handlers
@@ -13,6 +13,7 @@ from app.application.extraction import build_extractor
 from app.api.chat import router as chat_router
 from app.api.courses import router as course_router
 from app.api.places import router as place_router
+from app.ai.service import AIService
 
 
 def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1, extractor=None,
@@ -31,30 +32,35 @@ def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1
             while True:
                 await asyncio.sleep(cleanup_interval)
                 sessions.purge_expired()
-        task = None
-        try:
-            if connect_real_data:
-                from app.application.course_connection import prepare_runtime_connection
-                prepared = await asyncio.to_thread(prepare_runtime_connection)
-                capabilities = build_profile_capabilities(ProfileSupport(True, frozenset(INITIAL_FIELDS), True, True))
-                # Publish support only after DB, exclusions, weights and provider validate.
-                app.state.course_connection = prepared
-                app.state.course_service = prepared.service
-                app.state.place_repository = prepared.repository
-                app.state.capabilities = capabilities
-            task = asyncio.create_task(cleanup())
-            yield
-        finally:
-            if task is not None:
-                task.cancel()
-                with suppress(asyncio.CancelledError):
-                    await task
-            sessions.clear()
-            if connect_real_data:
-                app.state.course_connection = None
-                app.state.course_service = None
-                app.state.place_repository = None
-                app.state.capabilities = build_profile_capabilities()
+        async with AsyncExitStack() as resources:
+            task = None
+            try:
+                for component in (condition_extractor, explanation_generator):
+                    ai = getattr(component, 'ai', None)
+                    if isinstance(ai, AIService):
+                        await resources.enter_async_context(ai.session())
+                if connect_real_data:
+                    from app.application.course_connection import prepare_runtime_connection
+                    prepared = await asyncio.to_thread(prepare_runtime_connection)
+                    capabilities = build_profile_capabilities(ProfileSupport(True, frozenset(INITIAL_FIELDS), True, True))
+                    # Publish support only after DB, exclusions, weights and provider validate.
+                    app.state.course_connection = prepared
+                    app.state.course_service = prepared.service
+                    app.state.place_repository = prepared.repository
+                    app.state.capabilities = capabilities
+                task = asyncio.create_task(cleanup())
+                yield
+            finally:
+                if task is not None:
+                    task.cancel()
+                    with suppress(asyncio.CancelledError):
+                        await task
+                sessions.clear()
+                if connect_real_data:
+                    app.state.course_connection = None
+                    app.state.course_service = None
+                    app.state.place_repository = None
+                    app.state.capabilities = build_profile_capabilities()
 
     app = FastAPI(
         title="BusanFit — 세션·조건 API",

@@ -30,3 +30,8 @@ fake.py의 FakeProvider는 FakeReply로 정상·지연·실패를 재현하고 �
 ```
 
 개발은 Gemini Flash 계열이며 모델 이름은 GEMINI_MODEL로 명시합니다. 키는 GEMINI_API_KEY, 둘 다 backend/.env에만 두고 uvicorn --env-file로 읽습니다. [.env.example](../../.env.example)에는 값이 없습니다. 어댑터는 공식 [generateContent API](https://ai.google.dev/api/generate-content)의 responseMimeType·responseJsonSchema와 x-goog-api-key 헤더를 사용합니다. 외부 응답은 별도로 Pydantic 타입·업무 의미를 검증합니다. 실제 호출·추천 이유 완성·배포 로그 검증 완료를 뜻하지 않습니다.
+## 시도별 지연 계측 (FR-002, NFR-001·002)
+
+AIService 내부 결과의 attempt_metrics와 ai_attempt INFO 로그에 시도별 Provider/검증 시간 및 고정 실패 원인을 남긴다. 프롬프트·응답·키·예외 원문은 기록하지 않는다. 기존 10초·1회 재시도 정책과 외부 계약은 유지한다. [계측 항목·5~10회 가상 측정·실제 실행 후속](../../../evaluation/extraction/LATENCY.md)을 따른다. CLI는 가상 Provider 전용이며 키 설정·실제 호출·유료 전환을 수행하지 않는다.
+
+2026-11-20: AIService.session과 FastAPI lifespan에서 Gemini HTTP 클라이언트를 공유·종료한다. 단독 complete도 재시도 동안 같은 풀을 사용하며, 정적 출력 스키마는 최대 16개 캐시 후 요청마다 복사한다. 입력·출력은 캐시하지 않고 매 응답을 검증한다. 연결 초기화·취소·루프 경계를 오프라인으로 검증했으며, 개선 후 실제 지연은 추가 측정 승인 전 미확인이다.
