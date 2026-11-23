@@ -12,6 +12,6 @@
 
 | 세트 | 위치 | 상태 |
 |---|---|---|
-| 조건 추출 31개 (AI-REQ-04·06) | [extraction/](extraction/README.md) | 김영무 교차 검토 완료(#44), 실제 LLM 실행 전 |
+| 조건 추출 31개 (AI-REQ-04·06) | [extraction/](extraction/README.md) | 실제 LLM 1차 평가 11/23: 항목 97.8%·강도 98.6%·되묻기 3/4 |
 | 수정 요청 20개 (AI-REQ-07) | [adjust/](adjust/README.md) | 초안, 수정 API 계약(#32) 전 |
 | 코스 시나리오 10개 (AI-REQ-01·05) | [courses/](courses/README.md) | 초안, 실제 데이터 실행 전 |
