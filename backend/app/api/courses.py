@@ -25,14 +25,14 @@ async def generate_course(body: CourseRequest, request: Request, response: Respo
         started = monotonic()
         profile = Profile.model_validate(current.profile)
         result = await run_in_threadpool(service.generate, profile, revision, request.app.state.capabilities)
-        store.check_current(sid, revision)
+        store.check_course(sid, revision, current.course_epoch)
         explainer = request.app.state.explanation_generator
         if result.course is not None and explainer is not None:
             explained = await explainer.explain(result.course, tuple(profile.mobility.value or ()),
                 remaining_seconds=max(0, 14 - (monotonic() - started)))
             result.course = explained.course
             result.warnings.extend(explained.warnings)
-            store.check_current(sid, revision)
+            store.check_course(sid, revision, current.course_epoch)
         payload = dict(course=result.course, suggestions=result.suggestions, warnings=result.warnings,
                        excludedUnknown=result.excluded_unknown, sessionExpiresAt=current.expires_at,
                        requestId=uuid4())
@@ -41,14 +41,16 @@ async def generate_course(body: CourseRequest, request: Request, response: Respo
         else:
             model = CourseSuccess(status='SUCCESS', **payload)
     except ProfileError:
-        store.check_current(sid, revision)
+        store.check_course(sid, revision, current.course_epoch)
         raise
     except Exception:
         # Dependency exception strings can contain storage details. Never log or
         # rethrow them through server-error middleware. Stale/expired wins.
-        store.check_current(sid, revision)
+        store.check_course(sid, revision, current.course_epoch)
         return error_response(500, 'INTERNAL_ERROR', '코스를 구성하지 못했어요. 잠시 후 다시 시도해 주세요.', True)
-    saved = store.finish_read(sid, revision)
+    wire = model.model_dump(mode='json')
+    saved = store.commit_course(sid, revision, current.course_epoch, course=wire['course'],
+        metadata={key: wire[key] for key in ('warnings', 'suggestions', 'excludedUnknown')})
     model.sessionExpiresAt = saved.expires_at
     response.headers['Cache-Control'] = 'no-store'
     return model

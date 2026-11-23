@@ -8,6 +8,7 @@ from datetime import datetime, date
 from urllib.parse import urlparse
 from uuid import UUID
 import runpy
+import re
 
 ROOT = Path(__file__).resolve().parent
 spec = json.loads((ROOT / "openapi.json").read_text(encoding="utf-8"))
@@ -63,6 +64,8 @@ def check(value, schema, path="$"):
         for i, child in enumerate(value):
             check(child, schema["items"], f"{path}[{i}]")
     if kind == "string":
+        if "pattern" in schema:
+            assert re.search(schema['pattern'], value), (path, 'pattern')
         assert len(value) >= schema.get("minLength", 0), (path, "minLength")
         assert len(value) <= schema.get("maxLength", float("inf")), (path, "maxLength")
         fmt = schema.get("format")

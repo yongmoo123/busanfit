@@ -59,8 +59,15 @@ class GeminiProvider:
             raise ProviderFailure('NETWORK_ERROR') from None
 
     async def _generate(self, request: AIRequest) -> str:
-        content = (json.dumps(asdict(request.context), ensure_ascii=False)
-                   if request.purpose == Purpose.EXPLAIN else request.user_message)
+        content = request.user_message
+        if request.purpose == Purpose.EXPLAIN:
+            context = asdict(request.context)
+            context.pop('adjustment_items')
+            content = json.dumps(context, ensure_ascii=False)
+        if request.purpose == Purpose.MODIFY:
+            context = asdict(request.context)
+            content = json.dumps({'message': request.user_message, 'course': {
+                'mobility': context['mobility'], 'adjustment_items': context['adjustment_items']}}, ensure_ascii=False)
         # AIService owns the total per-attempt deadline and the single retry.
         async with self.session():
             # Keep setup inside the attempt's failure/timeout boundary and

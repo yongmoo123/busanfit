@@ -14,17 +14,22 @@ from app.api.chat import router as chat_router
 from app.api.courses import router as course_router
 from app.api.places import router as place_router
 from app.ai.service import AIService
+from app.api.adjustments import router as adjustment_router
+from app.application.adjustment_interpreter import AdjustmentInterpreter
 
 
 def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1, extractor=None,
                profile_support: ProfileSupport | None = None, course_service=None,
-               place_repository=None, explanation_generator=None, connect_real_data: bool = False) -> FastAPI:
+               place_repository=None, explanation_generator=None, connect_real_data: bool = False,
+               adjustment_interpreter=None) -> FastAPI:
     if type(connect_real_data) is not bool:
         raise ValueError('connect_real_data must be boolean')
     if connect_real_data and any(value is not None for value in (profile_support, course_service, place_repository)):
         raise ValueError('runtime connection cannot override injected course dependencies')
     sessions = store if store is not None else SessionStore()
     condition_extractor = extractor if extractor is not None else build_extractor()
+    adjustment_interpreter = (adjustment_interpreter if adjustment_interpreter is not None else
+        AdjustmentInterpreter(getattr(condition_extractor, 'ai', None)))
 
     @asynccontextmanager
     async def lifespan(app):
@@ -35,10 +40,12 @@ def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1
         async with AsyncExitStack() as resources:
             task = None
             try:
-                for component in (condition_extractor, explanation_generator):
+                opened = set()
+                for component in (condition_extractor, explanation_generator, adjustment_interpreter):
                     ai = getattr(component, 'ai', None)
-                    if isinstance(ai, AIService):
+                    if isinstance(ai, AIService) and id(ai) not in opened:
                         await resources.enter_async_context(ai.session())
+                        opened.add(id(ai))
                 if connect_real_data:
                     from app.application.course_connection import prepare_runtime_connection
                     prepared = await asyncio.to_thread(prepare_runtime_connection)
@@ -79,11 +86,13 @@ def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1
     app.state.place_repository = (place_repository if place_repository is not None else
                                   (course_service.repository if course_service is not None else None))
     app.state.explanation_generator = explanation_generator
+    app.state.adjustment_interpreter = adjustment_interpreter
     app.state.capabilities = build_profile_capabilities(profile_support)
     install_error_handlers(app)
     app.include_router(router)
     app.include_router(profile_router)
     app.include_router(course_router)
+    app.include_router(adjustment_router)
     app.include_router(place_router)
     if app.state.extractor is not None:
         app.include_router(chat_router)

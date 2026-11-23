@@ -911,7 +911,9 @@ JSON Schema(OpenAPI 3.1). $ref는 아래 components.schemas 이름을 가리킨�
                   "NOT_FOUND",
                   "RATE_LIMITED",
                   "AI_UNAVAILABLE",
-                  "INTERNAL_ERROR"
+                  "INTERNAL_ERROR",
+                  "COURSE_CONFLICT",
+                  "COURSE_NOT_FOUND"
                 ]
               },
               "message": {
@@ -1887,6 +1889,197 @@ JSON Schema(OpenAPI 3.1). $ref는 아래 components.schemas 이름을 가리킨�
             "$ref": "#/components/schemas/CourseInsufficient"
           }
         ]
+      },
+      "AdjustmentRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "sessionId": {
+            "format": "uuid",
+            "title": "Sessionid",
+            "type": "string"
+          },
+          "expectedProfileRevision": {
+            "minimum": 1,
+            "title": "Expectedprofilerevision",
+            "type": "integer"
+          },
+          "message": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sessionId",
+          "expectedProfileRevision",
+          "message"
+        ],
+        "title": "AdjustmentRequest",
+        "type": "object"
+      },
+      "AdjustmentChanges": {
+        "additionalProperties": false,
+        "properties": {
+          "removedItemIds": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Removeditemids",
+            "type": "array"
+          },
+          "replacedItems": {
+            "items": {
+              "$ref": "#/components/schemas/ReplacedItem"
+            },
+            "title": "Replaceditems",
+            "type": "array"
+          },
+          "timeChangedItemIds": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Timechangeditemids",
+            "type": "array"
+          }
+        },
+        "title": "AdjustmentChanges",
+        "type": "object"
+      },
+      "AdjustmentQuestion": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "pattern": "^(adjustment\\.(target|minutes|message|followUp)|profile\\.(area|timeWindow|transport|mobility|budget|indoorPreference|companions|excludedCategories|preferenceTags))$",
+            "title": "Field",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "message"
+        ],
+        "title": "AdjustmentQuestion",
+        "type": "object"
+      },
+      "ReplacedItem": {
+        "additionalProperties": false,
+        "properties": {
+          "oldItemId": {
+            "title": "Olditemid",
+            "type": "string"
+          },
+          "newItemId": {
+            "title": "Newitemid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "oldItemId",
+          "newItemId"
+        ],
+        "title": "ReplacedItem",
+        "type": "object"
+      },
+      "AdjustmentResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "suggestions": {
+            "items": {
+              "$ref": "#/components/schemas/Suggestion"
+            },
+            "maxItems": 3,
+            "title": "Suggestions",
+            "type": "array"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "title": "Warnings",
+            "type": "array"
+          },
+          "excludedUnknown": {
+            "$ref": "#/components/schemas/ExcludedUnknown"
+          },
+          "sessionExpiresAt": {
+            "format": "date-time",
+            "title": "Sessionexpiresat",
+            "type": "string"
+          },
+          "requestId": {
+            "format": "uuid",
+            "title": "Requestid",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "SUCCESS",
+              "NEEDS_INPUT",
+              "NOT_APPLIED"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "profileRevision": {
+            "minimum": 1,
+            "title": "Profilerevision",
+            "type": "integer"
+          },
+          "course": {
+            "$ref": "#/components/schemas/Course"
+          },
+          "changes": {
+            "$ref": "#/components/schemas/AdjustmentChanges"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/AdjustmentQuestion"
+            },
+            "maxItems": 2,
+            "title": "Questions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "suggestions",
+          "warnings",
+          "excludedUnknown",
+          "sessionExpiresAt",
+          "requestId",
+          "status",
+          "profileRevision",
+          "course"
+        ],
+        "title": "AdjustmentResponse",
+        "type": "object"
+      },
+      "ExcludedUnknown": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "minimum": 0,
+            "title": "Count",
+            "type": "integer"
+          },
+          "fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Fields",
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "fields"
+        ],
+        "title": "ExcludedUnknown",
+        "type": "object"
       }
     }
   }
@@ -6100,5 +6293,584 @@ GET /api/places/{placeId}를 기존 PlaceResponse(place/sources/warnings/request
   },
   "sessionExpiresAt": "2026-11-05T10:30:00+09:00",
   "requestId": "22222222-2222-4222-8222-222222222222"
+}
+~~~
+
+
+### 07-adjust.request.json
+
+[가상] FR-015 계약 예시. 실제 장소·세션 정보가 아닙니다.
+
+~~~json
+{
+  "sessionId": "11111111-1111-4111-8111-111111111111",
+  "expectedProfileRevision": 1,
+  "message": "3번에 15분 더"
+}
+~~~
+
+
+### 07-adjust.success.response.json
+
+[가상] FR-015 계약 예시. 실제 장소·세션 정보가 아닙니다.
+
+~~~json
+{
+  "status": "SUCCESS",
+  "course": {
+    "id": "22222222-2222-4222-8222-222222222222",
+    "profileRevision": 1,
+    "createdAt": "2026-11-05T10:00:00+09:00",
+    "availableWindow": {
+      "startAt": "2026-11-06T13:00:00+09:00",
+      "endAt": "2026-11-06T17:00:00+09:00"
+    },
+    "startAt": "2026-11-06T13:00:00+09:00",
+    "endAt": "2026-11-06T15:25:00+09:00",
+    "items": [
+      {
+        "id": "item-01",
+        "order": 1,
+        "place": {
+          "id": "mock-place-001",
+          "name": "[가상] 실내 전시공간 A",
+          "category": "EXHIBITION",
+          "area": "HAEUNDAE",
+          "address": "부산광역시 해운대구 — 테스트용 가상 주소",
+          "coordinates": {
+            "latitude": 35.16,
+            "longitude": 129.16
+          },
+          "indoor": true,
+          "openHours": {
+            "status": "KNOWN",
+            "description": "테스트 설정: 10:00~18:00"
+          },
+          "price": {
+            "status": "UNKNOWN",
+            "amount": null,
+            "currency": "KRW",
+            "basis": "UNKNOWN"
+          },
+          "defaultStayMinutes": 60,
+          "accessibility": {
+            "grade": "UNKNOWN",
+            "wheelchair": null,
+            "stroller": null,
+            "elevator": null,
+            "accessibleToilet": null,
+            "evidence": []
+          },
+          "sourceIds": [
+            "mock-source-01"
+          ]
+        },
+        "startAt": "2026-11-06T13:00:00+09:00",
+        "endAt": "2026-11-06T14:00:00+09:00",
+        "stayMinutes": 60,
+        "reason": "실내 전시공간으로 실내 위주 선호에 부합합니다.",
+        "reasonMethod": "TEMPLATE",
+        "isAnchor": false
+      },
+      {
+        "id": "item-02",
+        "order": 2,
+        "place": {
+          "id": "mock-place-002",
+          "name": "[가상] 카페 B",
+          "category": "CAFE",
+          "area": "HAEUNDAE",
+          "address": "부산광역시 해운대구 — 테스트용 가상 주소",
+          "coordinates": {
+            "latitude": 35.162,
+            "longitude": 129.163
+          },
+          "indoor": true,
+          "openHours": {
+            "status": "KNOWN",
+            "description": "테스트 설정: 10:00~18:00"
+          },
+          "price": {
+            "status": "UNKNOWN",
+            "amount": null,
+            "currency": "KRW",
+            "basis": "UNKNOWN"
+          },
+          "defaultStayMinutes": 60,
+          "accessibility": {
+            "grade": "UNKNOWN",
+            "wheelchair": null,
+            "stroller": null,
+            "elevator": null,
+            "accessibleToilet": null,
+            "evidence": []
+          },
+          "sourceIds": [
+            "mock-source-01"
+          ]
+        },
+        "startAt": "2026-11-06T14:10:00+09:00",
+        "endAt": "2026-11-06T15:25:00+09:00",
+        "stayMinutes": 75,
+        "reason": "실내에서 쉬어갈 수 있는 카페입니다.",
+        "reasonMethod": "TEMPLATE",
+        "isAnchor": false
+      }
+    ],
+    "legs": [
+      {
+        "fromItemId": "item-01",
+        "toItemId": "item-02",
+        "mode": "WALK",
+        "minutes": 10,
+        "method": "DISTANCE_ESTIMATE",
+        "isEstimate": true
+      }
+    ],
+    "summary": {
+      "totalStayMinutes": 135,
+      "totalTravelMinutes": 10,
+      "totalWaitingMinutes": 0,
+      "totalMinutes": 145,
+      "estimatedCost": {
+        "status": "UNKNOWN",
+        "amount": null,
+        "currency": "KRW",
+        "basis": "UNKNOWN"
+      }
+    },
+    "validation": {
+      "status": "PASSED",
+      "checkedHardConstraints": [
+        "area",
+        "timeWindow",
+        "excludedCategories"
+      ],
+      "unverifiedFields": [
+        "price",
+        "routeAccessibility"
+      ],
+      "routeAccessibility": "UNVERIFIED"
+    },
+    "sources": [
+      {
+        "id": "mock-source-01",
+        "provider": "테스트용 가상 기관",
+        "datasetName": "API 연결용 가상 장소 데이터",
+        "url": "https://example.invalid/busanfit/mock-data",
+        "license": "MOCK_ONLY — 실제 공공데이터·이용허락의 증거가 아님",
+        "baseDate": "2026-11-01",
+        "retrievedAt": "2026-11-05T09:00:00+09:00"
+      }
+    ]
+  },
+  "suggestions": [],
+  "warnings": [
+    {
+      "code": "TRAVEL_TIME_ESTIMATED",
+      "message": "이동시간은 추정치이며, 실제 보행 경로와 경로 접근성은 확인되지 않았습니다.",
+      "placeIds": []
+    }
+  ],
+  "excludedUnknown": {
+    "count": 0,
+    "fields": []
+  },
+  "sessionExpiresAt": "2026-11-05T10:30:00+09:00",
+  "requestId": "22222222-2222-4222-8222-222222222222",
+  "profileRevision": 1,
+  "changes": {
+    "removedItemIds": [],
+    "replacedItems": [],
+    "timeChangedItemIds": [
+      "item-02"
+    ]
+  },
+  "questions": []
+}
+~~~
+
+
+### 07-adjust.needs-input.response.json
+
+[가상] FR-015 계약 예시. 실제 장소·세션 정보가 아닙니다.
+
+~~~json
+{
+  "status": "NEEDS_INPUT",
+  "course": {
+    "id": "33333333-3333-4333-8333-333333333333",
+    "profileRevision": 1,
+    "createdAt": "2026-11-05T10:00:00+09:00",
+    "availableWindow": {
+      "startAt": "2026-11-06T13:00:00+09:00",
+      "endAt": "2026-11-06T17:00:00+09:00"
+    },
+    "startAt": "2026-11-06T13:00:00+09:00",
+    "endAt": "2026-11-06T15:10:00+09:00",
+    "items": [
+      {
+        "id": "item-01",
+        "order": 1,
+        "place": {
+          "id": "mock-place-001",
+          "name": "[가상] 실내 전시공간 A",
+          "category": "EXHIBITION",
+          "area": "HAEUNDAE",
+          "address": "부산광역시 해운대구 — 테스트용 가상 주소",
+          "coordinates": {
+            "latitude": 35.16,
+            "longitude": 129.16
+          },
+          "indoor": true,
+          "openHours": {
+            "status": "KNOWN",
+            "description": "테스트 설정: 10:00~18:00"
+          },
+          "price": {
+            "status": "UNKNOWN",
+            "amount": null,
+            "currency": "KRW",
+            "basis": "UNKNOWN"
+          },
+          "defaultStayMinutes": 60,
+          "accessibility": {
+            "grade": "UNKNOWN",
+            "wheelchair": null,
+            "stroller": null,
+            "elevator": null,
+            "accessibleToilet": null,
+            "evidence": []
+          },
+          "sourceIds": [
+            "mock-source-01"
+          ]
+        },
+        "startAt": "2026-11-06T13:00:00+09:00",
+        "endAt": "2026-11-06T14:00:00+09:00",
+        "stayMinutes": 60,
+        "reason": "실내 전시공간으로 실내 위주 선호에 부합합니다.",
+        "reasonMethod": "TEMPLATE",
+        "isAnchor": false
+      },
+      {
+        "id": "item-02",
+        "order": 2,
+        "place": {
+          "id": "mock-place-002",
+          "name": "[가상] 카페 B",
+          "category": "CAFE",
+          "area": "HAEUNDAE",
+          "address": "부산광역시 해운대구 — 테스트용 가상 주소",
+          "coordinates": {
+            "latitude": 35.162,
+            "longitude": 129.163
+          },
+          "indoor": true,
+          "openHours": {
+            "status": "KNOWN",
+            "description": "테스트 설정: 10:00~18:00"
+          },
+          "price": {
+            "status": "UNKNOWN",
+            "amount": null,
+            "currency": "KRW",
+            "basis": "UNKNOWN"
+          },
+          "defaultStayMinutes": 60,
+          "accessibility": {
+            "grade": "UNKNOWN",
+            "wheelchair": null,
+            "stroller": null,
+            "elevator": null,
+            "accessibleToilet": null,
+            "evidence": []
+          },
+          "sourceIds": [
+            "mock-source-01"
+          ]
+        },
+        "startAt": "2026-11-06T14:10:00+09:00",
+        "endAt": "2026-11-06T15:10:00+09:00",
+        "stayMinutes": 60,
+        "reason": "실내에서 쉬어갈 수 있는 카페입니다.",
+        "reasonMethod": "TEMPLATE",
+        "isAnchor": false
+      }
+    ],
+    "legs": [
+      {
+        "fromItemId": "item-01",
+        "toItemId": "item-02",
+        "mode": "WALK",
+        "minutes": 10,
+        "method": "DISTANCE_ESTIMATE",
+        "isEstimate": true
+      }
+    ],
+    "summary": {
+      "totalStayMinutes": 120,
+      "totalTravelMinutes": 10,
+      "totalWaitingMinutes": 0,
+      "totalMinutes": 130,
+      "estimatedCost": {
+        "status": "UNKNOWN",
+        "amount": null,
+        "currency": "KRW",
+        "basis": "UNKNOWN"
+      }
+    },
+    "validation": {
+      "status": "PASSED",
+      "checkedHardConstraints": [
+        "area",
+        "timeWindow",
+        "excludedCategories"
+      ],
+      "unverifiedFields": [
+        "price",
+        "routeAccessibility"
+      ],
+      "routeAccessibility": "UNVERIFIED"
+    },
+    "sources": [
+      {
+        "id": "mock-source-01",
+        "provider": "테스트용 가상 기관",
+        "datasetName": "API 연결용 가상 장소 데이터",
+        "url": "https://example.invalid/busanfit/mock-data",
+        "license": "MOCK_ONLY — 실제 공공데이터·이용허락의 증거가 아님",
+        "baseDate": "2026-11-01",
+        "retrievedAt": "2026-11-05T09:00:00+09:00"
+      }
+    ]
+  },
+  "suggestions": [],
+  "warnings": [
+    {
+      "code": "TRAVEL_TIME_ESTIMATED",
+      "message": "이동시간은 추정치이며, 실제 보행 경로와 경로 접근성은 확인되지 않았습니다.",
+      "placeIds": []
+    }
+  ],
+  "excludedUnknown": {
+    "count": 0,
+    "fields": []
+  },
+  "sessionExpiresAt": "2026-11-05T10:30:00+09:00",
+  "requestId": "22222222-2222-4222-8222-222222222222",
+  "profileRevision": 1,
+  "changes": {
+    "removedItemIds": [],
+    "replacedItems": [],
+    "timeChangedItemIds": []
+  },
+  "questions": [
+    {
+      "field": "adjustment.minutes",
+      "message": "몇 분 더 머무를까요?"
+    }
+  ]
+}
+~~~
+
+
+### 07-adjust.not-applied.response.json
+
+[가상] FR-015 계약 예시. 실제 장소·세션 정보가 아닙니다.
+
+~~~json
+{
+  "status": "NOT_APPLIED",
+  "course": {
+    "id": "33333333-3333-4333-8333-333333333333",
+    "profileRevision": 1,
+    "createdAt": "2026-11-05T10:00:00+09:00",
+    "availableWindow": {
+      "startAt": "2026-11-06T13:00:00+09:00",
+      "endAt": "2026-11-06T17:00:00+09:00"
+    },
+    "startAt": "2026-11-06T13:00:00+09:00",
+    "endAt": "2026-11-06T15:10:00+09:00",
+    "items": [
+      {
+        "id": "item-01",
+        "order": 1,
+        "place": {
+          "id": "mock-place-001",
+          "name": "[가상] 실내 전시공간 A",
+          "category": "EXHIBITION",
+          "area": "HAEUNDAE",
+          "address": "부산광역시 해운대구 — 테스트용 가상 주소",
+          "coordinates": {
+            "latitude": 35.16,
+            "longitude": 129.16
+          },
+          "indoor": true,
+          "openHours": {
+            "status": "KNOWN",
+            "description": "테스트 설정: 10:00~18:00"
+          },
+          "price": {
+            "status": "UNKNOWN",
+            "amount": null,
+            "currency": "KRW",
+            "basis": "UNKNOWN"
+          },
+          "defaultStayMinutes": 60,
+          "accessibility": {
+            "grade": "UNKNOWN",
+            "wheelchair": null,
+            "stroller": null,
+            "elevator": null,
+            "accessibleToilet": null,
+            "evidence": []
+          },
+          "sourceIds": [
+            "mock-source-01"
+          ]
+        },
+        "startAt": "2026-11-06T13:00:00+09:00",
+        "endAt": "2026-11-06T14:00:00+09:00",
+        "stayMinutes": 60,
+        "reason": "실내 전시공간으로 실내 위주 선호에 부합합니다.",
+        "reasonMethod": "TEMPLATE",
+        "isAnchor": false
+      },
+      {
+        "id": "item-02",
+        "order": 2,
+        "place": {
+          "id": "mock-place-002",
+          "name": "[가상] 카페 B",
+          "category": "CAFE",
+          "area": "HAEUNDAE",
+          "address": "부산광역시 해운대구 — 테스트용 가상 주소",
+          "coordinates": {
+            "latitude": 35.162,
+            "longitude": 129.163
+          },
+          "indoor": true,
+          "openHours": {
+            "status": "KNOWN",
+            "description": "테스트 설정: 10:00~18:00"
+          },
+          "price": {
+            "status": "UNKNOWN",
+            "amount": null,
+            "currency": "KRW",
+            "basis": "UNKNOWN"
+          },
+          "defaultStayMinutes": 60,
+          "accessibility": {
+            "grade": "UNKNOWN",
+            "wheelchair": null,
+            "stroller": null,
+            "elevator": null,
+            "accessibleToilet": null,
+            "evidence": []
+          },
+          "sourceIds": [
+            "mock-source-01"
+          ]
+        },
+        "startAt": "2026-11-06T14:10:00+09:00",
+        "endAt": "2026-11-06T15:10:00+09:00",
+        "stayMinutes": 60,
+        "reason": "실내에서 쉬어갈 수 있는 카페입니다.",
+        "reasonMethod": "TEMPLATE",
+        "isAnchor": false
+      }
+    ],
+    "legs": [
+      {
+        "fromItemId": "item-01",
+        "toItemId": "item-02",
+        "mode": "WALK",
+        "minutes": 10,
+        "method": "DISTANCE_ESTIMATE",
+        "isEstimate": true
+      }
+    ],
+    "summary": {
+      "totalStayMinutes": 120,
+      "totalTravelMinutes": 10,
+      "totalWaitingMinutes": 0,
+      "totalMinutes": 130,
+      "estimatedCost": {
+        "status": "UNKNOWN",
+        "amount": null,
+        "currency": "KRW",
+        "basis": "UNKNOWN"
+      }
+    },
+    "validation": {
+      "status": "PASSED",
+      "checkedHardConstraints": [
+        "area",
+        "timeWindow",
+        "excludedCategories"
+      ],
+      "unverifiedFields": [
+        "price",
+        "routeAccessibility"
+      ],
+      "routeAccessibility": "UNVERIFIED"
+    },
+    "sources": [
+      {
+        "id": "mock-source-01",
+        "provider": "테스트용 가상 기관",
+        "datasetName": "API 연결용 가상 장소 데이터",
+        "url": "https://example.invalid/busanfit/mock-data",
+        "license": "MOCK_ONLY — 실제 공공데이터·이용허락의 증거가 아님",
+        "baseDate": "2026-11-01",
+        "retrievedAt": "2026-11-05T09:00:00+09:00"
+      }
+    ]
+  },
+  "suggestions": [],
+  "warnings": [
+    {
+      "code": "TRAVEL_TIME_ESTIMATED",
+      "message": "이동시간은 추정치이며, 실제 보행 경로와 경로 접근성은 확인되지 않았습니다.",
+      "placeIds": []
+    },
+    {
+      "code": "ADJUSTMENT_NOT_FEASIBLE",
+      "message": "[가상] 영업시간을 넘어서 연장할 수 없어요.",
+      "placeIds": []
+    }
+  ],
+  "excludedUnknown": {
+    "count": 0,
+    "fields": []
+  },
+  "sessionExpiresAt": "2026-11-05T10:30:00+09:00",
+  "requestId": "22222222-2222-4222-8222-222222222222",
+  "profileRevision": 1,
+  "changes": {
+    "removedItemIds": [],
+    "replacedItems": [],
+    "timeChangedItemIds": []
+  },
+  "questions": []
+}
+~~~
+
+
+### error-409-course.response.json
+
+[가상] FR-015 계약 예시. 실제 장소·세션 정보가 아닙니다.
+
+~~~json
+{
+  "error": {
+    "code": "COURSE_CONFLICT",
+    "message": "코스가 변경되었습니다. 최신 코스를 확인해 주세요.",
+    "retryable": false,
+    "details": []
+  },
+  "requestId": "99999999-9999-4999-8999-999999999999"
 }
 ~~~
