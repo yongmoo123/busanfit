@@ -1,0 +1,74 @@
+{
+  "status": "PROPOSAL",
+  "pmApproved": false,
+  "proposal": "FR-016 #33 A단계 판정 기본값 (이찬용 제안 11/24). PM 승인 전에는 코스에 연결하지 않는다(supportsWeather false).",
+  "forecast": {
+    "service": "기상청_단기예보 조회서비스 getVilageFcst",
+    "url": "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst",
+    "baseTimes": ["0200", "0500", "0800", "1100", "1400", "1700", "2000", "2300"],
+    "availableAfterMin": 10,
+    "maxDaysAhead": 2,
+    "numOfRows": 1000,
+    "rangeBasis": "11/24 02시 발표 실제 응답(해운대 격자): 오늘 03시~모레 23시는 1시간 간격, 글피는 3시간 간격(00~21시)·글피+1 00시만. 시간별 판정이 되는 모레까지만 범위로 둔다(글피 포함은 PM 판단)."
+  },
+  "thresholds": {
+    "excludeOutdoor": {
+      "popGte": 60
+    },
+    "penalizeOutdoor": {
+      "skyCodes": [4],
+      "windSpeedGteMps": 9.0
+    },
+    "codeNames": {
+      "SKY": {"1": "맑음", "3": "구름많음", "4": "흐림"},
+      "POP": "강수확률 %",
+      "WSD": "풍속 m/s"
+    }
+  },
+  "warnings": {
+    "service": "기상청_기상특보 조회서비스 getPwnCd",
+    "url": "https://apis.data.go.kr/1360000/WthrWrnInfoService/getPwnCd",
+    "checkOnlyWhenVisitIsToday": true,
+    "lookbackDays": 7,
+    "numOfRows": 1000,
+    "areaNamePrefix": "부산",
+    "ignoreAreaNameContains": ["바다"],
+    "areaMatchNote": "11/24 응답(최근 7일 전국 528건)에 부산 육상 특보구역 기록이 없어 구역 코드를 확인하지 못했다. 코드 대신 구역 이름이 '부산'으로 시작하고 '바다'가 없으면 4개 권역 모두에 적용한다(보수적). 확인된 부산 해상 구역: S1311100 부산앞바다(육상 장소 판정에는 쓰지 않음).",
+    "excludeOutdoorWarnVars": {
+      "3": "WARNING_COLD_WAVE",
+      "12": "WARNING_HEAT_WAVE"
+    },
+    "warnVarNames": {
+      "1": "강풍", "2": "호우", "3": "한파", "4": "건조", "5": "폭풍해일", "6": "풍랑",
+      "7": "태풍", "8": "대설", "9": "황사", "12": "폭염"
+    },
+    "warnVarNote": "활용가이드 코드표 기준. 11/24 응답에서 지역·계절로 맞는지 본 값: 1·2·3·4·6·8. 12(폭염)는 응답에 없어 미확인.",
+    "cancelCommands": ["2"],
+    "commandNote": "command 1 발표, 2 해제, 3 연장(응답 관측 1·2·3·7). 7 등 의미를 확인하지 못한 값은 해제로 보지 않는다(보수적)."
+  },
+  "outdoorBy": {
+    "source": "TourAPI areaBasedList2 lclsSystm3 (DB places에 분류 코드 칸이 없어 pipelines/outdoor_ids.py가 장소 ID 목록 파일을 만든다)",
+    "placeIdFile": "outdoor-places.proposal.json",
+    "codePrefixes": {
+      "NA": "자연관광 (섬·항구/포구·해변/해수욕장·생태관광지)",
+      "VE03": "문화관광 > 도시공원",
+      "VE0401": "문화관광 > 도시·지역문화관광 > 골목길, 문화거리",
+      "VE0103": "문화관광 > 랜드마크관광 > 다리 / 대교"
+    },
+    "needsDecision": {
+      "VE010200": "타워/전망대: 실내 전망대(부산엑스더스카이)와 야외 전망대(천마산하늘전망대)가 섞임",
+      "VE040200": "마을관광지: 대부분 야외 골목이지만 실내 전시·카페 포함 가능",
+      "VE050100": "관광단지/특구: 구역 전체라 실내외 섞임",
+      "LS011900": "기타육상레저: 산책로(문탠로드·해파랑길)는 실외, 정거장 등 섞임",
+      "LS020100": "윈드서핑/제트스키: 활동은 실외, 업체 사무실 위치로 등록",
+      "LS020300": "요트: 활동은 실외, 업체 위치로 등록",
+      "LS021400": "기타수상레저: 활동은 실외, 업체 위치로 등록",
+      "EX070200": "기타체험관광: 청사포 기찻길(실외)과 실내 체험 섞임",
+      "EX030100": "체험마을: 마을 단위",
+      "SH060200": "상설시장: 지붕 있는 시장·노점 거리 섞임",
+      "SH070100": "기타쇼핑시설: 해운대 로데오거리(거리지만 쇼핑 목적)",
+      "VE020200": "워터파크: 실내외 섞임",
+      "HS020100": "탑·비석·기념탑: 부산타워(실내 전망)"
+    }
+  }
+}
