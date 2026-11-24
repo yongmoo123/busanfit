@@ -1,0 +1,47 @@
+.course-adjustment-preview {
+  width: min(100%, 760px);
+  height: 100dvh;
+  margin-inline: auto;
+  padding: 24px 16px 48px;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  color: #233e38;
+}
+.course-adjustment-preview h1 { font-size: 1.4rem; }
+.course-adjustment-preview h2, .course-adjustment h2 { font-size: 1.1rem; }
+.course-adjustment-preview h3, .course-adjustment h3 { font-size: 1rem; }
+.course-adjustment-preview p, .course-adjustment p { line-height: 1.65; }
+.adjustment-scenario, .course-adjustment form { display: grid; gap: 10px; }
+.adjustment-scenario select, .course-adjustment textarea {
+  width: 100%; min-width: 0; padding: 12px; border: 1px solid #97b2a8;
+  border-radius: 10px; background: white; color: #233e38; font: inherit;
+}
+.course-adjustment textarea { resize: vertical; }
+.course-adjustment, .adjustment-preview-card {
+  margin-block: 20px; padding: 20px; border: 1px solid #d5dfdb;
+  border-radius: 18px; background: #fff;
+}
+.course-adjustment .suggestion-chips { margin-bottom: 16px; }
+.course-adjustment button, .adjustment-preview-reset { min-height: 44px; }
+.course-adjustment form button, .adjustment-preview-reset {
+  justify-self: start; padding: 10px 16px; border: 1px solid #548376;
+  border-radius: 10px; background: #edf5f1; color: #214f44;
+  font: inherit; cursor: pointer;
+}
+.course-adjustment form button { background: #3e8172; color: white; }
+.course-adjustment button:disabled { opacity: .6; cursor: default; }
+.adjustment-preview-timeline { padding-left: 24px; }
+.adjustment-preview-timeline li { padding: 10px; margin-block: 12px; border-radius: 10px; }
+.adjustment-preview-timeline li p { margin-bottom: 4px; }
+.adjustment-item-changed { background: #edf7f1; outline: 1px solid #8db9a5; }
+.adjustment-change-badge { display: inline-block; margin-left: 8px; padding: 3px 8px; border-radius: 8px; background: #d4eadf; font-size: .8rem; }
+.adjustment-question { padding: 12px; margin-block: 12px; background: #fff4ce; border-radius: 10px; }
+.adjustment-question h3 { margin-top: 0; }
+.adjustment-preview-error { padding: 12px 16px; border: 1px solid #d7b3a3; border-radius: 10px; background: #fff0e8; }
+.adjustment-outcome { border-color: #8db9a5; }
+.adjustment-preview-metadata { margin-top: 24px; }
+.course-adjustment-preview :focus-visible { outline: 3px solid #245f53; outline-offset: 3px; }
+@media (max-width: 480px) {
+  .course-adjustment, .adjustment-preview-card { padding: 16px; }
+  .course-adjustment .suggestion-chip { width: 100%; text-align: left; }
+}
