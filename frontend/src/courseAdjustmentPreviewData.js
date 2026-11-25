@@ -3,6 +3,7 @@ import baseResponse from './mocks/07-adjust.base.response.json'
 export const adjustmentScenarios = [
   ['remove', '장소 빼기 성공', '2번 빼줘'],
   ['replace', '같은 시간대 장소 교체 성공', '2번 다른 카페로 바꿔줘'],
+  ['replace-unavailable', '교체 후보 없음·이유와 대안 안내', '2번 다른 카페로 바꿔줘'],
   ['extend', '체류 늘리기·뒤 장소 시각 변경', '2번에 30분 더 머물래'],
   ['question', '연장 시간 추가 질문', '2번에 더 머물래'],
   ['rejected', '수정 불가·기존 코스 유지', '2번에 180분 더 머물래'],
@@ -70,6 +71,13 @@ export function simulateAdjustment(scenario, original, sequence = 1, answer = ''
       ] }
     }
     operation = 'extend'
+  }
+  if (scenario === 'replace-unavailable') {
+    response.status = 'NOT_APPLIED'
+    response.warnings.push({ code: 'ADJUSTMENT_NOT_FEASIBLE',
+      message: '[가상] 원래 방문 시간대에 영업하고 앞뒤 이동시간까지 맞는 교체 후보가 없어요. 기존 코스를 유지했어요. 대안으로 해당 장소 빼기나 체류 늘리기를 요청할 수 있어요. 다른 수정도 조건을 만족할 때만 적용돼요.',
+      placeIds: [] })
+    return response
   }
   if (scenario === 'rejected') {
     response.status = 'NOT_APPLIED'
