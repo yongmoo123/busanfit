@@ -36,10 +36,13 @@ class ProfileSupport:
     # Defaults closed for injected apps. The ordinary root enables it after
     # actual #22/consent/conditional integration checks and explicit authorization.
     unknown_accessibility_verified: bool = False
+    # Ordinary startup opts in after the course dependencies have prepared.
+    course_adjustment_verified: bool = False
 
     def __post_init__(self):
         if any(type(value) is not bool for value in (self.candidate_search_connected, self.mobility_verified,
-                                                    self.unknown_accessibility_verified)):
+                                                    self.unknown_accessibility_verified,
+                                                    self.course_adjustment_verified)):
             raise ValueError('connection evidence must be boolean')
         if not isinstance(self.verified_fields, frozenset) or not self.verified_fields <= set(INITIAL_FIELDS):
             raise ValueError('unsupported initial profile fields')
@@ -55,4 +58,5 @@ def build_profile_capabilities(support: ProfileSupport | None = None) -> Capabil
                         supportedProfileFields=fields,
                         supportsUnknownAccessibilityInclusion=(enabled and support.mobility_verified
                             and 'mobility' in fields and support.unknown_accessibility_verified),
-                        supportsCourseAdjustment=False, supportsWeather=False)
+                        supportsCourseAdjustment=(enabled and support.mobility_verified
+                            and support.course_adjustment_verified), supportsWeather=False)

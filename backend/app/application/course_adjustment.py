@@ -158,7 +158,8 @@ class CourseAdjustmentService:
                     found = attempted
                     break
             if found is None:
-                return reject('현재 방문 시간을 바꾸지 않고 교체할 수 있는 후보가 없어요.')
+                return reject('현재 방문 시간을 바꾸지 않고 교체할 수 있는 후보가 없어요. 기존 코스를 유지했어요. '
+                              '대안으로 장소 빼기나 체류 늘리기를 요청할 수 있어요. 다른 수정도 조건을 만족할 때만 적용돼요.')
             visits = found
             new_id = 'item-' + uuid4().hex[:12]
             result.changes.replacedItems = [ReplacedItem(oldItemId=identities[index], newItemId=new_id)]

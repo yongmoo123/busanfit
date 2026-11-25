@@ -19,7 +19,7 @@ example.invalid는 의도적으로 사용할 수 없는 출처 주소다. 실제
 | POST /api/chat | sessionId, message, expectedProfileRevision | status, reply, profile, profileRevision, questions, warnings, sessionExpiresAt, requestId |
 | PUT /api/sessions/{sessionId}/profile | expectedProfileRevision, profile | status, profile, profileRevision, questions, warnings, sessionExpiresAt, requestId |
 | POST /api/courses | sessionId, profileRevision | status, course, suggestions, warnings, excludedUnknown, sessionExpiresAt, requestId |
-| POST /api/courses/{courseId}/adjust | sessionId, expectedProfileRevision, message | status, course, profileRevision, changes, questions, suggestions, warnings, excludedUnknown, sessionExpiresAt, requestId (FR-015, 일반 비활성) |
+| POST /api/courses/{courseId}/adjust | sessionId, expectedProfileRevision, message | status, course, profileRevision, changes, questions, suggestions, warnings, excludedUnknown, sessionExpiresAt, requestId (FR-015, 시작 연결 성공 후 활성) |
 | GET /api/places/{placeId} | 경로의 placeId | place, sources, warnings, requestId |
 
 서버 주소는 로컬 예시 http://localhost:8000. 경로에 /api가 이미 포함되어 있다.
@@ -250,16 +250,16 @@ FR-013 포함 동의는 별도 adjust를 호출하지 않고 기존 PUT→POST�
 2026-11-21: 실제 공유 DB의 CS-01~10 자동 검사에서 하드 위반·미존재 장소 0건을 확인한 뒤 사용자 요청으로 일반 연결을 활성화했다. 검색/검증 반경은 같은 값을 전달하고 기존 외부 JSON·revision·하드 필터는 유지한다. #70 정보 없음 포함 기능과 화면/수동 인수는 별도다. [실행기와 선행 입력](../evaluation/courses/DATABASE_RUN.md).
 
 
-## FR-015 부분 수정 기본 계약 — #32 (일반 비활성)
+## FR-015 부분 수정 계약 — #32 (시작 연결 성공 후 활성)
 
 POST `/api/courses/{courseId}/adjust`: `{sessionId, expectedProfileRevision, message}`. 현재 세션의 최신 코스만 수정한다. 성공 시 새 courseId를 반환하고 profileRevision은 유지한다. 별도 공개 courseRevision은 없다. 프로필 변경은 저장 코스·후속 질문을 무효화하며 새 생성이 필요하다. 일반 생성과 수정은 저장 직전 프로필/코스 CAS 검사를 수행해 느린 결과의 덮어쓰기를 막는다.
 
 응답은 기존 CourseResponse 자체가 아니라 전체 Course·공통 경고/제안/제외 수를 재사용한 **AdjustmentResponse**다. SUCCESS는 수정된 전체 코스, NEEDS_INPUT·NOT_APPLIED는 변경 없는 기존 코스를 반환한다. changes는 removedItemIds/replacedItems(oldItemId,newItemId)/timeChangedItemIds, questions는 수정 전용 field(adjustment.target/minutes/message/followUp 또는 profile.<ProfileField>)·message다. 첫 수정 성공 뒤 후속 질문이 남을 수 있으므로 SUCCESS에서도 questions를 표시한다. 연장 분을 추측하지 않고 물으며 코스 ID에 묶인 질문 문맥에서 답을 처리한다. 유지된 itemId는 보존하고 표시 order만 다시1부터 매긴다.
 
-REMOVE는 다른 방문 시각을 보존한다. REPLACE는 대상과 다른 방문의 시각·체류시간을 모두 고정하는 합의 범위만 지원한다. EXTEND_STAY는 뒤 장소의 시각만 필요한 만큼 이동한다. 하드 조건·실제 이동·운영시간 재검증 실패는 미적용이며 전체 재생성으로 대체하지 않는다. 후보 기본 체류시간을 적용해 교체 후 일정을 바꾸는 정책은 미합의다.
+REMOVE는 다른 방문 시각을 보존한다. REPLACE는 대상과 다른 방문의 시각·체류시간을 모두 고정하는 합의 범위만 지원한다. EXTEND_STAY는 뒤 장소의 시각만 필요한 만큼 이동한다. 하드 조건·실제 이동·운영시간 재검증 실패는 미적용이며 전체 재생성으로 대체하지 않는다. DEC-035 확정에 따라 교체 시각 재조정은 범위 밖이다. 더 머무르려면 별도 EXTEND_STAY를 요청하며, 맞는 후보가 없으면 기존 코스와 이유·대안을 반환한다.
 
 PROFILE_CHANGE는 카드/조건 채팅 후 재생성으로 안내하고, INCLUDE_UNKNOWN은 #30 명시적 확인→전체 PUT→새 revision POST를 재사용한다. 해석만으로 동의하지 않는다. 기존 동의로 실제 null이 남는 코스는 CONDITIONAL과 장소별 경고를 유지한다. INDOOR 실제 교체는 이번 기본3연산에 포함하지 않는다.
 
 오류는 기존 봉투와 no-store다. COURSE_NOT_FOUND(404)·COURSE_CONFLICT(409)를 추가한다. 기존 INVALID_REQUEST(400/422), REVISION_CONFLICT(409), SESSION_EXPIRED(410), PROFILE_INCOMPLETE/UNSUPPORTED_CONSTRAINT(422), RATE_LIMITED(429, Retry-After), INTERNAL_ERROR(500)를 유지한다. 비활성 상태는 해석 전에422. LLM 재시도 후 단순 삭제만 규칙 처리하며 나머지는200 NEEDS_INPUT이다. 오류는 코스·프로필·TTL 미변경,200은TTL 갱신이다. 응답 유실 시 수정 자동 재전송 금지,409 복구 불가 시 사용자 확인 후 새 생성/새 세션으로 진행한다.
 
-완전한 가상 예시: `examples/07-adjust.*.json`, `error-409-course.response.json`. 일반 capability는false이며 실제 LLM 평가·프론트 연결·활성화는 별도 후속이다. [구현·검증·미합의 기록](../docs/ISSUE32_COURSE_ADJUSTMENT.md).
+완전한 가상 예시: `examples/07-adjust.*.json`, `error-409-course.response.json`. 일반 app.main:app은 실제 DB·검색기·계산기·승인 가중치 시작 연결이 성공한 뒤 supportsCourseAdjustment=true를 공개한다. 연결 실패 시 시작하지 않고 종료 시 false로 초기화한다. 주입 앱은 명시적 검증 설정 없이 기본 false다. 새 세션에서 capability를 확인하고 같은 서버·세션의 최신 courseId/revision을 사용한다. 모델 미설정·실패 시 단순 삭제만 규칙 대체하며 나머지는 NEEDS_INPUT이다. 실제 LLM20개 평가·프론트 인수는 별도 후속이다. [구현·검증 기록](../docs/ISSUE32_COURSE_ADJUSTMENT.md).

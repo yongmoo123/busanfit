@@ -4,7 +4,7 @@
 
 ## 상태
 
-서버 기본 구현과 가상 검증 단계다. **일반 `supportsCourseAdjustment=false`를 유지**한다. 실제 Provider 호출·새 API 키 읽기·일반 활성화·병합은 수행하지 않는다. 테스트에서는 명시적인 DI와 가상 capability만 사용한다. 이 문서는 구현·연결 참고이며 PM 확정 결정 문서를 대신하지 않는다.
+2026-11-25 사용자 요청으로 **일반 시작 연결 성공 후 `supportsCourseAdjustment=true`를 공개**한다. 실제 DB·검색기·계산기·승인 가중치 준비가 실패하면 시작하지 않고 종료 시 false로 초기화한다. 주입 앱은 별도 검증 설정 없이는 기본 false다. 실제 Provider 호출·키/.env 읽기·PR 병합은 하지 않는다. 가상 Provider 자동 검사와 실제 DB·계산기 연결 검증을 구분한다. 이 문서는 구현·연결 참고이며 PM 확정 결정 문서를 대신하지 않는다.
 
 ## 요청·응답
 
@@ -57,13 +57,13 @@
 
 기존 ErrorResponse와 Cache-Control: no-store를 유지한다. `COURSE_NOT_FOUND`(404, 수정할 세션 코스 없음), `COURSE_CONFLICT`(409, 최신 코스 아님/동시 처리)가 추가된다. 기존 400/422 INVALID_REQUEST, 409 REVISION_CONFLICT, 410 SESSION_EXPIRED, 422 PROFILE_INCOMPLETE/UNSUPPORTED_CONSTRAINT, 429 RATE_LIMITED 및 Retry-After, 500 INTERNAL_ERROR를 사용한다. 비활성 API는 실제 해석 전에422를 반환한다. 해석 불가 자체는 500/503이 아니라200 NEEDS_INPUT이다.
 
-## 미합의·후속
+## 확정 범위·후속
 
-- **미합의 유지:** REPLACE 후 후보 기본 체류시간 적용, 다른 방문 시각 당김/밀림, 일정 재배치. 이번 구현은 고정 슬롯만 지원한다.
+- **DEC-035 확정:** REPLACE는 원래 시작·종료·체류시간과 다른 방문을 고정한다. 시각 재배치는 범위 밖이고 더 머무르기는 별도 EXTEND_STAY다. 후보가 없으면 NOT_APPLIED와 이유·빼기/체류 늘리기 대안을 반환한다.
 - 프론트와 새 응답 상태·질문 field·changes 표시·코스 ID 교체·409 복구 흐름의 실제 연결 확인이 필요하다.
-- INDOOR 실제 교체, #55 체류 칩 연결, 실제 LLM20개 평가(80% 목표), 화면 캡처와 일반 활성화는 별도 후속이다. 평가셋 형식 변경은 계약 공유 후 PM 담당이다. 이번 작업에서 평가 결과를 임의로 통과 처리하지 않는다.
+- INDOOR 실제 교체, #55 체류 칩 연결, 실제 LLM20개 평가(80% 목표), 화면 캡처는 별도 후속이다. 평가셋 형식 변경은 계약 공유 후 PM 담당이다. 이번 작업에서 평가 결과를 임의로 통과 처리하지 않는다.
 
-정식 지원 전에는 가상 응답으로 화면을 준비하고, 실제 연결 안내와 capability가 true인 것을 확인한 뒤 연결한다.
+백엔드는 `feature/FR-015-course-adjustment`(#86), 프론트는 `feature/FR-015-course-adjustment-ui`(#89)를 사용한다. 이 브랜치의 최신 커밋으로 서버를 재시작하고 새 세션의 capability=true를 확인한 뒤 연결한다. 기존 서버/세션의 courseId는 가져오지 말고 같은 프로세스에서 새 코스를 만든다. 환경변수로 capability만 강제하는 스위치는 없다. 모델 환경 설정이 없으면 단순 삭제만 규칙 처리하고 교체·연장은 NEEDS_INPUT이며, 실제 자연어 검증은 담당자가 별도로 수행한다.
 
 
 ## 2026-11-23 로컬 검증
@@ -73,3 +73,23 @@
 - 계약 검사7 operations·37 schemas·28 가상 JSON examples·15 정책 사례 PASS. source JSON 동기화·diff 검사 PASS. Python3.11 문법 정적 검사 통과는 런타임3.11 테스트 통과를 의미하지 않는다.
 - 전체 검사에서 기존 AI 수명주기 테스트의 해운대1곳 기대값을 현재 설정 권역으로 보정했다. 수정용 문맥은 MODIFY에만 보내고 EXPLAIN wire 기존3필드 형식은 유지한다.
 - 실제 LLM20개 평가·실제 프론트 인수는 미실행. 일반 supportsCourseAdjustment=false 유지. 실제 모델 API·키/.env·DECISIONS.md·DB 변경·서비스 활성화·커밋/push·병합 없음.
+
+
+## 2026-11-25 일반 서버 활성화·연결 검증
+
+이 절은 위 11/23 비활성 상태 기록을 대체하는 최신 상태다. 최신 develop `b890e88`과 DEC-035를 #86 작업 브랜치에 반영했으며 사용자 요청으로 시작 연결 성공 후 수정 지원을 켠다. DECISIONS.md에 별도 수정은 하지 않고 develop의 PM 결정만 통합했다.
+
+- 전체 Python3.12 검사 **1663 passed, 1 warning**, 25.82초. 계약7 operations·37 schemas·28 examples·15 정책 사례와 source sync PASS. 수정 작업 트리에서 측정했으며 최종 커밋을 테스트 당시 커밋으로 소급 표시하지 않는다.
+- 신규13개 검사는 명시적 검증·핵심 연결·이동제약 검증이 있어야 지원 공개, 엄격한 boolean, 일반 시작 연결 후 HTTP 삭제·교체·연장·되묻기, 종료 시 지원 해제, 모델 미설정 시 단순 삭제만 규칙 대체를 포함한다. 기존 시작 실패 검사도 지원 false를 확인한다.
+- 실제 v3 DB SHA-256 `e8bd5c5142af936e819e71036a7919fa0c847a707dceec94d9b5e6a4a219a6fc`, 전후 해시 동일. 실제 검색기·도보 계산기와 **가상 모델 의도**로 4개 권역 각5건(삭제·교체·15분 연장·해석 불가·1440분 연장), 총20건 HTTP 검증. 실제 LLM 호출0건이다.
+- 삭제4건 성공, 15분 연장은 해운대·서면2건 성공/광안리·남포2건 미적용. 고정 슬롯 교체4건은 맞는 후보가 없어 미적용이며 이유·빼기/체류 늘리기 대안 표시를 확인했다. 해석 불가4건은 질문, 과도한 연장4건은 미적용이다. **실제 DB 교체 성공을 확인한 것으로 표시하지 않는다.** 교체·연장 성공 경로는 별도 가상 SQLite+가상 모델 테스트에서 검증했다.
+- 수정 성공 코스6개와 미적용/질문의 보존 코스14개를 독립 응답 감사로 검사해 하드 위반·미존재 장소0건. 일반 서버 활성 상태와 종료 후 false를 확인했다. 상세: [검증 결과](ISSUE32_RUNTIME_VALIDATION_20261125.json).
+- 실제 LLM20문장 평가, 진호님의 실제 화면 연결·PC/모바일 인수는 후속이다. 실제 모델 호출·키/.env 읽기·유료 전환·GitHub 병합 없음.
+
+### 진호님 실행 순서
+
+1. 백엔드 `feature/FR-015-course-adjustment` 최신 커밋, 프론트 `feature/FR-015-course-adjustment-ui`를 각각 사용한다. 아직 develop에는 이 활성화가 없다.
+2. 백엔드 저장소 루트에서 본인 v3 DB 위치를 `BUSANFIT_DB_PATH`로 지정하고 Python 환경으로 `python -m uvicorn app.main:app --app-dir backend --no-access-log --port 8000`을 실행한다. 기존 승인된 모델 환경 설정은 담당자가 사용한다. 이 실행은 실제 메시지 전송 시 LLM을 호출할 수 있으며 이번 검증에서는 호출하지 않았다. 모델 미설정 상태는 단순 삭제 규칙 외 수정이 NEEDS_INPUT이므로 자연어 교체/연장 성공 확인과 구분한다.
+3. 프론트 dev 서버의 `/api` 프록시는 기본 `http://127.0.0.1:8000`이며 필요하면 `BUSANFIT_API_TARGET` 또는 `BUSANFIT_API_PROXY_TARGET`을 지정한다. #89 QA 화면 `/?qa=course-adjustment`는 여전히 가상 응답이다. 실제 API 호출 연결은 프론트 후속 작업이다.
+4. 새 세션 생성 응답에서 `supportsCourseAdjustment=true`를 확인한다. 같은 서버 프로세스·세션에서 조건 저장과 코스 생성을 수행하고 최신 courseId/profileRevision으로 adjust한다. 서버 재시작 시 이전 세션/코스는 유효하지 않다.
+5. SUCCESS는 새 courseId로 교체하고 profileRevision은 유지한다. SUCCESS에도 questions를 표시한다. NEEDS_INPUT/NOT_APPLIED는 기존 코스 유지, 추가 답변도 현재 courseId를 사용한다. 409·응답 유실은 자동 재전송하지 않고 기존 안내대로 복구한다.

@@ -1,4 +1,4 @@
-"""FR-015 draft contract. Ordinary runtime stays disabled until integration approval."""
+"""FR-015 contract. Runtime support follows successful dependency preparation."""
 from typing import Annotated, Literal
 from uuid import UUID
 

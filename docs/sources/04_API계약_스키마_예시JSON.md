@@ -6874,3 +6874,8 @@ GET /api/places/{placeId}를 기존 PlaceResponse(place/sources/warnings/request
   "requestId": "99999999-9999-4999-8999-999999999999"
 }
 ~~~
+
+
+### 2026-11-25 FR-015 연결 상태
+
+DEC-035에 따라 REPLACE는 원래 방문 시간 고정이며 추가 체류는 별도 EXTEND_STAY다. 사용자 요청으로 #86 일반 app.main:app은 실제 DB·검색기·계산기·승인 가중치 시작 연결 성공 후 supportsCourseAdjustment=true를 공개한다. 연결 실패 시 시작하지 않고 종료 시 false로 초기화하며 주입 앱은 명시적 검증 설정 없이는 기본 false다. JSON 형식과 가상 예시는 유지하고 실제 지원 여부는 새 세션 capabilities를 따른다. 실제 LLM 평가20개와 프론트 인수는 후속이다.

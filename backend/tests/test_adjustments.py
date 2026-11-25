@@ -1,4 +1,4 @@
-"""FR-015 synthetic HTTP/engine controls. No live provider; runtime remains disabled."""
+"""FR-015 synthetic HTTP/engine controls. Never call a live provider."""
 import asyncio
 from copy import deepcopy
 from dataclasses import replace
@@ -40,7 +40,7 @@ def editable(env):
     generated = generate(env)
     assert generated.status_code == 200 and generated.json()['status'] == 'SUCCESS'
     env['base'] = generated.json()['course']
-    # Explicit isolated test fixture only. No production flag/config is enabled.
+    # Explicit injected fixture; ordinary startup is tested separately.
     env['app'].state.capabilities.supportsCourseAdjustment = True
     env['app'].state.adjustment_interpreter = ScriptedInterpreter(op='REMOVE', targets=[2])
     return env
@@ -139,6 +139,8 @@ def test_replacement_does_not_shift_schedule_to_fit_closed_place(editable):
     interpret(editable, op='REPLACE', targets=[2], category='CAFE')
     body = adjust(editable).json()
     assert body['status'] == 'NOT_APPLIED' and body['course'] == editable['base']
+    message = next(w['message'] for w in body['warnings'] if w['code'] == 'ADJUSTMENT_NOT_FEASIBLE')
+    assert '장소 빼기' in message and '체류 늘리기' in message and '조건을 만족' in message
 
 
 def test_multiple_requests_apply_first_and_ask_about_remaining(editable):

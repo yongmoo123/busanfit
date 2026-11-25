@@ -207,7 +207,7 @@ Software Design Document (SDD)
 | API-002 | POST | /api/chat | 조건 입력·제약 분석 | {sessionId, message} | {reply, questions\[\], profile, status} | FR-001~005 |
 | API-003 | PUT | /api/sessions/{id}/profile | 제약 확인·수정 | {profile} | {profile} | FR-006 |
 | API-004 | POST | /api/courses | 코스 생성 | {sessionId} | {course, suggestions\[\], warnings\[\], excludedUnknown} | FR-007~012, FR-016 |
-| API-005 | POST | /api/courses/{courseId}/adjust | 대화형 부분 수정(일반 비활성, #32 기본 계약) | {sessionId, expectedProfileRevision, message} | {status, course, profileRevision, changes, questions, suggestions, warnings, excludedUnknown, sessionExpiresAt, requestId} | FR-015 |
+| API-005 | POST | /api/courses/{courseId}/adjust | 대화형 부분 수정(시작 연결 성공 후 활성, #32 계약) | {sessionId, expectedProfileRevision, message} | {status, course, profileRevision, changes, questions, suggestions, warnings, excludedUnknown, sessionExpiresAt, requestId} | FR-015 |
 | API-006 | GET | /api/places/{placeId} | 장소 상세·출처 | \- | {place, sources\[\], warnings\[\]} | FR-008, FR-012 |
 | API-007 | GET | /api/facilities?bbox=&types= | 주변 편의시설 | query | {facilities\[\]} | FR-017 |
 | API-008 | POST | /api/courses/{courseId}/share | 코스 공유 링크 생성 | {sessionId} | {shareUrl, expiresAt} | FR-019 |
@@ -217,7 +217,7 @@ Software Design Document (SDD)
 
 # 7. AI / LLM / VLM 설계
 
-API-005 부분 수정 설계(AC-007·DEC-024·025·027): 세션 메모리에 마지막 코스와 구조화된 후속 질문만 보관하고 프로필 변경·만료·삭제 시 무효화한다. 수정 성공은 새 courseId, profileRevision은 유지한다. 생성/수정 저장 시 현재 프로필·코스 버전을 원자적으로 검사한다. REMOVE는 나머지 장소·순서·시각을 보존하고 연결 구간을 재계산한다. EXTEND_STAY는 앞 장소를 유지하고 뒤 장소의 시각만 필요한 만큼 민다. REPLACE는 사용자 확인 범위에 따라 모든 방문 시작·종료·체류시간을 고정하고 해당 슬롯에 들어가는 후보만 교체한다. 후보 기본 체류시간에 따른 일정 재조정은 미합의로 남긴다. 검증에 실패하면 기존 코스를 유지한다. 질문/미적용은 NEEDS_INPUT/NOT_APPLIED이며 일반 supportsCourseAdjustment는 false다. FR-013 포함 동의는 기존 API-003→API-004 흐름을 사용한다. 계약·진호 연결 기준과 미합의 항목은 [#32 구현 참고](ISSUE32_COURSE_ADJUSTMENT.md)에 분리한다.
+API-005 부분 수정 설계(AC-007·DEC-024·025·027): 세션 메모리에 마지막 코스와 구조화된 후속 질문만 보관하고 프로필 변경·만료·삭제 시 무효화한다. 수정 성공은 새 courseId, profileRevision은 유지한다. 생성/수정 저장 시 현재 프로필·코스 버전을 원자적으로 검사한다. REMOVE는 나머지 장소·순서·시각을 보존하고 연결 구간을 재계산한다. EXTEND_STAY는 앞 장소를 유지하고 뒤 장소의 시각만 필요한 만큼 민다. REPLACE는 사용자 확인 범위에 따라 모든 방문 시작·종료·체류시간을 고정하고 해당 슬롯에 들어가는 후보만 교체한다. DEC-035에 따라 교체 시각 재조정은 범위 밖이며 더 머무르기는 별도 EXTEND_STAY로 처리한다. 검증에 실패하면 기존 코스를 유지한다. 질문/미적용은 NEEDS_INPUT/NOT_APPLIED이며 일반 supportsCourseAdjustment는 실제 DB·검색·계산·승인 가중치 시작 연결이 성공한 뒤 true이며 실패 시 시작하지 않고 종료 시 false로 초기화한다. 주입 앱은 명시적 검증 설정 없이 기본 false다. FR-013 포함 동의는 기존 API-003→API-004 흐름을 사용한다. 계약·진호 연결 기준과 후속 검증 항목은 [#32 구현 참고](ISSUE32_COURSE_ADJUSTMENT.md)에 분리한다.
 
 ## 7.1 AI 파이프라인
 
