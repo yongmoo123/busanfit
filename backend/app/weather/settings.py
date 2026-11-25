@@ -45,9 +45,12 @@ class WeatherSettings:
     warning_rows: int
     warning_name_prefix: str
     warning_ignore_contains: tuple[str, ...]
-    warning_exclude: Mapping[str, str]       # warnVar -> reason code
+    warning_exclude: Mapping[str, str]       # warnVar -> reason code (실외 제외)
+    warning_penalize: Mapping[str, str]      # warnVar -> reason code (실외 감점)
     warning_names: Mapping[str, str]         # warnVar -> 이름
-    warning_cancel_commands: frozenset[str]
+    warning_issue_commands: frozenset[str]   # 발표·연장·변경발표: startTime부터 효력
+    warning_release_commands: frozenset[str]  # 해제·변경해제: endTime부터 효력
+    warning_cancelled_values: frozenset[str]  # cancel 값: 취소된 특보(무시)
     area_grids: Mapping[str, tuple[int, int]]
 
 
@@ -76,13 +79,21 @@ def load_weather_settings(config_dir: Path = CONFIG_DIR) -> WeatherSettings:
             warning_name_prefix=_str(wr["areaNamePrefix"]),
             warning_ignore_contains=tuple(_str(v) for v in wr["ignoreAreaNameContains"]),
             warning_exclude={str(k): _str(v) for k, v in wr["excludeOutdoorWarnVars"].items()},
+            warning_penalize={str(k): _str(v) for k, v in wr["penalizeOutdoorWarnVars"].items()},
             warning_names={str(k): _str(v) for k, v in wr["warnVarNames"].items()},
-            warning_cancel_commands=frozenset(_str(v) for v in wr["cancelCommands"]),
+            warning_issue_commands=frozenset(_str(v) for v in wr["issueCommands"]),
+            warning_release_commands=frozenset(_str(v) for v in wr["releaseCommands"]),
+            warning_cancelled_values=frozenset(_str(v) for v in wr["cancelledValues"]),
             area_grids={area: to_grid(float(c["latitude"]), float(c["longitude"]))
                         for area, c in dict(centers).items()},
         )
     except (KeyError, TypeError, ValueError, AttributeError) as error:
         raise WeatherSettingsError(f"{config_dir / CONFIG_FILE}: invalid ({type(error).__name__}: {error})") from None
+    if set(settings.warning_exclude) & set(settings.warning_penalize):
+        raise WeatherSettingsError(f"{config_dir / CONFIG_FILE}: a warnVar is both excluded and penalized")
+    if not settings.warning_issue_commands or not settings.warning_release_commands or             settings.warning_issue_commands & settings.warning_release_commands:
+        raise WeatherSettingsError(f"{config_dir / CONFIG_FILE}: issueCommands/releaseCommands must be "
+                                   "non-empty and disjoint")
     if not settings.area_grids:
         raise WeatherSettingsError(f"{config_dir / CENTERS_FILE}: areaCenters is empty")
     return settings

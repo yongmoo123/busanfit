@@ -1,10 +1,11 @@
-"""장소가 확실한 실외인지 판정 (FR-016, #33 A단계 선택지 A 제안).
+"""장소가 확실한 실외인지 판정하고, 시각별 날씨 판정을 장소에 적용 (FR-016, #33 A단계, DEC-034 4·5).
 
 ``places.indoor``는 모든 장소가 NULL이고 그대로 둔다(정보 없음을 실내·실외로 바꾸지 않음). 대신
-``config/weather.json`` ``outdoorBy`` 규칙(TourAPI 분류 코드 접두어)으로 ``pipelines/outdoor_ids.py``가 만든
-장소 ID 목록 파일(``outdoorBy.placeIdFile``)에 있으면 OUTDOOR, 없으면 UNKNOWN.
+``config/weather.json`` ``outdoorBy`` 규칙(TourAPI 분류 코드 접두어, 먹자골목 3곳 예외)으로
+``pipelines/outdoor_ids.py``가 만든 장소 ID 목록 파일(``outdoorBy.placeIdFile``)에 있으면 OUTDOOR, 없으면 UNKNOWN.
 
-UNKNOWN은 "실내"가 아니다. 날씨 판정을 적용할지 모른다는 뜻이며, 어떻게 다룰지는 PM 결정(README).
+UNKNOWN은 "실내"가 아니다(판단 필요 44곳 포함). DEC-034 5에 따라 UNKNOWN 장소는 날씨로 **제외도 감점도 하지 않고**
+``OUTDOOR_UNKNOWN`` 이유만 붙인다(B단계 경고 "실내·실외 정보가 없는 장소는 날씨를 반영하지 않았어요").
 목록 파일이 없거나 깨졌으면 오류다(빈 목록으로 보지 않음).
 """
 from __future__ import annotations
@@ -13,10 +14,21 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 
+from app.weather.judge import OK, HourlyJudgement
 from app.weather.settings import CONFIG_DIR, CONFIG_FILE, WeatherSettingsError
 
 OUTDOOR = "OUTDOOR"
 UNKNOWN = "UNKNOWN"
+
+# 장소 판정 이유: 실내·실외 정보가 없어 날씨를 반영하지 않음 (DEC-034 5, 경고용)
+OUTDOOR_UNKNOWN = "OUTDOOR_UNKNOWN"
+
+
+@dataclass(frozen=True)
+class PlaceWeather:
+    outdoor: str                 # OUTDOOR / UNKNOWN
+    verdict: str                 # OK / PENALIZE_OUTDOOR / EXCLUDE_OUTDOOR (UNKNOWN이면 항상 OK)
+    reasons: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -58,3 +70,16 @@ def outdoor_status(place: object, outdoor_list: OutdoorList | None = None) -> st
             _default = load_outdoor_list()
         outdoor_list = _default
     return outdoor_list.status_of(place)
+
+
+def place_weather(place: object, judgement: HourlyJudgement, outdoor_list: OutdoorList | None = None) -> PlaceWeather:
+    """그 장소 방문 시각의 판정(``HourlyJudgement``)을 장소에 적용한다.
+
+    - OUTDOOR: 시각 판정 그대로(제외·감점·이유, WARNING_UNCHECKED 포함)
+    - UNKNOWN: 제외·감점 없음(verdict OK), reasons ``(OUTDOOR_UNKNOWN,)`` — 날씨를 반영하지 않았다는 경고용
+    날씨 자체가 NOT_APPLIED면 시각 판정이 없으므로 이 함수를 부르지 않고 "날씨 미반영"으로 처리한다(README).
+    """
+    status = outdoor_status(place, outdoor_list)
+    if status == OUTDOOR:
+        return PlaceWeather(OUTDOOR, judgement.verdict, judgement.reasons)
+    return PlaceWeather(UNKNOWN, OK, (OUTDOOR_UNKNOWN,))

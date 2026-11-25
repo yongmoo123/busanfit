@@ -1,5 +1,5 @@
 {
-  "status": "PROPOSAL (FR-016 #33 A단계 선택지 A, 이찬용 제안 11/24, PM 승인 전)",
+  "status": "APPROVED (DEC-034, PM 김세민 2026-11-24. 분류 코드로 확실한 실외만, 먹자골목 3곳 제외)",
   "criterion": {
     "source": "TourAPI areaBasedList2 lclsSystm3",
     "rulesFrom": "config/weather.json outdoorBy",
@@ -29,12 +29,12 @@
   },
   "generatedFrom": "data/raw/tourapi 부산 시군구 목록 원본 전체 (pipelines/outdoor_ids.py)",
   "targetsInCircles": 630,
-  "count": 32,
+  "count": 29,
   "countByArea": {
     "GWANGALLI": 6,
     "HAEUNDAE": 6,
-    "NAMPO": 12,
-    "SEOMYEON": 8
+    "NAMPO": 10,
+    "SEOMYEON": 7
   },
   "countByCode": {
     "NA020500": 1,
@@ -45,7 +45,7 @@
     "VE030100": 3,
     "VE030400": 1,
     "VE030500": 3,
-    "VE040100": 16
+    "VE040100": 13
   },
   "places": [
     {
@@ -169,18 +169,6 @@
       "name": "미술의거리"
     },
     {
-      "placeId": "tourapi-kor:1960614",
-      "area": "NAMPO",
-      "code": "VE040100",
-      "name": "부평족발골목"
-    },
-    {
-      "placeId": "tourapi-kor:1960620",
-      "area": "NAMPO",
-      "code": "VE040100",
-      "name": "부산 자갈치 양곱창 골목"
-    },
-    {
       "placeId": "tourapi-kor:2650232",
       "area": "NAMPO",
       "code": "VE040100",
@@ -229,16 +217,34 @@
       "name": "전포공구길"
     },
     {
-      "placeId": "tourapi-kor:3014435",
-      "area": "SEOMYEON",
-      "code": "VE040100",
-      "name": "서면먹자골목"
-    },
-    {
       "placeId": "tourapi-kor:3093625",
       "area": "SEOMYEON",
       "code": "VE040100",
       "name": "부산진 별빛산책길"
+    }
+  ],
+  "excludedCount": 3,
+  "excludedPlaces": [
+    {
+      "placeId": "tourapi-kor:1960614",
+      "area": "NAMPO",
+      "code": "VE040100",
+      "name": "부평족발골목",
+      "note": "부평족발골목: DEC-034 4, 먹자골목은 활동이 식당 안이라 실외에서 뺀다"
+    },
+    {
+      "placeId": "tourapi-kor:1960620",
+      "area": "NAMPO",
+      "code": "VE040100",
+      "name": "부산 자갈치 양곱창 골목",
+      "note": "부산 자갈치 양곱창 골목: DEC-034 4, 먹자골목은 활동이 식당 안이라 실외에서 뺀다"
+    },
+    {
+      "placeId": "tourapi-kor:3014435",
+      "area": "SEOMYEON",
+      "code": "VE040100",
+      "name": "서면먹자골목",
+      "note": "서면먹자골목: DEC-034 4, 먹자골목은 활동이 식당 안이라 실외에서 뺀다"
     }
   ],
   "needsDecisionCount": 44,

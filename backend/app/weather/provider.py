@@ -5,8 +5,10 @@
 2. ``KMA_SERVICE_KEY``가 없으면 호출 없이 NOT_APPLIED(NO_KEY).
 3. 지금 받을 수 있는 가장 최근 발표(baseTimes 중 발표시각 + availableAfterMin 분이 지난 것)로 격자 예보 조회.
    실패 → NOT_APPLIED(FETCH_FAILED / INVALID_RESPONSE). 요청 시각 중 하나라도 값이 없으면 INCOMPLETE_FORECAST.
-4. 방문일이 오늘이면 특보 조회(부산 육상 구역). 실패하면 판정은 하되 reasons에 WARNING_UNCHECKED,
-   warning_check=FAILED. 오늘이 아니면 특보를 보지 않고 WARNING_UNCHECKED, warning_check=NOT_CHECKED_FUTURE.
+4. 방문일이 오늘이면 특보 조회(부산 육상 구역). 방문 시각마다 발효·해제 시각과 비교한다(judge.busan_warning_tracks).
+   실패하면 판정은 하되 reasons에 WARNING_UNCHECKED, warning_check=FAILED. 시각이 없는 기록 때문에 상태를 정할 수
+   없는 시각이 있으면 그 시각과 전체에 WARNING_UNCHECKED, warning_check=INCOMPLETE.
+   오늘이 아니면 특보를 보지 않고 WARNING_UNCHECKED, warning_check=NOT_CHECKED_FUTURE.
 
 같은 발표·격자의 예보와 같은 날의 특보는 한 provider 안에서 한 번만 호출한다(성공한 응답만 메모리 캐시,
 실패는 캐시하지 않음). 특보는 같은 날 안에서는 다시 조회하지 않으므로 B단계에서 요청마다 provider를 새로 만들거나
@@ -18,7 +20,7 @@ from collections.abc import Callable, Iterable, Sequence
 from datetime import date, datetime, timedelta, timezone
 
 from app.weather.judge import (NO_KEY, OUT_OF_RANGE, WARNING_CHECK_FAILED, WARNING_CHECKED,
-                               WARNING_NOT_CHECKED_FUTURE, AreaWeather, active_busan_warnings,
+                               WARNING_NOT_CHECKED_FUTURE, AreaWeather, busan_warning_tracks,
                                forecast_by_hour, judge_area, not_applied)
 from app.weather.kma_client import KmaClient, KmaError
 from app.weather.settings import WeatherSettings, load_service_key, load_weather_settings
@@ -78,13 +80,13 @@ class WeatherProvider:
         if visit_date == today:
             warnings = self._warning_items(today)
             if isinstance(warnings, KmaError):
-                check, active = WARNING_CHECK_FAILED, ()
+                check, tracks = WARNING_CHECK_FAILED, ()
             else:
-                check, active = WARNING_CHECKED, active_busan_warnings(warnings, self.settings)
+                check, tracks = WARNING_CHECKED, busan_warning_tracks(warnings, self.settings)
         else:
-            check, active = WARNING_NOT_CHECKED_FUTURE, ()
+            check, tracks = WARNING_NOT_CHECKED_FUTURE, ()
         return judge_area(area, visit_date, hours, forecast_by_hour(forecast, visit_date, *grid), self.settings,
-                          grid=grid, base=base, warning_check=check, active_warnings=active)
+                          grid=grid, base=base, warning_check=check, warning_tracks=tracks)
 
     def areas_weather(self, areas: Iterable[str], visit_date: date, hours: Iterable[int]) -> dict[str, AreaWeather]:
         hours = _check_hours(hours)
