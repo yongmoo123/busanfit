@@ -1,0 +1,134 @@
+%% 그림 4-1(c). 코스 생성 핵심 모듈 클래스 다이어그램 (SDD 4.1, 실제 코드 기준 2026-11-25 develop b890e88)
+%% 범위: 코스 생성(UC-003)의 엔진 안쪽만. API·세션(#86)·대화형 수정(#86)·조건 추출(#91)·날씨(#87)는 진행 중이라 넣지 않았다.
+%% PNG 생성 (저장소 루트): npx -p @mermaid-js/mermaid-cli@11.4.2 mmdc -c docs/diagrams/mermaid.config.json -s 2 -b white -i docs/diagrams/sdd-4-1-class-course-engine.mmd -o docs/images/sdd-4-1-class-course-engine.png
+classDiagram
+  direction LR
+
+  class CourseService {
+    <<COMP-02 application>>
+    -settings: CourseSettings
+    +generate(profile, revision, capabilities) CourseResult
+  }
+  class CourseResult {
+    +course: Course | None
+    +warnings: list
+    +excluded_unknown: dict
+    +repair_attempts: int
+    +suggestions: list~Suggestion~
+  }
+
+  class CandidateRetriever {
+    <<interface>>
+    +retrieve(profile) RetrievalResult
+  }
+  class PlaceRetriever {
+    <<COMP-04>>
+    +retrieve(profile) RetrievalResult
+  }
+  class RetrievalResult {
+    +candidates: tuple~PlaceCandidate~
+    +excluded_unknown_ids: frozenset
+    +excluded_unknown_fields: frozenset
+    +unknown_accessibility_candidates: tuple~PlaceCandidate~
+  }
+
+  class CourseScheduler {
+    <<COMP-05>>
+    -scorer
+    +schedule(candidates, profile, travel) Plan
+  }
+  class ProposalCompanionScorer {
+    <<FR-018 동행 가중치>>
+    +breakdown(place, profile) ScoreBreakdown
+  }
+  class TravelCache {
+    -provider: TravelTimeProvider
+    -injury: bool
+    +unavailable: bool
+    +__call__(origin, destination) TravelEstimate | None
+  }
+
+  class TravelTimeProvider {
+    <<interface>>
+    +estimate(origin, destination, injury) TravelEstimate | None
+  }
+  class WalkingTravelTimeProvider {
+    <<COMP-06>>
+    +estimate(origin, destination, injury) TravelEstimate | None
+  }
+
+  class CourseValidator {
+    <<COMP-07>>
+    +validate(plan, profile, distances, travel) ValidationResult
+  }
+  class Plan {
+    +visits: tuple~Visit~
+    +travel_minutes: tuple~int~
+  }
+  class Visit {
+    +place: PlaceRecord
+    +start_at: datetime
+    +end_at: datetime
+    +stay_minutes: int
+  }
+  class ValidationResult {
+    +violations: tuple~Violation~
+    +checked_fields: tuple
+    +unverified_fields: tuple
+    +accepted() bool
+  }
+  class Violation {
+    +code: str
+    +fields: tuple
+    +place_ids: tuple
+    +unknown: bool
+  }
+
+  class PlaceRepository {
+    <<interface COMP-10>>
+    +find_within_radius(lat, lon, radius_m, area, exclude_categories) list~PlaceCandidate~
+    +get_place(place_id) PlaceRecord | None
+    +existing_place_ids(place_ids) frozenset
+    +get_sources(source_ids) list~DataSourceRecord~
+  }
+  class ConnectionPerCallRepository {
+    <<SQLite 어댑터>>
+  }
+
+  class ExplanationGenerator {
+    <<COMP-08>>
+    +explain(course, mobility) ExplanationResult
+  }
+  class AIService {
+    <<COMP-09>>
+    +complete(purpose, schema, context) AIResult
+  }
+
+  CourseService ..> CourseResult : 반환
+  CourseService --> CandidateRetriever
+  CourseService --> CourseScheduler
+  CourseService --> CourseValidator
+  CourseService --> TravelTimeProvider
+  CourseService --> PlaceRepository : 사실 재조회
+  CourseService ..> TravelCache : 요청마다 생성
+
+  CandidateRetriever <|.. PlaceRetriever
+  PlaceRetriever --> PlaceRepository
+  PlaceRetriever ..> RetrievalResult
+
+  CourseScheduler --> ProposalCompanionScorer : scorer 주입
+  CourseScheduler ..> TravelCache
+  CourseScheduler ..> Plan
+  Plan *-- Visit
+
+  TravelCache --> TravelTimeProvider
+  TravelTimeProvider <|.. WalkingTravelTimeProvider
+
+  CourseValidator --> PlaceRepository : 실존·영업시간 재확인
+  CourseValidator ..> ValidationResult
+  ValidationResult *-- Violation
+
+  PlaceRepository <|.. ConnectionPerCallRepository
+
+  ExplanationGenerator --> AIService
+  ExplanationGenerator --> PlaceRepository

@@ -1,0 +1,64 @@
+%% 그림 4-2(b). SD-01 코스 생성 부분 (UC-003, POST /api/courses) — 실제 코드 기준 2026-11-25 develop b890e88
+%% 범위: 저장된 조건 프로필로 코스를 만드는 엔진 흐름. 조건 입력·추출(UC-001, #91 진행 중)과 세션 확인(#86 진행 중)은 넣지 않았다.
+%% PNG 생성 (저장소 루트): npx -p @mermaid-js/mermaid-cli@11.4.2 mmdc -c docs/diagrams/mermaid.config.json -s 2 -b white -i docs/diagrams/sdd-4-2-sd01-course-generation.mmd -o docs/images/sdd-4-2-sd01-course-generation.png
+sequenceDiagram
+  autonumber
+  actor U as 사용자
+  participant FE as Frontend
+  participant API as CourseAPI<br/>(COMP-02)
+  participant CS as CourseService
+  participant PR as PlaceRetriever<br/>(COMP-04)
+  participant REPO as PlaceRepository<br/>(COMP-10)
+  participant SCH as CourseScheduler<br/>(COMP-05)
+  participant TT as TravelTimeProvider<br/>(COMP-06)
+  participant VAL as CourseValidator<br/>(COMP-07)
+  participant EXP as ExplanationGenerator<br/>(COMP-08)
+  participant AI as AIService<br/>(COMP-09)
+
+  U->>FE: "이대로 코스 만들기"
+  FE->>API: POST /api/courses {sessionId, profileRevision}
+  API->>CS: generate(profile, revision, capabilities)
+  Note over CS: 도보 기본값·이동제약 정규화<br/>미지원 조건이면 422
+  CS->>PR: retrieve(profile)
+  PR->>REPO: find_within_radius(권역 중심, 1.5 km, 제외 카테고리)
+  REPO-->>PR: 장소 목록(거리순)
+  Note over PR: 영업시간·이동제약·실내 판정<br/>정보 없음(null)은 후보에서 빼고 따로 집계
+  PR-->>CS: RetrievalResult(후보 ≤20, 정보 없음 ID·항목)
+
+  loop 검증 통과 또는 재구성 3회까지
+    CS->>REPO: get_place(id) — 후보 사실 재조회
+    CS->>SCH: schedule(후보, profile, TravelCache)
+    SCH->>TT: estimate(출발, 도착, injury)
+    TT-->>SCH: 이동 분 또는 None(구간 사용 안 함)
+    SCH-->>CS: Plan(방문 2~6곳, 시각·체류·이동)
+    alt 배치된 장소 2곳 미만
+      CS-->>CS: 반복 종료
+    else
+      CS->>VAL: validate(plan, profile, distances, travel)
+      VAL->>REPO: 실존·영업시간·이동제약 재확인
+      VAL-->>CS: ValidationResult
+      alt 통과
+        Note over CS: Course 조립 후 한 번 더 검증
+      else 위반
+        Note over CS: 위반 장소를 막고 다시 배치
+      end
+    end
+  end
+
+  alt 코스 없음
+    CS-->>API: CourseResult(INSUFFICIENT_PLACES 경고, 정보 없음 집계, 포함 제안)
+    API-->>FE: 200 INSUFFICIENT_PLACES (조건 완화 없음)
+  else 코스 있음
+    CS-->>API: CourseResult(course, 경고, 조정 제안)
+    API->>EXP: explain(course, mobility 범주)
+    EXP->>REPO: 장소 사실 조회
+    EXP->>AI: complete(EXPLAIN, 시스템이 고른 사실 후보)
+    alt LLM 성공
+      AI-->>EXP: 장소별 사실 선택
+    else 시간 초과·형식 오류
+      AI-->>EXP: 실패 → 템플릿 문장(AI_FALLBACK)
+    end
+    EXP-->>API: 이유가 붙은 코스
+    API-->>FE: 200 SUCCESS (코스·출처·경고·제안)
+  end
+  FE-->>U: 타임라인·지도·추천 이유
