@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
+import { groupMapMarkers } from './mapMarkerGroups.js'
 
 let sdkPromise
 
 function loadKakaoMaps() {
+  // Reuse the loaded SDK when Vite refreshes this module.
+  if (window.kakao?.maps?.Map) return Promise.resolve(window.kakao.maps)
   if (!sdkPromise) {
     sdkPromise = new Promise((resolve, reject) => {
       const key = import.meta.env.VITE_KAKAO_JS_KEY
@@ -36,6 +39,10 @@ export default function CourseMap({ items, isMock = true }) {
   useEffect(() => {
     let active = true
     const overlays = []
+    let removeMapListener = () => {}
+    let resizeObserver
+    let mapContainer
+    let initialFrame
 
     loadKakaoMaps()
       .then((maps) => {
@@ -46,7 +53,12 @@ export default function CourseMap({ items, isMock = true }) {
           return new maps.LatLng(latitude, longitude)
         })
 
-        const map = new maps.Map(mapRef.current, {
+        if (!mapRef.current || !positions.length) return
+        mapContainer = document.createElement('div')
+        mapContainer.style.width = '100%'
+        mapContainer.style.height = '100%'
+        mapRef.current.replaceChildren(mapContainer)
+        const map = new maps.Map(mapContainer, {
           center: positions[0],
           level: 4,
         })
@@ -66,21 +78,56 @@ export default function CourseMap({ items, isMock = true }) {
           overlays.push(line)
         }
 
-        positions.forEach((position, index) => {
-          const badge = document.createElement('span')
-          badge.className = 'course-map-marker'
-          badge.textContent = String(index + 1)
-          badge.setAttribute('role', 'img')
-          badge.setAttribute('aria-label', `${index + 1}번 방문 장소, ${items[index].place.name}`)
-
-          const marker = new maps.CustomOverlay({
-            position,
-            content: badge,
-            zIndex: 1,
+        let markers = []
+        const updateMarkers = () => {
+          markers.forEach((marker) => marker.setMap(null))
+          markers = []
+          const projection = map.getProjection()
+          const points = positions.map((position) => projection.containerPointFromCoords(position))
+          groupMapMarkers(points).forEach(({ x, y, indices }) => {
+            const badge = document.createElement('span')
+            badge.className = 'course-map-marker'
+            badge.textContent = indices.map((index) => index + 1).join(' · ')
+            badge.style.width = `${Math.max(28, indices.length * 22)}px`
+            badge.style.borderRadius = '999px'
+            badge.style.whiteSpace = 'nowrap'
+            badge.setAttribute('role', 'img')
+            const label = indices.map((index) => `${index + 1}번 방문 장소, ${items[index].place.name}`).join('; ')
+            badge.setAttribute('aria-label', label)
+            badge.title = label
+            const marker = new maps.CustomOverlay({
+              position: indices.length === 1 ? positions[indices[0]]
+                : projection.coordsFromContainerPoint(new maps.Point(x, y)),
+              content: badge,
+              zIndex: 1,
+            })
+            marker.setMap(map)
+            markers.push(marker)
           })
-          marker.setMap(map)
-          overlays.push(marker)
+        }
+        initialFrame = requestAnimationFrame(() => {
+          if (!active) return
+          map.relayout()
+          if (positions.length > 1) {
+            const bounds = new maps.LatLngBounds()
+            positions.forEach((position) => bounds.extend(position))
+            map.setBounds(bounds, 36, 36, 36, 36)
+          }
+          updateMarkers()
         })
+        resizeObserver = new ResizeObserver(() => {
+          if (!active || !mapContainer.clientWidth) return
+          const center = map.getCenter()
+          map.relayout()
+          map.setCenter(center)
+          updateMarkers()
+        })
+        resizeObserver.observe(mapContainer)
+        maps.event.addListener(map, 'idle', updateMarkers)
+        removeMapListener = () => {
+          maps.event.removeListener(map, 'idle', updateMarkers)
+          markers.forEach((marker) => marker.setMap(null))
+        }
       })
       .catch(() => {
         if (active) {
@@ -90,6 +137,10 @@ export default function CourseMap({ items, isMock = true }) {
 
     return () => {
       active = false
+      cancelAnimationFrame(initialFrame)
+      resizeObserver?.disconnect()
+      removeMapListener()
+      mapContainer?.remove()
       overlays.forEach((overlay) => overlay.setMap(null))
     }
   }, [items])
@@ -104,6 +155,7 @@ export default function CourseMap({ items, isMock = true }) {
       ) : (
         <>
           <p>점선은 방문 순서를 나타내요. 실제 보행 경로는 확인되지 않았어요.</p>
+          <p>가까운 장소는 방문 번호를 함께 표시해요. 지도를 확대하면 구분하기 쉬워요.</p>
           <div ref={mapRef} style={{ width: '100%', height: 260 }} />
         </>
       )}

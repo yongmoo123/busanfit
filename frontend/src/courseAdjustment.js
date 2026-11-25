@@ -1,4 +1,4 @@
-// FR-015 draft: result handling is shared with the future API connection.
+// FR-015: immutable response handling shared by live and mock flows.
 // Requests stay sequential; a lost response must never be sent automatically again.
 export function acceptAdjustmentResponse(currentCourse, requestedCourseId, revision, response) {
   if (currentCourse.id !== requestedCourseId || currentCourse.profileRevision !== revision) {
@@ -35,7 +35,19 @@ export function describeAdjustmentChanges(before, after, changes) {
   return { removed, replaced, shifted }
 }
 
+export function adjustmentNeedsRecovery(error) {
+  if (error.status === 429 || error.status === 400 ||
+      (error.status === 422 && error.code === 'INVALID_REQUEST')) return false
+  return true
+}
+
 export function adjustmentErrorMessage(error) {
+  if (error.status === 429) {
+    return `요청이 많아요. ${error.retryAfter ?? '잠시'}초 뒤 직접 다시 요청해 주세요. 기존 코스는 유지했어요.`
+  }
+  if (error.status === 400 || (error.status === 422 && error.code === 'INVALID_REQUEST')) {
+    return '수정 요청 내용을 확인해 주세요. 기존 코스는 유지했어요.'
+  }
   if (error.code === 'SESSION_EXPIRED' || error.status === 410) {
     return '대화가 만료됐어요. 새 대화를 시작해 주세요. 화면의 기존 코스는 그대로 두었어요.'
   }

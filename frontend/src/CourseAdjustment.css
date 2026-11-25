@@ -33,12 +33,26 @@
 .adjustment-preview-timeline { padding-left: 24px; }
 .adjustment-preview-timeline li { padding: 10px; margin-block: 12px; border-radius: 10px; }
 .adjustment-preview-timeline li p { margin-bottom: 4px; }
-.adjustment-item-changed { background: #edf7f1; outline: 1px solid #8db9a5; }
-.adjustment-change-badge { display: inline-block; margin-left: 8px; padding: 3px 8px; border-radius: 8px; background: #d4eadf; font-size: .8rem; }
+.adjustment-item-changed {
+  margin-block: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #f1f8f4;
+  box-shadow: inset 3px 0 0 #8db9a5;
+  overflow-wrap: anywhere;
+}
+.adjustment-item-changed > p { margin-block: 12px; line-height: 1.65; }
+.adjustment-item-changed > p:last-child { margin-bottom: 0; }
+.adjustment-change-badge { display: inline-block; margin-left: 8px; padding: 3px 8px; border-radius: 999px; background: #e0eee6; color: #315c4b; font-size: .75rem; font-weight: 600; vertical-align: middle; white-space: nowrap; }
 .adjustment-question { padding: 12px; margin-block: 12px; background: #fff4ce; border-radius: 10px; }
 .adjustment-question h3 { margin-top: 0; }
 .adjustment-preview-error { padding: 12px 16px; border: 1px solid #d7b3a3; border-radius: 10px; background: #fff0e8; }
 .adjustment-outcome { border-color: #8db9a5; }
+.course-adjustment-result {
+  margin-block: 16px; padding: 16px 20px; border: 1px solid #8db9a5;
+  border-radius: 14px; background: #f4faf7; overflow-wrap: anywhere;
+}
+.course-adjustment-result p { line-height: 1.65; }
 .adjustment-preview-metadata { margin-top: 24px; }
 .course-adjustment-preview :focus-visible { outline: 3px solid #245f53; outline-offset: 3px; }
 @media (max-width: 480px) {
