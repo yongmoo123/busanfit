@@ -256,6 +256,8 @@ POST `/api/courses/{courseId}/adjust`: `{sessionId, expectedProfileRevision, mes
 
 응답은 기존 CourseResponse 자체가 아니라 전체 Course·공통 경고/제안/제외 수를 재사용한 **AdjustmentResponse**다. SUCCESS는 수정된 전체 코스, NEEDS_INPUT·NOT_APPLIED는 변경 없는 기존 코스를 반환한다. changes는 removedItemIds/replacedItems(oldItemId,newItemId)/timeChangedItemIds, questions는 수정 전용 field(adjustment.target/minutes/message/followUp 또는 profile.<ProfileField>)·message다. 첫 수정 성공 뒤 후속 질문이 남을 수 있으므로 SUCCESS에서도 questions를 표시한다. 연장 분을 추측하지 않고 물으며 코스 ID에 묶인 질문 문맥에서 답을 처리한다. 유지된 itemId는 보존하고 표시 order만 다시1부터 매긴다.
 
+수정 요청별 `ADJUSTMENT_*` 안내는 다음 요청으로 승계하지 않는다. 각 요청 시작 시 이전 수정 안내만 제외하고 현재 요청 안내를 새로 구성한다. 가격·이동 경로·접근성 등 기존 코스 경고와 다른 코드의 경고는 유지하며, 성공·질문·미적용 모두 같은 기준을 적용한다.
+
 REMOVE는 다른 방문 시각을 보존한다. REPLACE는 대상과 다른 방문의 시각·체류시간을 모두 고정하는 합의 범위만 지원한다. EXTEND_STAY는 뒤 장소의 시각만 필요한 만큼 이동한다. 하드 조건·실제 이동·운영시간 재검증 실패는 미적용이며 전체 재생성으로 대체하지 않는다. DEC-035 확정에 따라 교체 시각 재조정은 범위 밖이다. 더 머무르려면 별도 EXTEND_STAY를 요청하며, 맞는 후보가 없으면 기존 코스와 이유·대안을 반환한다.
 
 PROFILE_CHANGE는 카드/조건 채팅 후 재생성으로 안내하고, INCLUDE_UNKNOWN은 #30 명시적 확인→전체 PUT→새 revision POST를 재사용한다. 해석만으로 동의하지 않는다. 기존 동의로 실제 null이 남는 코스는 CONDITIONAL과 장소별 경고를 유지한다. INDOOR 실제 교체는 이번 기본3연산에 포함하지 않는다.

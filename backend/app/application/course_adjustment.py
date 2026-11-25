@@ -37,7 +37,9 @@ class CourseAdjustmentService:
 
     def adjust(self, old, profile, revision, capabilities, intent, metadata):
         result = AdjustmentOutcome('NOT_APPLIED', old, {
-            'warnings': list(metadata.get('warnings', [])),
+            # Adjustment notices describe one request; course warnings persist.
+            'warnings': [w for w in metadata.get('warnings', [])
+                         if not w['code'].startswith('ADJUSTMENT_')],
             'suggestions': list(metadata.get('suggestions', [])),
             'excludedUnknown': metadata.get('excludedUnknown', {'count': 0, 'fields': []})})
 

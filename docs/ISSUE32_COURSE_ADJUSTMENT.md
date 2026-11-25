@@ -93,3 +93,12 @@
 3. 프론트 dev 서버의 `/api` 프록시는 기본 `http://127.0.0.1:8000`이며 필요하면 `BUSANFIT_API_TARGET` 또는 `BUSANFIT_API_PROXY_TARGET`을 지정한다. #89 QA 화면 `/?qa=course-adjustment`는 여전히 가상 응답이다. 실제 API 호출 연결은 프론트 후속 작업이다.
 4. 새 세션 생성 응답에서 `supportsCourseAdjustment=true`를 확인한다. 같은 서버 프로세스·세션에서 조건 저장과 코스 생성을 수행하고 최신 courseId/profileRevision으로 adjust한다. 서버 재시작 시 이전 세션/코스는 유효하지 않다.
 5. SUCCESS는 새 courseId로 교체하고 profileRevision은 유지한다. SUCCESS에도 questions를 표시한다. NEEDS_INPUT/NOT_APPLIED는 기존 코스 유지, 추가 답변도 현재 courseId를 사용한다. 409·응답 유실은 자동 재전송하지 않고 기존 안내대로 복구한다.
+
+
+## 2026-11-26 수정 안내 누적 방지
+
+기존 course_metadata.warnings를 승계할 때 이전 요청의 ADJUSTMENT_* 안내까지 복사하던 문제를 수정했다. 수정 처리 진입 시 해당 접두사의 경고만 제외하고 기존 코스 경고·다른 코드의 경고는 그대로 보존한다. 현재 요청의 수정 불가/미지원 안내는 이후 기존 경로에서 추가하므로 SUCCESS·NEEDS_INPUT·NOT_APPLIED 모두 현재 요청 기준이 된다. API 형식·동시성·코스 보존 정책은 변경하지 않았다.
+
+가상 HTTP 회귀 검사에서 교체 후보 없음 →15분 연장 성공 →120분 연장 불가 →추가 질문 순서로 최신 courseId를 사용했다. 코스 경고 전체와 세션 저장 경고가 각 응답과 일치하는지, 최종 미적용에서 연장 성공 코스가 보존되는지 확인했다. 이전 안내 없음/ADJUSTMENT_NOT_SUPPORTED/향후 ADJUSTMENT_* 코드의3가지 시작 상태를 검증해 특정 코드만 제거하는 회귀도 막는다. 수정 전3건 실패로 재현했고 수정 후3건 통과했다. 실제 LLM 호출·키/.env 읽기·병합은 하지 않았다.
+
+최종 검증: Python3.12 전체 **1666 passed, 1 warning**, 24.17초. 계약7 operations·37 schemas·28 examples·15 정책 사례 및 source JSON sync·diff 검사 PASS. 기존 Starlette/httpx 경고1개다. 이 결과는 커밋 전 수정 작업 트리에서 측정했다.

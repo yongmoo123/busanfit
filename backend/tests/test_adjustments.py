@@ -143,6 +143,51 @@ def test_replacement_does_not_shift_schedule_to_fit_closed_place(editable):
     assert '장소 빼기' in message and '체류 늘리기' in message and '조건을 만족' in message
 
 
+@pytest.mark.parametrize('previous_code', [None, 'ADJUSTMENT_NOT_SUPPORTED', 'ADJUSTMENT_FUTURE_NOTICE'])
+def test_request_warnings_do_not_accumulate_across_rejection_success_and_rejection(editable, previous_code):
+    e = editable
+    state = e['store'].check_current(e['sid'], 1)
+    course_warnings = deepcopy(state.course_metadata['warnings'])
+    assert course_warnings and all(not w['code'].startswith('ADJUSTMENT_') for w in course_warnings)
+    if previous_code:
+        metadata = deepcopy(state.course_metadata)
+        metadata['warnings'].append({'code': previous_code, 'message': '[가상] 이전 요청 안내', 'placeIds': []})
+        e['store'].commit_course(e['sid'], 1, state.course_epoch,
+            course=state.last_course, metadata=metadata)
+
+    def current_warnings(body):
+        retained = [w for w in body['warnings'] if not w['code'].startswith('ADJUSTMENT_')]
+        assert retained == course_warnings
+        assert e['store'].check_current(e['sid'], 1).course_metadata['warnings'] == body['warnings']
+        return [w for w in body['warnings'] if w['code'].startswith('ADJUSTMENT_')]
+
+    # No PARK candidate exists in this fixture. Keep the original course.
+    interpret(e, op='REPLACE', targets=[2], category='PARK')
+    rejected = adjust(e, '2번 다른 공원으로 바꿔줘').json()
+    assert rejected['status'] == 'NOT_APPLIED' and rejected['course'] == e['base']
+    first_warnings = current_warnings(rejected)
+    assert len(first_warnings) == 1 and '교체' in first_warnings[0]['message']
+
+    interpret(e, op='EXTEND_STAY', targets=[2], minutes=15)
+    extended = adjust(e, '2번에 15분 더 머물래').json()
+    assert extended['status'] == 'SUCCESS' and extended['course']['id'] != e['base']['id']
+    assert extended['course']['items'][1]['stayMinutes'] == e['base']['items'][1]['stayMinutes'] + 15
+    assert current_warnings(extended) == []
+
+    interpret(e, op='EXTEND_STAY', targets=[2], minutes=120)
+    failed = adjust(e, '2번에 120분 더 머물래', course=extended['course']['id']).json()
+    assert failed['status'] == 'NOT_APPLIED' and failed['course'] == extended['course']
+    last_warnings = current_warnings(failed)
+    assert len(last_warnings) == 1 and last_warnings[0]['code'] == 'ADJUSTMENT_NOT_FEASIBLE'
+    assert last_warnings[0]['message'] != first_warnings[0]['message']
+
+    # Questions must also discard the previous request's failure notice.
+    interpret(e, op='UNCLEAR', targets=[])
+    asked = adjust(e, '다시 확인해줘', course=extended['course']['id']).json()
+    assert asked['status'] == 'NEEDS_INPUT' and asked['course'] == extended['course']
+    assert current_warnings(asked) == []
+
+
 def test_multiple_requests_apply_first_and_ask_about_remaining(editable):
     interpret(editable, op='REMOVE', targets=[2], followUp=[{'op': 'INDOOR', 'targets': []}])
     body = adjust(editable).json()
