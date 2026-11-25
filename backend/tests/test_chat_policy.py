@@ -331,7 +331,7 @@ def test_ai_schema_validation_retries_before_using_rules(environment):
 def test_valid_ai_output_uses_no_fallback(environment):
     provider = FakeProvider([FakeReply(json.dumps({'profile': ready()}))])
     environment[0].state.extractor = AIConditionExtractor(AIService(provider), RuleBasedParser())
-    response = chat(environment, '가상 입력')
+    response = chat(environment, '[가상] 2026-11-12 해운대에서 13시부터 17시까지')
     assert response.status_code == 200, response.text
     assert response.json()['status'] == 'READY'
     assert response.json()['warnings'] == []
