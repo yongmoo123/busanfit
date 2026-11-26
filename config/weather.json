@@ -1,0 +1,92 @@
+{
+  "status": "APPROVED",
+  "pmApproved": true,
+  "decision": "DEC-034 날씨 판정 기준 (PM 김세민 2026-11-24, PR #87 승인 리뷰, 기록 PR #90). 판정 기준·예보 범위·특보 구역·실외 판정·먹자골목 제외·UNKNOWN 경고가 이 결정이다.",
+  "connected": "아직 코스에 연결하지 않았다(supportsWeather false). 연결(B·C)은 #33 11/25 판단 후.",
+  "forecast": {
+    "service": "기상청_단기예보 조회서비스 getVilageFcst",
+    "url": "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst",
+    "baseTimes": ["0200", "0500", "0800", "1100", "1400", "1700", "2000", "2300"],
+    "availableAfterMin": 10,
+    "maxDaysAhead": 2,
+    "numOfRows": 1000,
+    "rangeBasis": "DEC-034 2: 모레까지(1시간 간격). 근거 11/24 02시 발표 실제 응답(해운대 격자): 오늘 03시~모레 23시는 1시간 간격, 글피는 3시간 간격. 그 뒤 날짜·키 없음·조회 실패·형식 오류는 '날씨 미반영'(맑음·0으로 채우지 않음)."
+  },
+  "thresholds": {
+    "excludeOutdoor": {
+      "popGte": 60
+    },
+    "penalizeOutdoor": {
+      "skyCodes": [4],
+      "windSpeedGteMps": 9.0
+    },
+    "unusedCategories": {
+      "PTY": "강수형태는 판정에 쓰지 않는다(DEC-034 1). 표시용으로만 보관"
+    },
+    "codeNames": {
+      "SKY": {"1": "맑음", "3": "구름많음", "4": "흐림"},
+      "POP": "강수확률 %",
+      "WSD": "풍속 m/s"
+    }
+  },
+  "warnings": {
+    "service": "기상청_기상특보 조회서비스 getPwnCd (특보코드조회)",
+    "url": "https://apis.data.go.kr/1360000/WthrWrnInfoService/getPwnCd",
+    "checkOnlyWhenVisitIsToday": true,
+    "lookbackDays": 7,
+    "numOfRows": 1000,
+    "areaNamePrefix": "부산",
+    "ignoreAreaNameContains": ["바다"],
+    "areaMatchNote": "DEC-034 3: 부산 육상 특보구역 코드를 확인하지 못해(11/24 응답 최근 7일 전국 528건에 부산 육상 구역 기록 없음) 이름이 '부산'으로 시작하고 '바다'가 없는 구역의 특보를 4개 권역 모두에 적용한다(보수적). 확인된 부산 해상 구역: S1311100 부산앞바다(육상 장소 판정에는 쓰지 않음).",
+    "excludeOutdoorWarnVars": {
+      "2": "WARNING_HEAVY_RAIN",
+      "3": "WARNING_COLD_WAVE",
+      "7": "WARNING_TYPHOON",
+      "8": "WARNING_HEAVY_SNOW",
+      "12": "WARNING_HEAT_WAVE"
+    },
+    "penalizeOutdoorWarnVars": {
+      "1": "WARNING_STRONG_WIND"
+    },
+    "warnVarNames": {
+      "1": "강풍", "2": "호우", "3": "한파", "4": "건조", "5": "폭풍해일", "6": "풍랑",
+      "7": "태풍", "8": "대설", "9": "황사", "12": "폭염"
+    },
+    "warnVarNote": "DEC-034 1: 폭염·한파·호우·대설·태풍 → 실외 제외, 강풍 → 실외 감점. 코드는 공공데이터포털 기상특보 조회서비스 명세(data.go.kr/data/15000415, 특보코드조회 warnVar '1-강풍, 2-호우, 3-한파, 4-건조, 5-폭풍해일, 6-풍랑, 7-태풍, 8-대설, 9-황사, 12-폭염'). 11/24 실제 응답에서 관측한 값: 1·2·3·4·6·8. 7(태풍)·12(폭염)는 응답에 없어 명세로만 확인.",
+    "issueCommands": ["1", "3", "7"],
+    "releaseCommands": ["2", "8"],
+    "cancelledValues": ["1"],
+    "commandNote": "명세(data.go.kr/data/15000415 특보코드조회) command '1-발표, 2-해제, 3-연장, 6-정정, 7-변경발표, 8-변경해제', cancel '0-정상, 1-취소된 특보', startTime '발표발효시각(특보발표시에만 제공)', endTime '해제발효시각(특보해제시에만 제공)'. 11/24 실제 응답: command 1은 startTime만 있고 발표 시각보다 늦은 경우 137/281건(발효 예정), 2는 endTime만 있고 발표 시각보다 늦은 경우 59/191건(해제 예정), 3·7은 startTime = 발표 시각, 7은 같은 구역·종류의 주의보↔경보 변경. 발표(1·3·7)는 startTime부터, 해제(2·8)는 endTime부터 효력. cancel 1은 효력 없는 기록으로 무시. 6(정정)과 명세에 없는 값, 필요한 시각이 없는 기록은 판정하지 않고 WARNING_UNCHECKED."
+  },
+  "outdoorBy": {
+    "source": "TourAPI areaBasedList2 lclsSystm3 (DB places에 분류 코드 칸이 없어 pipelines/outdoor_ids.py가 장소 ID 목록 파일을 만든다)",
+    "decision": "DEC-034 4·5: 분류 코드로 확실한 실외만 OUTDOOR. needsDecision과 나머지는 UNKNOWN이며 제외·감점하지 않고 경고만 붙인다.",
+    "placeIdFile": "outdoor-places.json",
+    "codePrefixes": {
+      "NA": "자연관광 (섬·항구/포구·해변/해수욕장·생태관광지)",
+      "VE03": "문화관광 > 도시공원",
+      "VE0401": "문화관광 > 도시·지역문화관광 > 골목길, 문화거리",
+      "VE0103": "문화관광 > 랜드마크관광 > 다리 / 대교"
+    },
+    "excludePlaceIds": {
+      "tourapi-kor:1960614": "부평족발골목: DEC-034 4, 먹자골목은 활동이 식당 안이라 실외에서 뺀다",
+      "tourapi-kor:1960620": "부산 자갈치 양곱창 골목: DEC-034 4, 먹자골목은 활동이 식당 안이라 실외에서 뺀다",
+      "tourapi-kor:3014435": "서면먹자골목: DEC-034 4, 먹자골목은 활동이 식당 안이라 실외에서 뺀다"
+    },
+    "needsDecision": {
+      "VE010200": "타워/전망대: 실내 전망대(부산엑스더스카이)와 야외 전망대(천마산하늘전망대)가 섞임",
+      "VE040200": "마을관광지: 대부분 야외 골목이지만 실내 전시·카페 포함 가능",
+      "VE050100": "관광단지/특구: 구역 전체라 실내외 섞임",
+      "LS011900": "기타육상레저: 산책로(문탠로드·해파랑길)는 실외, 정거장 등 섞임",
+      "LS020100": "윈드서핑/제트스키: 활동은 실외, 업체 사무실 위치로 등록",
+      "LS020300": "요트: 활동은 실외, 업체 위치로 등록",
+      "LS021400": "기타수상레저: 활동은 실외, 업체 위치로 등록",
+      "EX070200": "기타체험관광: 청사포 기찻길(실외)과 실내 체험 섞임",
+      "EX030100": "체험마을: 마을 단위",
+      "SH060200": "상설시장: 지붕 있는 시장·노점 거리 섞임",
+      "SH070100": "기타쇼핑시설: 해운대 로데오거리(거리지만 쇼핑 목적)",
+      "VE020200": "워터파크: 실내외 섞임",
+      "HS020100": "탑·비석·기념탑: 부산타워(실내 전망)"
+    }
+  }
+}

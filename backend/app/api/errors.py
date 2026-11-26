@@ -32,6 +32,8 @@ def install_error_handlers(app: FastAPI) -> None:
             'REVISION_CONFLICT': '조건이 변경되었습니다. 최신 조건을 확인해 주세요.',
             'RATE_LIMITED': '요청이 많습니다. 잠시 후 다시 시도해 주세요.',
             'PROFILE_INCOMPLETE': '조건 카드에서 확인할 항목을 확인해 주세요.',
+            'COURSE_NOT_FOUND': '수정할 코스가 없어요. 코스를 먼저 생성해 주세요.',
+            'COURSE_CONFLICT': '코스가 변경되었습니다. 최신 코스를 확인해 주세요.',
         }
         response = error_response(exc.status, exc.code, messages[exc.code], exc.status == 429)
         if exc.retry_after is not None:

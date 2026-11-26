@@ -1,0 +1,561 @@
+{
+  "status": "APPROVED (DEC-034, PM 김세민 2026-11-24. 분류 코드로 확실한 실외만, 먹자골목 3곳 제외)",
+  "criterion": {
+    "source": "TourAPI areaBasedList2 lclsSystm3",
+    "rulesFrom": "config/weather.json outdoorBy",
+    "codePrefixes": {
+      "NA": "자연관광 (섬·항구/포구·해변/해수욕장·생태관광지)",
+      "VE03": "문화관광 > 도시공원",
+      "VE0401": "문화관광 > 도시·지역문화관광 > 골목길, 문화거리",
+      "VE0103": "문화관광 > 랜드마크관광 > 다리 / 대교"
+    },
+    "contentTypeIds": [
+      "12",
+      "14",
+      "28",
+      "38",
+      "39"
+    ]
+  },
+  "scope": {
+    "rule": "권역 원 안 장소만 (PM 11/21). 중심: config/retrieval.json areaCenters, 목록 원본 좌표로 판정",
+    "areas": [
+      "GWANGALLI",
+      "HAEUNDAE",
+      "NAMPO",
+      "SEOMYEON"
+    ],
+    "radiusM": 1500.0
+  },
+  "generatedFrom": "data/raw/tourapi 부산 시군구 목록 원본 전체 (pipelines/outdoor_ids.py)",
+  "targetsInCircles": 630,
+  "count": 29,
+  "countByArea": {
+    "GWANGALLI": 6,
+    "HAEUNDAE": 6,
+    "NAMPO": 10,
+    "SEOMYEON": 7
+  },
+  "countByCode": {
+    "NA020500": 1,
+    "NA020700": 2,
+    "NA020900": 2,
+    "NA040500": 1,
+    "VE010300": 3,
+    "VE030100": 3,
+    "VE030400": 1,
+    "VE030500": 3,
+    "VE040100": 13
+  },
+  "places": [
+    {
+      "placeId": "tourapi-kor:126078",
+      "area": "GWANGALLI",
+      "code": "NA020900",
+      "name": "광안리해수욕장"
+    },
+    {
+      "placeId": "tourapi-kor:126799",
+      "area": "GWANGALLI",
+      "code": "VE030500",
+      "name": "민락수변공원"
+    },
+    {
+      "placeId": "tourapi-kor:127925",
+      "area": "GWANGALLI",
+      "code": "VE040100",
+      "name": "광안리해변 테마거리"
+    },
+    {
+      "placeId": "tourapi-kor:128164",
+      "area": "GWANGALLI",
+      "code": "VE010300",
+      "name": "광안대교"
+    },
+    {
+      "placeId": "tourapi-kor:2782626",
+      "area": "GWANGALLI",
+      "code": "VE030500",
+      "name": "삼익비치수변공원"
+    },
+    {
+      "placeId": "tourapi-kor:3014437",
+      "area": "GWANGALLI",
+      "code": "VE030100",
+      "name": "민락해변공원"
+    },
+    {
+      "placeId": "tourapi-kor:126081",
+      "area": "HAEUNDAE",
+      "code": "NA020900",
+      "name": "해운대해수욕장"
+    },
+    {
+      "placeId": "tourapi-kor:128810",
+      "area": "HAEUNDAE",
+      "code": "VE030100",
+      "name": "동백공원"
+    },
+    {
+      "placeId": "tourapi-kor:987810",
+      "area": "HAEUNDAE",
+      "code": "NA020500",
+      "name": "해운대 동백섬"
+    },
+    {
+      "placeId": "tourapi-kor:2783306",
+      "area": "HAEUNDAE",
+      "code": "VE040100",
+      "name": "해리단길"
+    },
+    {
+      "placeId": "tourapi-kor:2784330",
+      "area": "HAEUNDAE",
+      "code": "NA020700",
+      "name": "미포항"
+    },
+    {
+      "placeId": "tourapi-kor:3027780",
+      "area": "HAEUNDAE",
+      "code": "VE030400",
+      "name": "송림공원"
+    },
+    {
+      "placeId": "tourapi-kor:126121",
+      "area": "NAMPO",
+      "code": "NA040500",
+      "name": "용두산공원"
+    },
+    {
+      "placeId": "tourapi-kor:126857",
+      "area": "NAMPO",
+      "code": "VE040100",
+      "name": "광복로패션거리"
+    },
+    {
+      "placeId": "tourapi-kor:127149",
+      "area": "NAMPO",
+      "code": "VE030500",
+      "name": "민주공원"
+    },
+    {
+      "placeId": "tourapi-kor:127488",
+      "area": "NAMPO",
+      "code": "VE040100",
+      "name": "BIFF 광장"
+    },
+    {
+      "placeId": "tourapi-kor:128698",
+      "area": "NAMPO",
+      "code": "VE040100",
+      "name": "40계단 문화관광테마거리"
+    },
+    {
+      "placeId": "tourapi-kor:129197",
+      "area": "NAMPO",
+      "code": "VE010300",
+      "name": "영도대교"
+    },
+    {
+      "placeId": "tourapi-kor:252562",
+      "area": "NAMPO",
+      "code": "VE010300",
+      "name": "부산대교"
+    },
+    {
+      "placeId": "tourapi-kor:985921",
+      "area": "NAMPO",
+      "code": "VE040100",
+      "name": "미술의거리"
+    },
+    {
+      "placeId": "tourapi-kor:2650232",
+      "area": "NAMPO",
+      "code": "VE040100",
+      "name": "산복도로"
+    },
+    {
+      "placeId": "tourapi-kor:2784333",
+      "area": "NAMPO",
+      "code": "NA020700",
+      "name": "부산남항"
+    },
+    {
+      "placeId": "tourapi-kor:1046349",
+      "area": "SEOMYEON",
+      "code": "VE040100",
+      "name": "서면1번가"
+    },
+    {
+      "placeId": "tourapi-kor:1805965",
+      "area": "SEOMYEON",
+      "code": "VE040100",
+      "name": "전포카페거리"
+    },
+    {
+      "placeId": "tourapi-kor:2663341",
+      "area": "SEOMYEON",
+      "code": "VE030100",
+      "name": "부산시민공원"
+    },
+    {
+      "placeId": "tourapi-kor:2708108",
+      "area": "SEOMYEON",
+      "code": "VE040100",
+      "name": "범일 이중섭거리"
+    },
+    {
+      "placeId": "tourapi-kor:2944033",
+      "area": "SEOMYEON",
+      "code": "VE040100",
+      "name": "전포 삼거리"
+    },
+    {
+      "placeId": "tourapi-kor:2994179",
+      "area": "SEOMYEON",
+      "code": "VE040100",
+      "name": "전포공구길"
+    },
+    {
+      "placeId": "tourapi-kor:3093625",
+      "area": "SEOMYEON",
+      "code": "VE040100",
+      "name": "부산진 별빛산책길"
+    }
+  ],
+  "excludedCount": 3,
+  "excludedPlaces": [
+    {
+      "placeId": "tourapi-kor:1960614",
+      "area": "NAMPO",
+      "code": "VE040100",
+      "name": "부평족발골목",
+      "note": "부평족발골목: DEC-034 4, 먹자골목은 활동이 식당 안이라 실외에서 뺀다"
+    },
+    {
+      "placeId": "tourapi-kor:1960620",
+      "area": "NAMPO",
+      "code": "VE040100",
+      "name": "부산 자갈치 양곱창 골목",
+      "note": "부산 자갈치 양곱창 골목: DEC-034 4, 먹자골목은 활동이 식당 안이라 실외에서 뺀다"
+    },
+    {
+      "placeId": "tourapi-kor:3014435",
+      "area": "SEOMYEON",
+      "code": "VE040100",
+      "name": "서면먹자골목",
+      "note": "서면먹자골목: DEC-034 4, 먹자골목은 활동이 식당 안이라 실외에서 뺀다"
+    }
+  ],
+  "needsDecisionCount": 44,
+  "needsDecisionPlaces": [
+    {
+      "placeId": "tourapi-kor:3064931",
+      "area": "NAMPO",
+      "code": "EX030100",
+      "name": "색채마을",
+      "note": "체험마을: 마을 단위"
+    },
+    {
+      "placeId": "tourapi-kor:2862152",
+      "area": "GWANGALLI",
+      "code": "EX070200",
+      "name": "밀락더마켓",
+      "note": "기타체험관광: 청사포 기찻길(실외)과 실내 체험 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:3511071",
+      "area": "GWANGALLI",
+      "code": "EX070200",
+      "name": "주식회사피알아이피",
+      "note": "기타체험관광: 청사포 기찻길(실외)과 실내 체험 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:3027700",
+      "area": "HAEUNDAE",
+      "code": "EX070200",
+      "name": "청사포 기찻길",
+      "note": "기타체험관광: 청사포 기찻길(실외)과 실내 체험 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:1018702",
+      "area": "NAMPO",
+      "code": "EX070200",
+      "name": "국제시장 먹자골목",
+      "note": "기타체험관광: 청사포 기찻길(실외)과 실내 체험 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:2999905",
+      "area": "NAMPO",
+      "code": "EX070200",
+      "name": "플루니티",
+      "note": "기타체험관광: 청사포 기찻길(실외)과 실내 체험 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:1277679",
+      "area": "NAMPO",
+      "code": "HS020100",
+      "name": "부산타워",
+      "note": "탑·비석·기념탑: 부산타워(실내 전망)"
+    },
+    {
+      "placeId": "tourapi-kor:2381567",
+      "area": "HAEUNDAE",
+      "code": "LS011900",
+      "name": "문탠로드",
+      "note": "기타육상레저: 산책로(문탠로드·해파랑길)는 실외, 정거장 등 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:2704645",
+      "area": "HAEUNDAE",
+      "code": "LS011900",
+      "name": "[해파랑길] 2코스",
+      "note": "기타육상레저: 산책로(문탠로드·해파랑길)는 실외, 정거장 등 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:2789488",
+      "area": "HAEUNDAE",
+      "code": "LS011900",
+      "name": "미포정거장",
+      "note": "기타육상레저: 산책로(문탠로드·해파랑길)는 실외, 정거장 등 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:2783308",
+      "area": "GWANGALLI",
+      "code": "LS020100",
+      "name": "서프마린",
+      "note": "윈드서핑/제트스키: 활동은 실외, 업체 사무실 위치로 등록"
+    },
+    {
+      "placeId": "tourapi-kor:3488597",
+      "area": "GWANGALLI",
+      "code": "LS020100",
+      "name": "크레이지서퍼스(크레이지컬처스주식회사)",
+      "note": "윈드서핑/제트스키: 활동은 실외, 업체 사무실 위치로 등록"
+    },
+    {
+      "placeId": "tourapi-kor:2825115",
+      "area": "HAEUNDAE",
+      "code": "LS020300",
+      "name": "요트탈래",
+      "note": "요트: 활동은 실외, 업체 위치로 등록"
+    },
+    {
+      "placeId": "tourapi-kor:3076754",
+      "area": "HAEUNDAE",
+      "code": "LS020300",
+      "name": "더베이101요트투어",
+      "note": "요트: 활동은 실외, 업체 위치로 등록"
+    },
+    {
+      "placeId": "tourapi-kor:2708019",
+      "area": "GWANGALLI",
+      "code": "LS021400",
+      "name": "광안리 SUP Zone",
+      "note": "기타수상레저: 활동은 실외, 업체 위치로 등록"
+    },
+    {
+      "placeId": "tourapi-kor:2991028",
+      "area": "GWANGALLI",
+      "code": "LS021400",
+      "name": "광안리 해양레포츠센터",
+      "note": "기타수상레저: 활동은 실외, 업체 위치로 등록"
+    },
+    {
+      "placeId": "tourapi-kor:995455",
+      "area": "HAEUNDAE",
+      "code": "SH060200",
+      "name": "해운대시장",
+      "note": "상설시장: 지붕 있는 시장·노점 거리 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:132190",
+      "area": "NAMPO",
+      "code": "SH060200",
+      "name": "부산 자갈치시장",
+      "note": "상설시장: 지붕 있는 시장·노점 거리 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:132191",
+      "area": "NAMPO",
+      "code": "SH060200",
+      "name": "국제시장",
+      "note": "상설시장: 지붕 있는 시장·노점 거리 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:132576",
+      "area": "NAMPO",
+      "code": "SH060200",
+      "name": "신동아 수산물시장",
+      "note": "상설시장: 지붕 있는 시장·노점 거리 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:986063",
+      "area": "NAMPO",
+      "code": "SH060200",
+      "name": "남포동건어물도매시장",
+      "note": "상설시장: 지붕 있는 시장·노점 거리 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:1013694",
+      "area": "NAMPO",
+      "code": "SH060200",
+      "name": "만물의거리",
+      "note": "상설시장: 지붕 있는 시장·노점 거리 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:1013709",
+      "area": "NAMPO",
+      "code": "SH060200",
+      "name": "아리랑거리",
+      "note": "상설시장: 지붕 있는 시장·노점 거리 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:1013716",
+      "area": "NAMPO",
+      "code": "SH060200",
+      "name": "국제시장 젊음의거리",
+      "note": "상설시장: 지붕 있는 시장·노점 거리 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:1013721",
+      "area": "NAMPO",
+      "code": "SH060200",
+      "name": "조명의거리",
+      "note": "상설시장: 지붕 있는 시장·노점 거리 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:1607655",
+      "area": "NAMPO",
+      "code": "SH060200",
+      "name": "부산공동어시장",
+      "note": "상설시장: 지붕 있는 시장·노점 거리 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:1878218",
+      "area": "NAMPO",
+      "code": "SH060200",
+      "name": "부평깡통시장",
+      "note": "상설시장: 지붕 있는 시장·노점 거리 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:1942298",
+      "area": "NAMPO",
+      "code": "SH060200",
+      "name": "남항시장",
+      "note": "상설시장: 지붕 있는 시장·노점 거리 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:1942316",
+      "area": "NAMPO",
+      "code": "SH060200",
+      "name": "영도봉래시장",
+      "note": "상설시장: 지붕 있는 시장·노점 거리 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:2744582",
+      "area": "NAMPO",
+      "code": "SH060200",
+      "name": "충무동 새벽시장",
+      "note": "상설시장: 지붕 있는 시장·노점 거리 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:132188",
+      "area": "SEOMYEON",
+      "code": "SH060200",
+      "name": "부전마켓타운",
+      "note": "상설시장: 지붕 있는 시장·노점 거리 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:132499",
+      "area": "SEOMYEON",
+      "code": "SH060200",
+      "name": "부산 자유도매시장",
+      "note": "상설시장: 지붕 있는 시장·노점 거리 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:132572",
+      "area": "SEOMYEON",
+      "code": "SH060200",
+      "name": "부산 중앙시장",
+      "note": "상설시장: 지붕 있는 시장·노점 거리 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:1250823",
+      "area": "SEOMYEON",
+      "code": "SH060200",
+      "name": "부산 평화도매시장",
+      "note": "상설시장: 지붕 있는 시장·노점 거리 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:2763900",
+      "area": "SEOMYEON",
+      "code": "SH060200",
+      "name": "서면시장",
+      "note": "상설시장: 지붕 있는 시장·노점 거리 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:1304431",
+      "area": "HAEUNDAE",
+      "code": "SH070100",
+      "name": "해운대 로데오거리",
+      "note": "기타쇼핑시설: 해운대 로데오거리(거리지만 쇼핑 목적)"
+    },
+    {
+      "placeId": "tourapi-kor:2668973",
+      "area": "HAEUNDAE",
+      "code": "VE010200",
+      "name": "부산엑스더스카이",
+      "note": "타워/전망대: 실내 전망대(부산엑스더스카이)와 야외 전망대(천마산하늘전망대)가 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:2721158",
+      "area": "NAMPO",
+      "code": "VE010200",
+      "name": "천마산하늘전망대",
+      "note": "타워/전망대: 실내 전망대(부산엑스더스카이)와 야외 전망대(천마산하늘전망대)가 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:2788424",
+      "area": "NAMPO",
+      "code": "VE010200",
+      "name": "누리바라기전망대",
+      "note": "타워/전망대: 실내 전망대(부산엑스더스카이)와 야외 전망대(천마산하늘전망대)가 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:2994680",
+      "area": "HAEUNDAE",
+      "code": "VE020200",
+      "name": "클럽디 오아시스",
+      "note": "워터파크: 실내외 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:2554070",
+      "area": "NAMPO",
+      "code": "VE040200",
+      "name": "깡깡이 예술마을",
+      "note": "마을관광지: 대부분 야외 골목이지만 실내 전시·카페 포함 가능"
+    },
+    {
+      "placeId": "tourapi-kor:2662531",
+      "area": "SEOMYEON",
+      "code": "VE040200",
+      "name": "호천마을",
+      "note": "마을관광지: 대부분 야외 골목이지만 실내 전시·카페 포함 가능"
+    },
+    {
+      "placeId": "tourapi-kor:127004",
+      "area": "HAEUNDAE",
+      "code": "VE050100",
+      "name": "해운대 관광특구",
+      "note": "관광단지/특구: 구역 전체라 실내외 섞임"
+    },
+    {
+      "placeId": "tourapi-kor:1957694",
+      "area": "NAMPO",
+      "code": "VE050100",
+      "name": "용두산 자갈치 관광특구",
+      "note": "관광단지/특구: 구역 전체라 실내외 섞임"
+    }
+  ]
+}

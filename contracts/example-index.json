@@ -21,5 +21,10 @@
   "examples/error-500-internal.response.json": "ErrorResponse",
   "examples/06-course.unknown-proposal.response.json": "CourseResponse",
   "examples/06-profile.include-unknown.request.json": "ProfileUpdateRequest",
-  "examples/06-course.conditional.response.json": "CourseResponse"
+  "examples/06-course.conditional.response.json": "CourseResponse",
+  "examples/07-adjust.request.json": "AdjustmentRequest",
+  "examples/07-adjust.success.response.json": "AdjustmentResponse",
+  "examples/07-adjust.needs-input.response.json": "AdjustmentResponse",
+  "examples/07-adjust.not-applied.response.json": "AdjustmentResponse",
+  "examples/error-409-course.response.json": "ErrorResponse"
 }
