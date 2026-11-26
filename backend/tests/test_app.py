@@ -44,6 +44,7 @@ def test_only_implemented_routes_are_documented():
     with TestClient(app) as client:
         assert client.get("/docs").status_code == 200
         expected = {'/api/sessions', '/api/sessions/{sessionId}/profile', '/api/courses', '/api/places/{placeId}', '/api/sessions/{sessionId}'}
+        expected.add('/api/courses/{courseId}/adjust')
         if app.state.extractor is not None:
             expected.add('/api/chat')
         assert set(client.get("/openapi.json").json()["paths"]) == expected
