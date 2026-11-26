@@ -6,7 +6,10 @@ import { createEmptyProfile } from './profile.js'
 import { budgetLabel } from './profileDefaults.js'
 import ProfileEditor from './ProfileEditor.jsx'
 import CourseTimeline from './CourseTimeline.jsx'
-import { createCourse } from './courseApi.js'
+import { createCourse, adjustCourse } from './courseApi.js'
+import CourseAdjustmentPanel from './CourseAdjustmentPanel.jsx'
+import CourseAdjustmentResult from './CourseAdjustmentResult.jsx'
+import { acceptAdjustmentResponse, adjustmentErrorMessage, adjustmentNeedsRecovery } from './courseAdjustment.js'
 import { buildInclusionProfile } from './unknownInclusion.js'
 import './App.css'
 
@@ -228,6 +231,9 @@ function App() {
   const [isIncludingUnknown, setIsIncludingUnknown] = useState(false)
   const [courseRetry, setCourseRetry] = useState(null)
   const unknownRequestRef = useRef(false)
+  const adjustmentRequestRef = useRef(null)
+  const latestCourseRef = useRef(null)
+  const [isAdjustingCourse, setIsAdjustingCourse] = useState(false)
 
   useEffect(() => {
     if (isQaEditor) return undefined
@@ -260,6 +266,10 @@ function App() {
   function retrySession() {
     if (profileSaveRef.current || unknownRequestRef.current) return
     courseRequestRef.current?.abort()
+    adjustmentRequestRef.current?.abort()
+    adjustmentRequestRef.current = null
+    latestCourseRef.current = null
+    setIsAdjustingCourse(false)
     setCourseRetry(null)
     if (session?.sessionId) deleteSession(session.sessionId).catch(() => {})
     sessionRequestRef.current = null
@@ -294,6 +304,7 @@ function App() {
     return () => {
       chatAbortRef.current?.abort()
       courseRequestRef.current?.abort()
+      adjustmentRequestRef.current?.abort()
     }
   }, [])
 
@@ -362,7 +373,7 @@ function App() {
       return { profile, status: questions.length ? 'NEEDS_INPUT' : 'READY', questions, warnings: [] }
     }
 
-    if (!session || profileSaveRef.current || courseRequestRef.current) {
+    if (!session || profileSaveRef.current || courseRequestRef.current || adjustmentRequestRef.current) {
       throw new Error('서버 연결 또는 이전 저장이 끝날 때까지 기다려 주세요.')
     }
 
@@ -370,11 +381,13 @@ function App() {
     let result
     try {
       result = await saveProfile(session.sessionId, profile, session.profileRevision)
+      latestCourseRef.current = null
       setCourseRetry(null)
       setSession((current) => {
         if (current?.sessionId !== session.sessionId) return current
         return {
           ...current,
+          latestCourseId: null,
           savedProfile: result.profile,
           profileStatus: result.status,
           profileRevision: result.profileRevision,
@@ -406,7 +419,7 @@ function App() {
   }
 
   function openEditor(target, focusField) {
-    if (!session || sessionError || profileSaveRef.current || courseRequestRef.current || isSending || editor) return
+    if (!session || sessionError || profileSaveRef.current || courseRequestRef.current || adjustmentRequestRef.current || isSending || editor) return
     setEditor({ target, isMock: false, focusField, regenerate: Boolean(focusField) })
   }
 
@@ -439,7 +452,7 @@ function App() {
               type="button"
               className="primary-button"
               onClick={() => handleCreateCourse()}
-              disabled={isCreatingCourse || isSending || Boolean(sessionError)}
+              disabled={isCreatingCourse || isSending || isAdjustingCourse || Boolean(sessionError)}
             >
               {isCreatingCourse ? '코스 만드는 중…' : '저장한 조건으로 코스 만들기'}
             </button>
@@ -465,7 +478,7 @@ function App() {
   }
 
   async function sendMessage(text) {
-    if (!session || sessionError || isSending || profileSaveRef.current || courseRequestRef.current || editor) return
+    if (!session || sessionError || isSending || profileSaveRef.current || courseRequestRef.current || adjustmentRequestRef.current || editor) return
     profileSaveRef.current = true
     const controller = new AbortController()
     chatAbortRef.current = controller
@@ -485,9 +498,11 @@ function App() {
     try {
       const response = await sendChat(session.sessionId, text, session.profileRevision, controller.signal)
       if (controller.signal.aborted) return
+      latestCourseRef.current = null
       setCourseRetry(null)
       setSession((current) => ({
         ...current,
+        latestCourseId: null,
         savedProfile: response.profile,
         profileStatus: response.status,
         profileRevision: response.profileRevision,
@@ -536,7 +551,8 @@ function App() {
       (savedProfile?.status ?? savedProfile?.profileStatus) !== 'READY' ||
       sessionError ||
       profileSaveRef.current ||
-      courseRequestRef.current
+      courseRequestRef.current ||
+      adjustmentRequestRef.current
     ) {
       return
     }
@@ -547,6 +563,8 @@ function App() {
     const controller = new AbortController()
     courseRequestRef.current = controller
     setIsCreatingCourse(true)
+    latestCourseRef.current = null
+    setSession((current) => current?.sessionId === session.sessionId ? { ...current, latestCourseId: null } : current)
     setCourseRetry(null)
 
     try {
@@ -558,6 +576,11 @@ function App() {
 
       if (controller.signal.aborted) return
 
+      const courseMessageId = crypto.randomUUID()
+      latestCourseRef.current = response.course ? {
+        sessionId: session.sessionId, messageId: courseMessageId,
+        profileRevision: requestedRevision, course: response.course,
+      } : null
       const isDemo = import.meta.env.DEV &&
         new URLSearchParams(window.location.search).get('qa') === 'course-api'
       setCourseRetry(null)
@@ -565,7 +588,7 @@ function App() {
       setMessages((previous) => [
         ...previous,
         {
-          id: crypto.randomUUID(),
+          id: courseMessageId,
           role: 'assistant',
           content: response.status === 'INSUFFICIENT_PLACES'
             ? '저장한 조건으로 방문할 수 있는 장소가 부족해요.'
@@ -577,7 +600,7 @@ function App() {
         },
       ])
       setSession((current) => current?.sessionId === session.sessionId
-        ? { ...current, expiresAt: response.sessionExpiresAt }
+        ? { ...current, latestCourseId: response.course?.id ?? null, expiresAt: response.sessionExpiresAt }
         : current)
       return true
     } catch (error) {
@@ -618,7 +641,7 @@ function App() {
 
   async function handleIncludeUnknown(message) {
     if (!session || sessionError || editor || isSending || profileSaveRef.current ||
-        courseRequestRef.current || unknownRequestRef.current) return
+        courseRequestRef.current || adjustmentRequestRef.current || unknownRequestRef.current) return
     if (message.requestedRevision !== session.profileRevision ||
         message.id !== messages.findLast((item) => item.courseResponse)?.id) {
       throw new Error('조건이 변경됐어요. 최신 조건으로 코스를 다시 만들어 주세요.')
@@ -636,6 +659,64 @@ function App() {
     } finally {
       unknownRequestRef.current = false
       setIsIncludingUnknown(false)
+    }
+  }
+
+  async function handleAdjustCourse(message, text) {
+    const snapshot = latestCourseRef.current
+    if (!session || sessionError || editor || isSending || profileSaveRef.current ||
+        courseRequestRef.current || unknownRequestRef.current || adjustmentRequestRef.current ||
+        session.capabilities?.supportsCourseAdjustment !== true || !text.trim() ||
+        !snapshot || snapshot.sessionId !== session.sessionId || snapshot.messageId !== message.id ||
+        snapshot.profileRevision !== session.profileRevision ||
+        snapshot.course.id !== message.courseResponse?.course?.id ||
+        message.requestedRevision !== session.profileRevision || message.adjustmentBlocked) return false
+
+    const controller = new AbortController()
+    adjustmentRequestRef.current = controller
+    setIsAdjustingCourse(true)
+    setMessages((current) => current.map((item) => item.id === message.id
+      ? { ...item, adjustmentError: '' } : item))
+    try {
+      const response = await adjustCourse(snapshot.sessionId, snapshot.course.id,
+        snapshot.profileRevision, text.trim(), controller.signal)
+      if (controller.signal.aborted || latestCourseRef.current !== snapshot) return false
+      const applied = acceptAdjustmentResponse(snapshot.course, snapshot.course.id,
+        snapshot.profileRevision, response)
+      if (applied.ignored) return false
+      latestCourseRef.current = { ...snapshot, course: applied.course }
+      setMessages((current) => current.map((item) => item.id === snapshot.messageId ? {
+        ...item,
+        content: response.status === 'SUCCESS' ? '코스를 수정했어요.'
+          : response.status === 'NEEDS_INPUT' ? '수정 전에 추가 확인이 필요해요.' : '수정을 적용하지 않았어요.',
+        courseResponse: { ...response, course: applied.course },
+        adjustmentResponse: response,
+        beforeAdjustment: snapshot.course,
+        adjustmentError: '',
+        adjustmentBlocked: false,
+      } : item))
+      setSession((current) => current?.sessionId === snapshot.sessionId
+        ? { ...current, latestCourseId: applied.course.id, expiresAt: response.sessionExpiresAt } : current)
+      return true
+    } catch (error) {
+      if (controller.signal.aborted || latestCourseRef.current !== snapshot) return false
+      const recovery = adjustmentNeedsRecovery(error)
+      if (recovery) latestCourseRef.current = null
+      setMessages((current) => current.map((item) => item.id === snapshot.messageId ? {
+        ...item, adjustmentResponse: null, beforeAdjustment: null,
+        adjustmentError: adjustmentErrorMessage(error), adjustmentBlocked: recovery,
+      } : item))
+      if (recovery) setSession((current) => current?.sessionId === snapshot.sessionId
+        ? { ...current, latestCourseId: null } : current)
+      if (error.status === 410 || error.code === 'SESSION_EXPIRED') {
+        setSessionError('대화가 만료됐어요. 새 대화를 시작해 주세요.')
+      }
+      return false
+    } finally {
+      if (adjustmentRequestRef.current === controller) {
+        adjustmentRequestRef.current = null
+        setIsAdjustingCourse(false)
+      }
     }
   }
 
@@ -663,7 +744,7 @@ function App() {
         aria-label="여행 조건 입력"
         rows={1}
         maxLength={1000}
-        disabled={isSending || isCreatingCourse || isIncludingUnknown || !session || Boolean(sessionError) || Boolean(editor)}
+        disabled={isSending || isCreatingCourse || isIncludingUnknown || isAdjustingCourse || !session || Boolean(sessionError) || Boolean(editor)}
       />
       <div className="composer-bottom">
         <span>✦ BusanFit AI</span>
@@ -671,7 +752,7 @@ function App() {
           type="submit"
           className="send-button"
           aria-label="메시지 전송"
-          disabled={!input.trim() || isSending || isCreatingCourse || isIncludingUnknown || !session || Boolean(sessionError) || Boolean(editor)}
+          disabled={!input.trim() || isSending || isCreatingCourse || isIncludingUnknown || isAdjustingCourse || !session || Boolean(sessionError) || Boolean(editor)}
         >
           ↑
         </button>
@@ -705,7 +786,7 @@ function App() {
         {!isQaEditor && <div className="chat-notice" role="status">
           <span>개발 검증 중 · 개인정보가 없는 가상 조건만 입력해 주세요.</span>
           {sessionError ? <><p>{sessionError}</p><button type="button" onClick={handleNewChat}>새 대화 시작</button></>
-            : !session ? <p>서버 연결 중…</p> : <button type="button" disabled={isSending || Boolean(editor)} onClick={() => openEditor('manual')}>조건 직접 입력</button>}
+            : !session ? <p>서버 연결 중…</p> : <button type="button" disabled={isSending || isAdjustingCourse || Boolean(editor)} onClick={() => openEditor('manual')}>조건 직접 입력</button>}
         </div>}
 
         {isQaEditor || editor?.target === 'manual' ? (
@@ -763,14 +844,14 @@ function App() {
 
                       {message.warnings?.map((warning, index) => <p className="chat-warning" role="status" key={`${warning.code}-${index}`}>{warning.message}</p>)}
 
-                      {message.directInput && <button type="button" disabled={isSending} onClick={() => openEditor(message.id)}>조건 카드에 직접 입력</button>}
+                      {message.directInput && <button type="button" disabled={isSending || isAdjustingCourse} onClick={() => openEditor(message.id)}>조건 카드에 직접 입력</button>}
 
                       {message.profile && message.id === messages.findLast((item) => item.profile)?.id && (
                         editor?.target === message.id ? renderProfileEditor() : (
                           <ConditionCard
                             profile={message.profile}
                             ready={message.status === 'READY'}
-                            disabled={isSending || isCreatingCourse || isIncludingUnknown || Boolean(sessionError)}
+                            disabled={isSending || isCreatingCourse || isIncludingUnknown || isAdjustingCourse || Boolean(sessionError)}
                             onRecommend={handleRecommend}
                             onEdit={() => openEditor(message.id)}
                           />
@@ -786,6 +867,7 @@ function App() {
                       {(message.showCoursePlaceholder || message.courseResponse) && (
                         <CourseTimeline
                           courseResponse={message.courseResponse}
+                          adjustment={message.adjustmentResponse}
                           isInjury={message.isInjuryCourse ?? false}
                           supportsUnknownInclusion={session?.capabilities?.supportsUnknownAccessibilityInclusion === true}
                           onIncludeUnknown={() => handleIncludeUnknown(message)}
@@ -794,11 +876,43 @@ function App() {
                             ? (suggestion) => openEditor(message.id, suggestion.field)
                             : undefined}
                           suggestionsDisabled={
-                            Boolean(editor) || isSending || isCreatingCourse || isIncludingUnknown || Boolean(sessionError)
+                            Boolean(editor) || isSending || isCreatingCourse || isIncludingUnknown || isAdjustingCourse || Boolean(sessionError)
                             || message.id !== messages.findLast((item) => item.courseResponse)?.id
                             || message.requestedRevision !== session?.profileRevision
                           }
                         />
+                      )}
+                      {message.courseResponse?.course && (
+                        <CourseAdjustmentResult response={message.adjustmentResponse}
+                          before={message.beforeAdjustment} error={message.adjustmentError} />
+                      )}
+                      {message.courseResponse?.course && message.id === messages.findLast((item) => item.courseResponse)?.id && (
+                        <>
+                          {session?.capabilities?.supportsCourseAdjustment === true && (
+                            <CourseAdjustmentPanel
+                              key={`${session.sessionId}-${message.id}`}
+                              onSubmit={(text) => handleAdjustCourse(message, text)}
+                              busy={isAdjustingCourse}
+                              disabled={Boolean(editor) || isSending || isCreatingCourse || isIncludingUnknown ||
+                                Boolean(sessionError) || message.adjustmentBlocked ||
+                                message.requestedRevision !== session.profileRevision ||
+                                message.courseResponse.course.id !== session.latestCourseId}
+                              questions={message.adjustmentResponse?.questions ?? []}
+                            />
+                          )}
+                          {message.adjustmentResponse?.questions?.some((question) => question.field.startsWith('profile.')) && (
+                            <button type="button" className="profile-secondary"
+                              disabled={isSending || isCreatingCourse || isIncludingUnknown || isAdjustingCourse || Boolean(editor) || Boolean(sessionError)}
+                              onClick={() => openEditor(message.id, message.adjustmentResponse.questions.find((question) => question.field.startsWith('profile.')).field.slice(8))}>
+                              조건 카드에서 변경
+                            </button>
+                          )}
+                          {message.adjustmentBlocked && !sessionError && (
+                            <button type="button" className="profile-secondary"
+                              disabled={isSending || isCreatingCourse || isIncludingUnknown || isAdjustingCourse || Boolean(editor)}
+                              onClick={handleRecommend}>저장한 조건으로 새 코스 만들기</button>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -809,7 +923,7 @@ function App() {
                   <div className="condition-card" role="status">
                     <p>저장한 조건은 유지돼요. 조건을 다시 저장하지 않고 코스 생성만 재시도할 수 있어요.</p>
                     <button type="button" className="profile-secondary"
-                      disabled={Boolean(editor) || isSending || isCreatingCourse || isIncludingUnknown || Boolean(sessionError)}
+                      disabled={Boolean(editor) || isSending || isCreatingCourse || isIncludingUnknown || isAdjustingCourse || Boolean(sessionError)}
                       onClick={handleRetryCourse}>
                       코스 생성만 다시 시도
                     </button>

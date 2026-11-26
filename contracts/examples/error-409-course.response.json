@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "COURSE_CONFLICT",
+    "message": "코스가 변경되었습니다. 최신 코스를 확인해 주세요.",
+    "retryable": false,
+    "details": []
+  },
+  "requestId": "99999999-9999-4999-8999-999999999999"
+}

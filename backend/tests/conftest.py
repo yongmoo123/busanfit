@@ -6,3 +6,4 @@ import pytest
 def no_live_provider(monkeypatch):
     monkeypatch.delenv('GEMINI_API_KEY', raising=False)
     monkeypatch.delenv('GEMINI_MODEL', raising=False)
+    monkeypatch.delenv('KMA_SERVICE_KEY', raising=False)

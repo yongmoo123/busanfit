@@ -5,6 +5,8 @@ async function requestJson(url, options, fallbackMessage) {
     const payload = await response.json().catch(() => null)
     const error = new Error(payload?.error?.message ?? fallbackMessage)
     error.status = response.status
+    error.code = payload?.error?.code
+    error.retryAfter = response.headers.get('Retry-After')
     throw error
   }
 
@@ -29,5 +31,17 @@ export function getPlaceDetail(placeId, signal) {
     `/api/places/${encodeURIComponent(placeId)}`,
     { signal },
     '장소 상세 정보를 불러오지 못했어요.',
+  )
+}
+export function adjustCourse(sessionId, courseId, expectedProfileRevision, message, signal) {
+  return requestJson(
+    `/api/courses/${encodeURIComponent(courseId)}/adjust`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId, expectedProfileRevision, message }),
+      signal,
+    },
+    '코스를 수정하지 못했어요.',
   )
 }

@@ -1,0 +1,89 @@
+{
+ "_note": "[가상] 테스트 고정 응답. 구조는 2026-11-24 getPwnCd 실제 응답과 같고 구역 코드·이름·시각은 만든 것이다.",
+ "response": {
+  "header": {
+   "resultCode": "00",
+   "resultMsg": "NORMAL_SERVICE"
+  },
+  "body": {
+   "dataType": "JSON",
+   "items": {
+    "item": [
+     {
+      "allEndTime": 0,
+      "areaCode": "L9999001",
+      "areaName": "부산동부[가상]",
+      "cancel": "0",
+      "command": "1",
+      "endTime": 0,
+      "stnId": "108",
+      "tmFc": 202611200500,
+      "tmSeq": 101,
+      "warnVar": 3,
+      "warnStress": 0,
+      "startTime": 202611200500
+     },
+     {
+      "allEndTime": 202611211000,
+      "areaCode": "L9999001",
+      "areaName": "부산동부[가상]",
+      "cancel": "0",
+      "command": "2",
+      "endTime": 202611211000,
+      "stnId": "108",
+      "tmFc": 202611211000,
+      "tmSeq": 120,
+      "warnVar": 3,
+      "warnStress": 0,
+      "startTime": 0
+     },
+     {
+      "allEndTime": 0,
+      "areaCode": "L9999002",
+      "areaName": "부산서부[가상]",
+      "cancel": "0",
+      "command": "1",
+      "endTime": 0,
+      "stnId": "108",
+      "tmFc": 202611240400,
+      "tmSeq": 181,
+      "warnVar": 1,
+      "warnStress": 0,
+      "startTime": 202611240400
+     },
+     {
+      "allEndTime": 0,
+      "areaCode": "S9999001",
+      "areaName": "부산앞바다[가상]",
+      "cancel": "0",
+      "command": "1",
+      "endTime": 0,
+      "stnId": "108",
+      "tmFc": 202611232110,
+      "tmSeq": 176,
+      "warnVar": 6,
+      "warnStress": 0,
+      "startTime": 202611232110
+     },
+     {
+      "allEndTime": 0,
+      "areaCode": "L9999101",
+      "areaName": "경주시[가상]",
+      "cancel": "0",
+      "command": "1",
+      "endTime": 0,
+      "stnId": "108",
+      "tmFc": 202611240400,
+      "tmSeq": 181,
+      "warnVar": 3,
+      "warnStress": 0,
+      "startTime": 202611240400
+     }
+    ]
+   },
+   "pageNo": 1,
+   "numOfRows": 1000,
+   "totalCount": 5
+  }
+ }
+}

@@ -1,0 +1,4644 @@
+{
+  "fieldAccuracy": {
+    "correct": 273,
+    "total": 279,
+    "ratio": 0.978494623655914
+  },
+  "strengthAccuracy": {
+    "correct": 72,
+    "total": 73,
+    "ratio": 0.9863013698630136
+  },
+  "missingQuestionCases": {
+    "correct": 3,
+    "total": 4
+  },
+  "questionOverflowCount": 0,
+  "cases": [
+    {
+      "id": "EX-01",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T14:00:00+09:00",
+              "endAt": "2026-11-14T18:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T14:00:00+09:00",
+              "endAt": "2026-11-14T18:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 2504.9
+    },
+    {
+      "id": "EX-02",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "GWANGALLI",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-13T10:00:00+09:00",
+              "endAt": "2026-11-13T15:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "GWANGALLI",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-13T10:00:00+09:00",
+              "endAt": "2026-11-13T15:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 2491.5
+    },
+    {
+      "id": "EX-03",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true,
+        "companions": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true,
+        "companions": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "SEOMYEON",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T18:00:00+09:00",
+              "endAt": "2026-11-12T21:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FRIENDS",
+              "count": 4,
+              "hasInfant": false
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {
+          "type": "FRIENDS",
+          "count": 4,
+          "hasInfant": false
+        },
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "SEOMYEON",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T18:00:00+09:00",
+              "endAt": "2026-11-12T21:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FRIENDS",
+              "count": 4,
+              "hasInfant": false
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 4232.8
+    },
+    {
+      "id": "EX-04",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "NAMPO",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-15T12:00:00+09:00",
+              "endAt": "2026-11-15T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "PUBLIC",
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "NAMPO",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-15T12:00:00+09:00",
+              "endAt": "2026-11-15T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "PUBLIC",
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 2246.9
+    },
+    {
+      "id": "EX-05",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true,
+        "indoorPreference": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T13:00:00+09:00",
+              "endAt": "2026-11-14T19:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": "INDOOR",
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T13:00:00+09:00",
+              "endAt": "2026-11-14T19:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": "INDOOR",
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 2344.1
+    },
+    {
+      "id": "EX-06",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true,
+        "indoorPreference": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T14:00:00+09:00",
+              "endAt": "2026-11-14T18:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": "INDOOR",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T14:00:00+09:00",
+              "endAt": "2026-11-14T18:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": "INDOOR",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 2697.2
+    },
+    {
+      "id": "EX-07",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "GWANGALLI",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-15T11:00:00+09:00",
+              "endAt": "2026-11-15T16:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "GWANGALLI",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-15T11:00:00+09:00",
+              "endAt": "2026-11-15T16:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 3073.4
+    },
+    {
+      "id": "EX-08",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true,
+        "preferenceTags": false
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-13T16:00:00+09:00",
+              "endAt": "2026-11-13T21:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": [
+              "야경"
+            ],
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-13T16:00:00+09:00",
+              "endAt": "2026-11-13T21:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": [
+              "야경"
+            ],
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "FAIL",
+      "manualReviewRequired": [],
+      "extractionMs": 2854.5
+    },
+    {
+      "id": "EX-09",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": false,
+        "transport": true,
+        "mobility": true,
+        "budget": false,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true,
+        "budget": true
+      },
+      "policyChecks": {
+        "status": false,
+        "questionFields": false,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [
+          "budget",
+          "timeWindow"
+        ],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "NEEDS_INPUT",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [
+          {
+            "field": "timeWindow",
+            "message": "시작 시각과 종료 시각을 입력해 주세요."
+          },
+          {
+            "field": "budget",
+            "message": "조건 카드에서 이 항목을 확인해 주세요."
+          }
+        ],
+        "warnings": [
+          {
+            "code": "UNCONFIRMED_CHANGE",
+            "message": "확인하지 못한 조건이 있어요. 조건 카드에서 확인해 주세요.",
+            "placeIds": []
+          }
+        ],
+        "pendingFields": {
+          "timeWindow": "UNCONFIRMED_CHANGE",
+          "budget": "UNCONFIRMED_CHANGE"
+        }
+      },
+      "verdict": "FAIL",
+      "manualReviewRequired": [],
+      "extractionMs": 2817.9
+    },
+    {
+      "id": "EX-10",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true,
+        "excludedCategories": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "SEOMYEON",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-15T12:00:00+09:00",
+              "endAt": "2026-11-15T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": [
+              "EXHIBITION"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "SEOMYEON",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-15T12:00:00+09:00",
+              "endAt": "2026-11-15T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": [
+              "EXHIBITION"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 2647.7
+    },
+    {
+      "id": "EX-11",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "NEEDS_INPUT",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [
+          {
+            "field": "timeWindow",
+            "message": "시작 시각과 종료 시각을 입력해 주세요."
+          }
+        ],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 2845.7
+    },
+    {
+      "id": "EX-12",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {},
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [
+          "timeWindow"
+        ],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "NEEDS_INPUT",
+        "profile": {
+          "area": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [
+          {
+            "field": "area",
+            "message": "방문할 지역을 선택해 주세요."
+          },
+          {
+            "field": "timeWindow",
+            "message": "시작 시각과 종료 시각을 입력해 주세요."
+          }
+        ],
+        "warnings": [
+          {
+            "code": "UNCONFIRMED_CHANGE",
+            "message": "확인하지 못한 조건이 있어요. 조건 카드에서 확인해 주세요.",
+            "placeIds": []
+          }
+        ],
+        "pendingFields": {
+          "timeWindow": "UNCONFIRMED_CHANGE"
+        }
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 2899.7
+    },
+    {
+      "id": "EX-13",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {},
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "NEEDS_INPUT",
+        "profile": {
+          "area": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [
+          {
+            "field": "area",
+            "message": "방문할 지역을 선택해 주세요."
+          },
+          {
+            "field": "timeWindow",
+            "message": "시작 시각과 종료 시각을 입력해 주세요."
+          }
+        ],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 2902.4
+    },
+    {
+      "id": "EX-14",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": false,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true
+      },
+      "policyChecks": {
+        "status": false,
+        "questionFields": false,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "GWANGALLI",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T15:00:00+09:00",
+              "endAt": "2026-11-14T18:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "GWANGALLI",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T15:00:00+09:00",
+              "endAt": "2026-11-14T18:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "FAIL",
+      "manualReviewRequired": [],
+      "extractionMs": 3240.5
+    },
+    {
+      "id": "EX-15",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true,
+        "mobility": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T13:00:00+09:00",
+              "endAt": "2026-11-14T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "WHEELCHAIR"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T13:00:00+09:00",
+              "endAt": "2026-11-14T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "WHEELCHAIR"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 2990.2
+    },
+    {
+      "id": "EX-16",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true,
+        "mobility": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "GWANGALLI",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-15T14:00:00+09:00",
+              "endAt": "2026-11-15T18:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "INJURY"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "GWANGALLI",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-15T14:00:00+09:00",
+              "endAt": "2026-11-15T18:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "INJURY"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 2774.4
+    },
+    {
+      "id": "EX-17",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true,
+        "mobility": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-13T10:00:00+09:00",
+              "endAt": "2026-11-13T14:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "STROLLER"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-13T10:00:00+09:00",
+              "endAt": "2026-11-13T14:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "STROLLER"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 2836.1
+    },
+    {
+      "id": "EX-18",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true,
+        "mobility": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T13:00:00+09:00",
+              "endAt": "2026-11-14T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T13:00:00+09:00",
+              "endAt": "2026-11-14T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 3044.0
+    },
+    {
+      "id": "EX-19",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true,
+        "companions": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true,
+        "mobility": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T11:00:00+09:00",
+              "endAt": "2026-11-14T15:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 3,
+              "hasInfant": true
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {
+          "type": "FAMILY",
+          "count": 3,
+          "hasInfant": true
+        },
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T11:00:00+09:00",
+              "endAt": "2026-11-14T15:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "STROLLER"
+            ],
+            "source": "DEFAULT",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 3,
+              "hasInfant": true
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 2863.4
+    },
+    {
+      "id": "EX-20",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true,
+        "companions": true,
+        "mobility": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true,
+        "mobility": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "GWANGALLI",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-15T12:00:00+09:00",
+              "endAt": "2026-11-15T16:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 3,
+              "hasInfant": true
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {
+          "type": "FAMILY",
+          "count": 3,
+          "hasInfant": true,
+          "hasChild": true
+        },
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "GWANGALLI",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-15T12:00:00+09:00",
+              "endAt": "2026-11-15T16:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 3,
+              "hasInfant": true
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [
+          {
+            "code": "STROLLER_NOT_APPLIED",
+            "message": "유모차 조건은 자동으로 넣지 않았어요. 필요하면 조건 카드에서 추가해 주세요.",
+            "placeIds": []
+          }
+        ],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 3299.4
+    },
+    {
+      "id": "EX-21",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true,
+        "companions": true,
+        "mobility": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true,
+        "mobility": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T13:00:00+09:00",
+              "endAt": "2026-11-14T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "INJURY"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 3,
+              "hasInfant": true
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {
+          "type": "FAMILY",
+          "count": 3,
+          "hasInfant": true,
+          "hasChild": true
+        },
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T13:00:00+09:00",
+              "endAt": "2026-11-14T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "INJURY"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 3,
+              "hasInfant": true
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [
+          {
+            "code": "STROLLER_NOT_APPLIED",
+            "message": "유모차 조건은 자동으로 넣지 않았어요. 필요하면 조건 카드에서 추가해 주세요.",
+            "placeIds": []
+          }
+        ],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 3090.0
+    },
+    {
+      "id": "EX-22",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": false,
+        "warningCodes": true,
+        "transport": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T13:00:00+09:00",
+              "endAt": "2026-11-14T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "CAR",
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [
+          "timeWindow"
+        ],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "NEEDS_INPUT",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [
+          {
+            "field": "timeWindow",
+            "message": "시작 시각과 종료 시각을 입력해 주세요."
+          },
+          {
+            "field": "transport",
+            "message": "요청한 이동수단은 아직 지원하지 않아요. 지원되는 이동수단을 명시적으로 선택해 주세요."
+          }
+        ],
+        "warnings": [
+          {
+            "code": "UNSUPPORTED_TRANSPORT",
+            "message": "요청한 이동수단은 아직 지원하지 않아요.",
+            "placeIds": []
+          },
+          {
+            "code": "UNCONFIRMED_CHANGE",
+            "message": "확인하지 못한 조건이 있어요. 조건 카드에서 확인해 주세요.",
+            "placeIds": []
+          }
+        ],
+        "pendingFields": {
+          "timeWindow": "UNCONFIRMED_CHANGE",
+          "transport": "UNSUPPORTED_TRANSPORT"
+        }
+      },
+      "verdict": "FAIL",
+      "manualReviewRequired": [],
+      "extractionMs": 3733.5
+    },
+    {
+      "id": "EX-23",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true,
+        "transport": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-15T14:00:00+09:00",
+              "endAt": "2026-11-15T18:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "PUBLIC",
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "NEEDS_INPUT",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-15T14:00:00+09:00",
+              "endAt": "2026-11-15T18:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [
+          {
+            "field": "transport",
+            "message": "요청한 이동수단은 아직 지원하지 않아요. 지원되는 이동수단을 명시적으로 선택해 주세요."
+          }
+        ],
+        "warnings": [
+          {
+            "code": "UNSUPPORTED_TRANSPORT",
+            "message": "요청한 이동수단은 아직 지원하지 않아요.",
+            "placeIds": []
+          }
+        ],
+        "pendingFields": {
+          "transport": "UNSUPPORTED_TRANSPORT"
+        }
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 3616.9
+    },
+    {
+      "id": "EX-24",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "transport": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true,
+        "transport": true,
+        "pendingCleared": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T13:00:00+09:00",
+              "endAt": "2026-11-14T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 2596.5
+    },
+    {
+      "id": "EX-25",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "excludedCategories": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true,
+        "unchanged.area": true,
+        "unchanged.timeWindow": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": [
+              "CAFE"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T13:00:00+09:00",
+              "endAt": "2026-11-14T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": [
+              "CAFE"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 2702.5
+    },
+    {
+      "id": "EX-26",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": false,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "timeWindow": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true,
+        "unchanged.area": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T15:00:00+09:00",
+              "endAt": "2026-11-12T19:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-12T15:00:00+09:00",
+              "endAt": "2026-11-12T19:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "FAIL",
+      "manualReviewRequired": [],
+      "extractionMs": 3219.9
+    },
+    {
+      "id": "EX-27",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "excludedCategories": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true,
+        "unchanged.area": true,
+        "unchanged.timeWindow": true,
+        "unchanged.mobility": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": [
+              "EXHIBITION"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T13:00:00+09:00",
+              "endAt": "2026-11-14T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": [
+              "WHEELCHAIR"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": [
+              "EXHIBITION"
+            ],
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 3000.6
+    },
+    {
+      "id": "EX-28",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true
+      },
+      "policyChecks": {
+        "status": false,
+        "questionFields": false,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T14:00:00+09:00",
+              "endAt": "2026-11-14T18:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [
+          "timeWindow"
+        ],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "NEEDS_INPUT",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [
+          {
+            "field": "timeWindow",
+            "message": "시작 시각과 종료 시각을 입력해 주세요."
+          }
+        ],
+        "warnings": [
+          {
+            "code": "UNCONFIRMED_CHANGE",
+            "message": "확인하지 못한 조건이 있어요. 조건 카드에서 확인해 주세요.",
+            "placeIds": []
+          }
+        ],
+        "pendingFields": {
+          "timeWindow": "UNCONFIRMED_CHANGE"
+        }
+      },
+      "verdict": "FAIL",
+      "manualReviewRequired": [
+        "excludedCategories에 CAFE",
+        "카페 관련 HARD 조건"
+      ],
+      "extractionMs": 3176.9
+    },
+    {
+      "id": "EX-29",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T13:00:00+09:00",
+              "endAt": "2026-11-14T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-14T13:00:00+09:00",
+              "endAt": "2026-11-14T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "PASS",
+      "manualReviewRequired": [],
+      "extractionMs": 2880.7
+    },
+    {
+      "id": "EX-30",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": false,
+        "companions": true,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true,
+        "indoorPreference": true
+      },
+      "policyChecks": {
+        "status": true,
+        "questionFields": true,
+        "warningCodes": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "GWANGALLI",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-15T12:00:00+09:00",
+              "endAt": "2026-11-15T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": "OUTDOOR",
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {},
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "GWANGALLI",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-15T12:00:00+09:00",
+              "endAt": "2026-11-15T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": "OUTDOOR",
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "FAIL",
+      "manualReviewRequired": [
+        "indoorPreference INDOOR",
+        "indoorPreference HARD"
+      ],
+      "extractionMs": 3195.8
+    },
+    {
+      "id": "EX-31",
+      "fieldChecks": {
+        "area": true,
+        "timeWindow": true,
+        "transport": true,
+        "mobility": true,
+        "budget": true,
+        "indoorPreference": true,
+        "companions": false,
+        "excludedCategories": true,
+        "preferenceTags": true
+      },
+      "strengthChecks": {
+        "area": true,
+        "timeWindow": true
+      },
+      "policyChecks": {
+        "status": false,
+        "questionFields": false,
+        "warningCodes": true,
+        "unchanged.mobility": true
+      },
+      "actualExtraction": {
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-15T13:00:00+09:00",
+              "endAt": "2026-11-15T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 1,
+              "hasInfant": false
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "unconfirmedFields": [],
+        "companionHints": {
+          "type": "FAMILY"
+        },
+        "fallback": false,
+        "failure": null
+      },
+      "actual": {
+        "httpStatus": 200,
+        "status": "READY",
+        "profile": {
+          "area": {
+            "value": "HAEUNDAE",
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "timeWindow": {
+            "value": {
+              "startAt": "2026-11-15T13:00:00+09:00",
+              "endAt": "2026-11-15T17:00:00+09:00"
+            },
+            "source": "USER",
+            "strength": "HARD"
+          },
+          "transport": {
+            "value": "WALK",
+            "source": "DEFAULT",
+            "strength": "SOFT"
+          },
+          "mobility": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "budget": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "indoorPreference": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "companions": {
+            "value": {
+              "type": "FAMILY",
+              "count": 1,
+              "hasInfant": false
+            },
+            "source": "USER",
+            "strength": "SOFT"
+          },
+          "excludedCategories": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "HARD"
+          },
+          "preferenceTags": {
+            "value": null,
+            "source": "UNSET",
+            "strength": "SOFT"
+          },
+          "includeUnknownAccessibility": false
+        },
+        "questions": [],
+        "warnings": [],
+        "pendingFields": {}
+      },
+      "verdict": "FAIL",
+      "manualReviewRequired": [
+        "companions.hasInfant false로 확정",
+        "companions.hasInfant true로 추측",
+        "companions.count 추측",
+        "mobility STROLLER 적용"
+      ],
+      "extractionMs": 2878.4
+    }
+  ],
+  "runDate": "2026-11-23T15:13:31.996276+09:00",
+  "codeRevision": "2e188133b4e98eebae238c6220c19a8774d4067e",
+  "workingTreeModified": true,
+  "datasetVersion": "draft-2026-11-12",
+  "referenceNow": "2026-11-12T10:00:00+09:00",
+  "provider": "gemini",
+  "modelVersion": "gemini-3.5-flash-lite",
+  "syntheticOnly": true,
+  "policyExecution": "direct-policy-no-http",
+  "runner": "paced wrapper (delay 6.0s between cases)",
+  "fallbackCaseCount": 0,
+  "fallbackCases": [],
+  "llmAccuracyMeasured": true,
+  "latency": {
+    "llmCases": 31,
+    "maxMs": 4232.8,
+    "meanMs": 2958.0,
+    "within5s": 31
+  },
+  "attemptLogSample": [
+    "ai_attempt purpose=extract attempt=1 retry_reason=NONE outcome=SUCCESS detail=NONE provider_ms=3735.000 validation_ms=0.000 elapsed_ms=3735.000",
+    "ai purpose=extract attempts=1 failure=NONE elapsed_ms=3734",
+    "ai_attempt purpose=extract attempt=1 retry_reason=NONE outcome=SUCCESS detail=NONE provider_ms=3610.000 validation_ms=0.000 elapsed_ms=3610.000",
+    "ai purpose=extract attempts=1 failure=NONE elapsed_ms=3609",
+    "ai_attempt purpose=extract attempt=1 retry_reason=NONE outcome=SUCCESS detail=NONE provider_ms=2593.000 validation_ms=0.000 elapsed_ms=2593.000",
+    "ai purpose=extract attempts=1 failure=NONE elapsed_ms=2592",
+    "ai_attempt purpose=extract attempt=1 retry_reason=NONE outcome=SUCCESS detail=NONE provider_ms=2687.000 validation_ms=0.000 elapsed_ms=2687.000",
+    "ai purpose=extract attempts=1 failure=NONE elapsed_ms=2686",
+    "ai_attempt purpose=extract attempt=1 retry_reason=NONE outcome=SUCCESS detail=NONE provider_ms=3203.000 validation_ms=0.000 elapsed_ms=3203.000",
+    "ai purpose=extract attempts=1 failure=NONE elapsed_ms=3202",
+    "ai_attempt purpose=extract attempt=1 retry_reason=NONE outcome=SUCCESS detail=NONE provider_ms=3000.000 validation_ms=0.000 elapsed_ms=3000.000",
+    "ai purpose=extract attempts=1 failure=NONE elapsed_ms=3000",
+    "ai_attempt purpose=extract attempt=1 retry_reason=NONE outcome=SUCCESS detail=NONE provider_ms=3172.000 validation_ms=0.000 elapsed_ms=3172.000",
+    "ai purpose=extract attempts=1 failure=NONE elapsed_ms=3172",
+    "ai_attempt purpose=extract attempt=1 retry_reason=NONE outcome=SUCCESS detail=NONE provider_ms=2875.000 validation_ms=0.000 elapsed_ms=2875.000",
+    "ai purpose=extract attempts=1 failure=NONE elapsed_ms=2875",
+    "ai_attempt purpose=extract attempt=1 retry_reason=NONE outcome=SUCCESS detail=NONE provider_ms=3187.000 validation_ms=0.000 elapsed_ms=3187.000",
+    "ai purpose=extract attempts=1 failure=NONE elapsed_ms=3187",
+    "ai_attempt purpose=extract attempt=1 retry_reason=NONE outcome=SUCCESS detail=NONE provider_ms=2875.000 validation_ms=0.000 elapsed_ms=2875.000",
+    "ai purpose=extract attempts=1 failure=NONE elapsed_ms=2875"
+  ],
+  "datasetStatus": "초안 — 김영무 교차 검토 전 (최소 10문장 공동 검토 필요)",
+  "mustNotChecks": "manual review required; excluded from automatic verdict"
+}

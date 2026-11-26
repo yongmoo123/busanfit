@@ -207,7 +207,7 @@ Software Design Document (SDD)
 | API-002 | POST | /api/chat | 조건 입력·제약 분석 | {sessionId, message} | {reply, questions\[\], profile, status} | FR-001~005 |
 | API-003 | PUT | /api/sessions/{id}/profile | 제약 확인·수정 | {profile} | {profile} | FR-006 |
 | API-004 | POST | /api/courses | 코스 생성 | {sessionId} | {course, suggestions\[\], warnings\[\], excludedUnknown} | FR-007~012, FR-016 |
-| API-005 | POST | /api/courses/{courseId}/adjust | 조정 제안·대화형 수정 (계획; FR-013·FR-014②는 API-003 전체 PUT → API-004 POST 사용) | {sessionId, chipId \| message} | {course, changes\[\], suggestions\[\]} | FR-013~015 |
+| API-005 | POST | /api/courses/{courseId}/adjust | 대화형 부분 수정(시작 연결 성공 후 활성, #32 계약) | {sessionId, expectedProfileRevision, message} | {status, course, profileRevision, changes, questions, suggestions, warnings, excludedUnknown, sessionExpiresAt, requestId} | FR-015 |
 | API-006 | GET | /api/places/{placeId} | 장소 상세·출처 | \- | {place, sources\[\], warnings\[\]} | FR-008, FR-012 |
 | API-007 | GET | /api/facilities?bbox=&types= | 주변 편의시설 | query | {facilities\[\]} | FR-017 |
 | API-008 | POST | /api/courses/{courseId}/share | 코스 공유 링크 생성 | {sessionId} | {shareUrl, expiresAt} | FR-019 |
@@ -216,6 +216,8 @@ Software Design Document (SDD)
 | API-011 | DELETE | /api/sessions/{sessionId} | 세션 종료(세션 데이터 즉시 폐기, DEC-009) | \- | 204 (이미 없는 세션도 204) | NFR-003 |
 
 # 7. AI / LLM / VLM 설계
+
+API-005 부분 수정 설계(AC-007·DEC-024·025·027): 세션 메모리에 마지막 코스와 구조화된 후속 질문만 보관하고 프로필 변경·만료·삭제 시 무효화한다. 수정 성공은 새 courseId, profileRevision은 유지한다. 생성/수정 저장 시 현재 프로필·코스 버전을 원자적으로 검사한다. REMOVE는 나머지 장소·순서·시각을 보존하고 연결 구간을 재계산한다. EXTEND_STAY는 앞 장소를 유지하고 뒤 장소의 시각만 필요한 만큼 민다. REPLACE는 사용자 확인 범위에 따라 모든 방문 시작·종료·체류시간을 고정하고 해당 슬롯에 들어가는 후보만 교체한다. DEC-035에 따라 교체 시각 재조정은 범위 밖이며 더 머무르기는 별도 EXTEND_STAY로 처리한다. 검증에 실패하면 기존 코스를 유지한다. 질문/미적용은 NEEDS_INPUT/NOT_APPLIED이며 일반 supportsCourseAdjustment는 실제 DB·검색·계산·승인 가중치 시작 연결이 성공한 뒤 true이며 실패 시 시작하지 않고 종료 시 false로 초기화한다. 주입 앱은 명시적 검증 설정 없이 기본 false다. FR-013 포함 동의는 기존 API-003→API-004 흐름을 사용한다. 계약·진호 연결 기준과 후속 검증 항목은 [#32 구현 참고](ISSUE32_COURSE_ADJUSTMENT.md)에 분리한다.
 
 ## 7.1 AI 파이프라인
 
@@ -235,6 +237,8 @@ Software Design Document (SDD)
 | VLM | 구현 범위 제외 (향후 동일 제공자의 멀티모달 모델) | 사진 분위기 분석 → 유사 장소 검색 | Image + Text → JSON(분위기 태그) | AIService에 completeWithImage() 추가로 확장 | 향후 확장 |
 
 ## 7.3 Prompt 설계
+
+COMP-03 추출 근거 검사(FR-002·004, AI-REQ-06): JSON/업무 스키마 검증 뒤, 세션 병합 전에 현재 사용자 원문과 High 필드를 대조한다. 종료 근거 없는 timeWindow와 가족의 근거 없는 인원·영유아 여부는 미입력으로 돌리고 기존 DEC-021·022 확인 정책으로 처리한다. 완성 companions·부분 companionHints를 함께 검사하고 기존 USER 값·원문 비저장 원칙을 유지한다. 프롬프트만으로 추측 방지를 보장하지 않는다. 세부 범위·검증은 [#84 구현 참고](ISSUE84_EXTRACTION_EVIDENCE.md)로 분리한다.
 
 FR-009 구현 보완: CourseService가 CandidateRetriever·TravelTimeProvider·PlaceRepository를 주입받아 CourseScheduler와 CourseValidator를 호출한다. 실제 검색/이동시간을 구현하지 않고 가짜 포트로 먼저 검증했다. 스케줄러는 DB·LLM을 호출하지 않고 검증기는 Repository에서 장소 사실을 다시 확인한다. 배치 초안 후 최대 3회 수리·재검증, 마지막 사실 재검사, API 반환 전 세션 revision/만료 재검사를 수행한다. 코스 경로·필드와 장소 2~6곳 제한은 기존 Course 계약을 유지한다. [#23 연결·검증 기록](ISSUE23_COURSES_IMPLEMENTATION.md).
 

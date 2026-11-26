@@ -24,6 +24,10 @@ class SessionSnapshot:
     history: list = field(default_factory=list)
     pending_fields: dict[str, str] = field(default_factory=dict)
     companion_hints: dict = field(default_factory=dict)
+    last_course: dict | None = None
+    course_epoch: int = 0
+    adjustment_context: list = field(default_factory=list)
+    course_metadata: dict = field(default_factory=dict)
 
 
 @dataclass(repr=False)
@@ -123,6 +127,10 @@ class SessionStore:
             if hints_copy is not None:
                 entry.state.companion_hints = hints_copy
             entry.state.revision += 1
+            entry.state.last_course = None
+            entry.state.adjustment_context = []
+            entry.state.course_metadata = {}
+            entry.state.course_epoch += 1
             self._renew(entry)
             return deepcopy(entry.state)
 
@@ -140,6 +148,40 @@ class SessionStore:
         """Recheck after course generation; a stale result must not be returned."""
         with self._lock:
             entry = self._entry(session_id, expected_revision)
+            self._renew(entry)
+            return deepcopy(entry.state)
+
+    def check_course(self, session_id: str, revision: int, epoch: int,
+                     course_id: str | None = None) -> SessionSnapshot:
+        """A course ID is an immutable version; epoch also guards overlapping questions/generation."""
+        with self._lock:
+            state = self._entry(session_id, revision).state
+            if state.course_epoch != epoch:
+                raise SessionError('COURSE_CONFLICT', 409)
+            if course_id is not None:
+                if state.last_course is None:
+                    raise SessionError('COURSE_NOT_FOUND', 404)
+                if state.last_course['id'] != course_id:
+                    raise SessionError('COURSE_CONFLICT', 409)
+            return deepcopy(state)
+
+    def begin_adjustment(self, session_id: str, revision: int, course_id: str) -> SessionSnapshot:
+        with self._lock:
+            state = self.begin_course(session_id, revision)
+            return self.check_course(session_id, revision, state.course_epoch, course_id)
+
+    def commit_course(self, session_id: str, revision: int, epoch: int, *,
+                      course: dict | None, context: list | None = None,
+                      metadata: dict | None = None) -> SessionSnapshot:
+        """Publish only a validated current snapshot. No raw messages or database persistence."""
+        course_copy, context_copy = deepcopy(course), deepcopy(context or [])
+        with self._lock:
+            self.check_course(session_id, revision, epoch)
+            entry = self._entry(session_id, revision)
+            entry.state.last_course = course_copy
+            entry.state.adjustment_context = context_copy
+            entry.state.course_metadata = deepcopy(metadata or {}) if course_copy is not None else {}
+            entry.state.course_epoch += 1
             self._renew(entry)
             return deepcopy(entry.state)
 
