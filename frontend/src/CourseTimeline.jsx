@@ -59,7 +59,7 @@ function ServerPlaceDetail({ item, isMock }) {
 
 export default function CourseTimeline({
   courseResponse, isMock = !courseResponse, onEditSuggestion, suggestionsDisabled = false, isInjury = false,
-  supportsUnknownInclusion = false, onIncludeUnknown,
+  supportsUnknownInclusion = false, onIncludeUnknown, adjustment,
 }) {
   const [selectedItemId, setSelectedItemId] = useState(null)
   const detailId = useId()
@@ -72,6 +72,9 @@ export default function CourseTimeline({
   const { status, course, warnings, excludedUnknown } = response
   const suggestions = selectCourseSuggestions(response.suggestions, supportsUnknownInclusion)
   const unknownPlaceIds = includedUnknownPlaceIds(warnings)
+  const changedIds = new Set(adjustment?.status === 'SUCCESS'
+    ? [...adjustment.changes.timeChangedItemIds, ...adjustment.changes.replacedItems.map((pair) => pair.newItemId)] : [])
+  const visibleWarnings = adjustment ? warnings.filter((warning) => !warning.code.startsWith('ADJUSTMENT_')) : warnings
   const controls = (
     <UnknownPlaceSuggestion
       suggestions={suggestions}
@@ -91,7 +94,7 @@ export default function CourseTimeline({
           </p>
         )}
         {isMock && <p>가상 응답</p>}
-        {warnings.map((warning) => (
+        {visibleWarnings.map((warning) => (
           <p key={warning.code}>{warning.message}</p>
         ))}
         {controls}
@@ -122,7 +125,7 @@ export default function CourseTimeline({
           const incomingLeg = course.legs.find((leg) => leg.toItemId === item.id)
 
           return (
-            <li key={item.id}>
+            <li key={item.id} className={changedIds.has(item.id) ? 'adjustment-item-changed' : undefined}>
               <button
                 type="button"
                 className="profile-secondary"
@@ -137,6 +140,7 @@ export default function CourseTimeline({
                 {item.place.name} 상세 보기
               </button>
 
+              {changedIds.has(item.id) && <span className="adjustment-change-badge">변경됨</span>}
               {incomingLeg && (
                 <p>
                   이전 장소에서 이동 {incomingLeg.minutes}분
@@ -195,7 +199,7 @@ export default function CourseTimeline({
         <p>정보가 없어 제외된 장소가 {excludedUnknown.count}곳 있어요.</p>
       )}
 
-      {warnings.map((warning) => (
+      {visibleWarnings.map((warning) => (
         <p key={warning.code}>{warning.message}</p>
       ))}
     </section>
