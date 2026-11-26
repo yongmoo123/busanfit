@@ -3,9 +3,9 @@
 사용자의 지역·시간·이동수단·이동제약·예산·선호·동행 조건에 맞춰 실제 부산 공공데이터로 놀거리 코스를 구성하는 소프트웨어공학 팀프로젝트입니다.
 LLM은 조건 해석과 설명, DB와 규칙 엔진은 장소 선택·시간 계산·필수 조건 검증을 담당합니다. VLM은 범위 밖입니다.
 
-**현재 #72 작업 브랜치 상태(2026-11-21): 실제 해운대 DB·검색기·도보 계산기·승인 동행 가중치·정보 없는 장소 포함 API를 일반 서버에 연결했습니다.** 서버는 DB 경로를 지정해야 시작하며, 준비가 성공하면 HAEUNDAE/WALK와 포함 capability를 공개합니다. 초기 동의는 false이고 실제 null 장소는 명시적 동의 후에만 CONDITIONAL로 허용합니다. 실제 화면·지도·PC/모바일 및 최종 인수는 후속입니다. 가상 미리보기를 실제 여행 데이터나 인수 결과로 사용하지 않습니다.
+**현재 상태(2026-11-26, develop): 4개 권역 DB v3(`busanfit_v3.sqlite3`, 630곳)·검색기·도보 계산기·승인 동행 가중치·정보 없는 장소 포함·코스 수정 API를 일반 서버에 연결했습니다.** 지원 범위는 해운대·서면·광안리·남포 4개 권역, 도보(WALK)입니다(DEC-028·DEC-032). 서버는 DB 경로를 지정해야 시작합니다. 날씨 모듈은 준비됐지만 코스 연결은 향후 과제입니다(DEC-036). 실제 화면·지도·PC/모바일 최종 인수는 별도입니다.
 
-[제출용 설치·실행 안내](docs/SUBMISSION_RUN.md)와 [테스트 보고서용 검증 근거](docs/TEST_EVIDENCE_2026-11-21.md)를 정리했습니다. 제출 확정본은 승인된 통합 커밋과 화면 인수 결과로 다시 확인합니다. 별도 #73의 AI 계측·연결 재사용 변경은 이 구현에 포함되지 않았습니다.
+[제출용 설치·실행 안내](docs/SUBMISSION_RUN.md)(DEC-031)를 따릅니다. [2026-11-21 검증 근거](docs/TEST_EVIDENCE_2026-11-21.md)는 v1 DB로 실행한 당시 기록입니다.
 
 ## 팀 작업 영역
 
@@ -47,18 +47,17 @@ deployment/           공동 — 원본 배포 초안의 구현 예정 위치
 
 ## 시작하기
 
-설치·공유 DB/SHA 확인·키 없는 기본 재현·프론트 프록시·문제 확인은 [제출용 실행 안내](docs/SUBMISSION_RUN.md)를 따릅니다. 일반 앱은 `.env`를 자동으로 읽지 않으며, DB 없이 빈 데이터로 시작하지 않습니다.
+설치·DB/SHA 확인·Gemini 키 유무·프론트·종료는 [제출용 실행 안내](docs/SUBMISSION_RUN.md)를 따릅니다. 서버는 `.env`를 자동으로 읽지 않으며(환경변수 목록: [.env.example](.env.example)), DB 없이 빈 데이터로 시작하지 않습니다.
 
 의존성 설치를 마친 뒤 저장소 루트의 PowerShell에서:
 
 ```powershell
-$env:BUSANFIT_DB_PATH = (Resolve-Path data/share/haeundae_sample_v1.sqlite3).Path
-$env:GEMINI_API_KEY = $null
-$env:GEMINI_MODEL = $null
+$env:BUSANFIT_DB_PATH = (Resolve-Path data/share/busanfit_v3.sqlite3).Path   # SHA-256 e8bd5c51…a6fc
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 --no-access-log
+npm.cmd --prefix frontend run dev -- --host 127.0.0.1 --port 5173             # 다른 터미널
 ```
 
-API 문서는 http://127.0.0.1:8000/docs 입니다. 단일 worker를 사용하고 재시작 후에는 새 세션을 만듭니다. 새 POST /api/sessions에서 지원 범위를 확인하고 최신 프로필 전체 PUT → READY의 새 revision POST 순서로 연결합니다. 동의 변경·후보 부족·조건부 경고와 프론트 실행은 [실제 연결 안내](docs/ISSUE30_FRONTEND_HANDOFF.md)를 참고하세요.
+브라우저: http://127.0.0.1:5173 , API 문서: http://127.0.0.1:8000/docs . Gemini 키가 없으면 규칙 파서로 동작합니다(날짜와 오전/오후 또는 24시간 형식 필요, 입력 예시는 실행 안내 §6). 단일 worker를 사용하고 재시작 후에는 새 세션을 만듭니다. 화면 연결 순서는 [실제 연결 안내](docs/ISSUE30_FRONTEND_HANDOFF.md)를 참고하세요.
 
 ## 검사
 
@@ -73,7 +72,7 @@ GitHub Actions는 main/develop push와 PR에서 같은 검사를 실행합니다
 
 ## 다음 작업
 
-진호의 실제 화면 연결·지도·PC/모바일·수동 인수와 #72·#73 리뷰 대응이 남아 있습니다. 코드/API 검증 완료와 최종 사용자 인수는 구분합니다. #32 부분 수정은 11/22 범위 판단 후 계약부터 진행하고 날씨·고정 일정은 11/25 판단 전 착수하지 않습니다.
+화면·지도·PC/모바일 수동 인수, 테스트 보고서 갱신, v1.0 태그와 제출 압축(DEC-031)이 남아 있습니다. 날씨의 코스 연결과 대중교통·자차는 향후 과제입니다. 코드/API 검증 완료와 최종 사용자 인수는 구분합니다.
 
 [연결 기록](docs/ISSUE23_COURSES_IMPLEMENTATION.md), [포함 기능 기록](docs/ISSUE30_UNKNOWN_ACCESSIBILITY_IMPLEMENTATION.md), [기준 결정](docs/DECISIONS.md)을 참고하세요. 아래 날짜가 붙은 과거 기록의 비활성·미연결 표기는 당시 상태입니다.
 
