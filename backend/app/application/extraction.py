@@ -7,6 +7,7 @@ from app.api.profile_models import (
     Area, Budget, Category, Condition, Profile, ProfileField, TimeWindow,
 )
 from app.api.session_models import ContractModel
+from app.application.extraction_evidence import ground_high_risk_fields
 
 
 FIELD_MAP = {'area': 'area', 'time_window': 'timeWindow', 'transport': 'transport',
@@ -102,11 +103,11 @@ class AIConditionExtractor:
         result = await self.ai.complete(Purpose.EXTRACT, ExtractionOutput, user_message=message)
         if result.data is not None:
             profile = result.data.profile.model_dump(mode='json')
+            profile, hints, unconfirmed = ground_high_risk_fields(message, profile,
+                result.data.companionHints.model_dump(exclude_none=True), result.data.unconfirmedFields)
             if profile['transport']['value'] is None and 'transport' not in result.data.unconfirmedFields:
                 profile['transport'] = {'value': 'WALK', 'source': 'DEFAULT', 'strength': 'SOFT'}
-            return Analysis(profile,
-                            set(result.data.unconfirmedFields),
-                            result.data.companionHints.model_dump(exclude_none=True))
+            return Analysis(profile, unconfirmed, hints)
         parsed = self.parser.parse(message)
         profile = blank_profile()
         hints = {}
