@@ -347,7 +347,7 @@ FR-007·008 구현(#22): `retrieval/PlaceRetriever`가 CandidateRetriever를 구
 
 | **패턴/원칙** | **적용 위치** | **적용 이유** | **관련 클래스/컴포넌트** | **관련 요구사항** |
 |----|----|----|----|----|
-| Strategy | AIService | LLM 제공자(무료→유료) 교체를 설정으로 처리 | AIService, GeminiProvider, ClaudeProvider, OpenAIProvider | NFR-006 |
+| Strategy | AIService | LLM 제공자(무료→유료) 교체를 설정으로 처리 | AIService, GeminiProvider(구현), FakeProvider(테스트) / 유료 제공자는 향후 추가 (DEC-030) | NFR-006 |
 | Adapter | DataCollector | 데이터셋마다 다른 형식(API·CSV·좌표계)을 공통 Place/Facility 모델로 변환 | TourApiAdapter, MetroCsvAdapter, ParkingAdapter | FR-020, NFR-009 |
 | Repository | PlaceRepository | 도메인 로직과 SQL·공간 질의 분리, 테스트 시 Mock 교체 | PlaceRepository | FR-007, NFR-006 |
 | Facade | CourseOrchestrator | 프론트엔드에 단순한 API를 제공하고 내부 파이프라인을 감춤 | CourseOrchestrator | FR-001, FR-009 |
