@@ -69,7 +69,9 @@ def ground_high_risk_fields(message, profile, hints, unconfirmed):
         condition['value'], condition['source'] = None, 'UNSET'
         unconfirmed.add('companions')
         return profile, {}, unconfirmed
-    if family_mentioned or values.get('type') == 'FAMILY':
+    # A family keyword may be incidental (e.g. "가족 같은 친구"). Only fill
+    # a missing type; do not reclassify an explicit non-family AI type.
+    if values.get('type') == 'FAMILY' or (family_mentioned and values.get('type') is None):
         if family_mentioned:
             values['type'] = 'FAMILY'
         if values.get('count') is not None and not _count_is_supported(message, values['count']):

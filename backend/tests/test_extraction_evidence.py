@@ -179,15 +179,54 @@ def test_clock_minutes_are_not_people_count_or_infant_evidence():
     assert response.companion_hints == {'type': 'FAMILY'}
 
 
-def test_unsupported_family_claim_cannot_skip_question_by_using_solo_type():
-    family = {'type': 'SOLO', 'count': 1, 'hasInfant': False}
+@pytest.mark.parametrize('kind', ['SOLO', 'FRIENDS', 'COUPLE', 'OTHER'])
+def test_family_keyword_does_not_override_explicit_non_family_ai_type(kind):
+    group = {'type': kind, 'count': {'SOLO': 1, 'COUPLE': 2}.get(kind, 3), 'hasInfant': False}
+    response = asyncio.run(extractor(reply(family=group)).extract('가족 같은 친구들이랑'))
+    assert response.profile['companions']['value'] == group
+    assert 'companions' not in response.unconfirmed_fields
+
+
+@pytest.mark.parametrize('message', ['가족여행은 다음에 하고 오늘은 친구 3명이랑', '가족 같은 친구들이랑'])
+@pytest.mark.parametrize('channel', ['profile', 'hints', 'both'])
+def test_incidental_family_words_preserve_friends_and_do_not_ask_infant(message, channel):
+    group = {'type': 'FRIENDS', 'count': 3, 'hasInfant': False}
+    output = reply(family=group if channel != 'hints' else None,
+                   hints=group if channel != 'profile' else None)
+    direct = asyncio.run(extractor(output).extract(message))
+    if channel != 'hints':
+        assert direct.profile['companions']['value'] == group
+    if channel != 'profile':
+        assert direct.companion_hints == group
+    app = app_for(extractor(output))
+    with TestClient(app) as client:
+        sid = client.post('/api/sessions', json={}).json()['sessionId']
+        body = chat(client, sid, '토요일15시부터18시까지 해운대에서 ' + message)
+        assert body['status'] == 'READY' and body['questions'] == []
+        assert body['profile']['companions']['value'] == group
+
+
+def test_missing_type_can_still_use_family_hint_and_ask_infant_once():
+    app = app_for(extractor(reply(hints={'count': 1, 'hasInfant': False})))
+    with TestClient(app) as client:
+        sid = client.post('/api/sessions', json={}).json()['sessionId']
+        body = chat(client, sid, '토요일15시부터18시까지 해운대에서 가족끼리')
+        assert body['status'] == 'NEEDS_INPUT'
+        assert [q['message'] for q in body['questions']] == ['영유아도 함께 가나요?']
+        state = app.state.sessions.check_current(sid, body['profileRevision'])
+        assert state.companion_hints['type'] == 'FAMILY'
+        assert 'count' not in state.companion_hints and 'hasInfant' not in state.companion_hints
+
+
+def test_demo_s1_two_year_old_baby_and_family_of_three_are_preserved():
+    family = {'type': 'FAMILY', 'count': 3, 'hasInfant': True}
     app = app_for(extractor(reply(family=family)))
     with TestClient(app) as client:
         sid = client.post('/api/sessions', json={}).json()['sessionId']
-        body = chat(client, sid, '13시부터17시까지 해운대 가족끼리')
-        assert body['status'] == 'NEEDS_INPUT'
-        state = app.state.sessions.check_current(sid, body['profileRevision'])
-        assert state.companion_hints['type'] == 'FAMILY' and 'count' not in state.companion_hints
+        body = chat(client, sid, '토요일15시부터18시까지 해운대에서 두 살 아기랑 가족 셋이서')
+        assert body['status'] == 'READY' and body['questions'] == []
+        assert body['profile']['companions']['value'] == family
+        assert body['profile']['mobility']['value'] == ['STROLLER']
 
 
 def test_conflicting_infant_statement_needs_confirmation_instead_of_false_absence():
