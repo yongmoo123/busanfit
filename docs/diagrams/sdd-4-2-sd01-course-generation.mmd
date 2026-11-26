@@ -1,5 +1,5 @@
-%% 그림 4-2(b). SD-01 코스 생성 부분 (UC-003, POST /api/courses) — 실제 코드 기준 2026-11-25 develop b890e88
-%% 범위: 저장된 조건 프로필로 코스를 만드는 엔진 흐름. 조건 입력·추출(UC-001, #91 진행 중)과 세션 확인(#86 진행 중)은 넣지 않았다.
+%% 그림 4-2(b). SD-01 코스 생성 부분 (UC-003, POST /api/courses) — 실제 코드 기준 2026-11-26 develop 05011b2
+%% 범위: 저장된 조건 프로필로 코스를 만드는 엔진 흐름. 조건 입력·추출(UC-001)과 세션 revision 재확인은 생략했다. 날씨는 코스 생성에 연결되지 않아(DEC-036) 넣지 않았다.
 %% PNG 생성 (저장소 루트): npx -p @mermaid-js/mermaid-cli@11.4.2 mmdc -c docs/diagrams/mermaid.config.json -s 2 -b white -i docs/diagrams/sdd-4-2-sd01-course-generation.mmd -o docs/images/sdd-4-2-sd01-course-generation.png
 sequenceDiagram
   autonumber
@@ -22,10 +22,15 @@ sequenceDiagram
   CS->>PR: retrieve(profile)
   PR->>REPO: find_within_radius(권역 중심, 1.5 km, 제외 카테고리)
   REPO-->>PR: 장소 목록(거리순)
-  Note over PR: 영업시간·이동제약·실내 판정<br/>정보 없음(null)은 후보에서 빼고 따로 집계
-  PR-->>CS: RetrievalResult(후보 ≤20, 정보 없음 ID·항목)
+  Note over PR: 사후면세점 ID 제외(DEC-023)<br/>주소·영업시간·이동제약·실내 판정<br/>정보 없음(null)은 일반 후보에서 빼고 집계
+  PR-->>CS: RetrievalResult(일반 후보 ≤20, 정보 없음 집계,<br/>접근성 정보만 없는 후보 목록)
 
-  loop 검증 통과 또는 재구성 3회까지
+  opt 사용자가 정보 없는 장소 포함에 동의 (includeUnknownAccessibility=true, DEC-033)
+    CS->>REPO: get_place(id) — 접근성 정보만 없는 후보 재확인
+    Note over CS: 이동제약 항목 null만 허용해 후보에 추가<br/>영업시간·주소 등 다른 정보 없음은 계속 제외
+  end
+
+  loop 검증 통과 또는 재구성 3회까지 (첫 시도 포함 최대 4회)
     CS->>REPO: get_place(id) — 후보 사실 재조회
     CS->>SCH: schedule(후보, profile, TravelCache)
     SCH->>TT: estimate(출발, 도착, injury)
@@ -49,16 +54,17 @@ sequenceDiagram
     CS-->>API: CourseResult(INSUFFICIENT_PLACES 경고, 정보 없음 집계, 포함 제안)
     API-->>FE: 200 INSUFFICIENT_PLACES (조건 완화 없음)
   else 코스 있음
-    CS-->>API: CourseResult(course, 경고, 조정 제안)
-    API->>EXP: explain(course, mobility 범주)
-    EXP->>REPO: 장소 사실 조회
-    EXP->>AI: complete(EXPLAIN, 시스템이 고른 사실 후보)
-    alt LLM 성공
-      AI-->>EXP: 장소별 사실 선택
-    else 시간 초과·형식 오류
-      AI-->>EXP: 실패 → 템플릿 문장(AI_FALLBACK)
+    CS-->>API: CourseResult(course, 경고, 조정 제안)<br/>동의로 포함된 장소가 있으면 validation CONDITIONAL·장소별 경고
+    opt ExplanationGenerator가 연결된 경우 (미연결이면 템플릿 이유 그대로, #96)
+      API->>EXP: explain(course, mobility 범주, 남은 시간)
+      EXP->>REPO: 장소 사실 조회
+      alt 남은 시간 있음
+        EXP->>AI: complete(EXPLAIN, 시스템이 고른 사실 후보)
+        AI-->>EXP: 장소별 사실 선택 또는 실패(시간 초과·형식 오류)
+      end
+      Note over EXP: 선택이 유효하면 LLM 문장<br/>실패·시간 없음이면 EXP가 템플릿 문장으로 대체(AI_FALLBACK)
+      EXP-->>API: 이유가 붙은 코스
     end
-    EXP-->>API: 이유가 붙은 코스
     API-->>FE: 200 SUCCESS (코스·출처·경고·제안)
   end
   FE-->>U: 타임라인·지도·추천 이유
