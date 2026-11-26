@@ -238,6 +238,8 @@ API-005 부분 수정 설계(AC-007·DEC-024·025·027): 세션 메모리에 마
 
 ## 7.3 Prompt 설계
 
+COMP-03 추출 근거 검사(FR-002·004, AI-REQ-06): JSON/업무 스키마 검증 뒤, 세션 병합 전에 현재 사용자 원문과 High 필드를 대조한다. 종료 근거 없는 timeWindow와 가족의 근거 없는 인원·영유아 여부는 미입력으로 돌리고 기존 DEC-021·022 확인 정책으로 처리한다. 완성 companions·부분 companionHints를 함께 검사하고 기존 USER 값·원문 비저장 원칙을 유지한다. 프롬프트만으로 추측 방지를 보장하지 않는다. 세부 범위·검증은 [#84 구현 참고](ISSUE84_EXTRACTION_EVIDENCE.md)로 분리한다.
+
 FR-009 구현 보완: CourseService가 CandidateRetriever·TravelTimeProvider·PlaceRepository를 주입받아 CourseScheduler와 CourseValidator를 호출한다. 실제 검색/이동시간을 구현하지 않고 가짜 포트로 먼저 검증했다. 스케줄러는 DB·LLM을 호출하지 않고 검증기는 Repository에서 장소 사실을 다시 확인한다. 배치 초안 후 최대 3회 수리·재검증, 마지막 사실 재검사, API 반환 전 세션 revision/만료 재검사를 수행한다. 코스 경로·필드와 장소 2~6곳 제한은 기존 Course 계약을 유지한다. [#23 연결·검증 기록](ISSUE23_COURSES_IMPLEMENTATION.md).
 
 FR-005·006 보완: config/defaults.json을 서버 기본 체류시간 함수와 카드 안내가 공유한다. application/profile_support.py는 실제 후보 검색 연결·필드 검증 완료를 받은 뒤 지원 범위를 만드는 구성 경계이며 기본 앱은 비활성이다. #22의 검색·항목별 판정과 #23 스케줄러를 새로 구현하지 않았다. [이슈 #21 구현·후속 연결 기록](ISSUE21_DEFAULTS_IMPLEMENTATION.md).
