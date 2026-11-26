@@ -1,10 +1,10 @@
 # DB 기반 코스 평가 실행 준비 — FR-009 / AI-REQ-01·05
 
-2026-11-21. 실제 DB·계산기 자동 검사를 통과한 뒤 사용자 요청으로 일반 해운대·도보 코스 서비스·DEC-029 동행 가중치 연결을 활성화했다. 아래 최신 실행 방법과 ISSUE23 기록을 따른다. 기존 날짜의 대기/비활성·가상 검증 기록은 당시 상태이며, 화면·수동 인수와 PR 병합은 별도다.
+2026-11-21 작성, 2026-11-26 실행 명령 갱신. 현재 기준 DB는 **v3 `busanfit_v3.sqlite3`**(SHA-256 `e8bd5c5142af936e819e71036a7919fa0c847a707dceec94d9b5e6a4a219a6fc`, 4개 권역 630곳)이고, 일반 서버는 해운대·서면·광안리·남포 4개 권역·도보를 지원한다. 평가셋 CS-01~10은 해운대 사례이며 v3의 해운대 107곳은 v2와 같다(`data/share/busanfit_v3.txt`). 아래 "일반 서버 실행" 명령이 최신이다. 날짜가 붙은 절의 v1 SHA(`c2b178…`)·결과는 당시 실행 기록이며 고치지 않는다. 전체 실행 순서는 [제출용 실행 안내](../../docs/SUBMISSION_RUN.md)를 따른다.
 
 ## #30 포함 API 실제 연결
 
-일반 포함 지원은 활성화됐다. 서버 재시작 후 새 세션에서 capability=true를 확인한다. 일반 서버 재평가는 `unknown_inclusion.py --runtime-app --expected-db-sha256 <공유SHA> --output <결과JSON>`으로 실행한다. [진호님 연결·검증 안내](../../docs/ISSUE30_FRONTEND_HANDOFF.md)를 따른다. 아래 이전 비활성 기록은 과거 상태다.
+일반 포함 지원은 활성화됐다. 서버 재시작 후 새 세션에서 capability=true를 확인한다. 일반 서버 재평가는 `unknown_inclusion.py --runtime-app --expected-db-sha256 <공유SHA> --output <결과JSON>`으로 실행한다(해운대 사례만 사용). [진호님 연결·검증 안내](../../docs/ISSUE30_FRONTEND_HANDOFF.md)를 따른다. 아래 이전 비활성 기록은 과거 상태다.
 
 ## 일반 서버 연결 활성화 (2026-11-21, 사용자 요청)
 
@@ -18,21 +18,21 @@
 - DB SHA-256 `c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75` 실행 전후 동일. 모델 API 호출 0회·키/.env 읽기 및 키 저장 없음. 결과의 수동/전체 인수 플래그는 false 유지. 실제 보행 경로를 확인한 것이 아니며 계단·경사는 UNVERIFIED다. PR #72/#75 병합·배포는 하지 않았다.
 - 근거: `evaluation/courses/results/runtime-real-2026-11-21.json`, `runtime-http-2026-11-21.json`. 실행일 `2026-11-21T12:28:05.488219+09:00`, 코드 커밋은 위와 같으며 보고서 저장 전 미추적 공유 txt로 workingTreeModified=true였다.
 
-### 일반 서버 실행 (의존성 설치 후 저장소 루트)
+### 일반 서버 실행 (의존성 설치 후 저장소 루트, 2026-11-26 v3 기준)
 
 ```powershell
-$env:BUSANFIT_DB_PATH = (Resolve-Path data/share/haeundae_sample_v1.sqlite3).Path
-.venv/Scripts/python.exe -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 --no-access-log
+$env:BUSANFIT_DB_PATH = (Resolve-Path data/share/busanfit_v3.sqlite3).Path
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 --no-access-log
 ```
 
-### 일반 시작 경로를 사용하는 실제 DB 평가
+### 일반 시작 경로를 사용하는 실제 DB 평가 (v3 기준)
 
 ```powershell
-$env:BUSANFIT_DB_PATH = (Resolve-Path data/share/haeundae_sample_v1.sqlite3).Path
-.venv/Scripts/python.exe evaluation/courses/run.py --mode real --runtime-app --travel-provider app.travel.walking:create_travel_provider --expected-db-sha256 c2b178beb1e2b136c5fba07b33646598fed9da48e73b6443641d8ead1193ec75 --output evaluation/courses/results/runtime-real-local.json
+$env:BUSANFIT_DB_PATH = (Resolve-Path data/share/busanfit_v3.sqlite3).Path
+.\.venv\Scripts\python.exe evaluation/courses/run.py --mode real --runtime-app --travel-provider app.travel.walking:create_travel_provider --expected-db-sha256 e8bd5c5142af936e819e71036a7919fa0c847a707dceec94d9b5e6a4a219a6fc --output evaluation/courses/results/runtime-real-local.json
 ```
 
-브라우저 점검자는 우선 `POST /api/sessions`의 HAEUNDAE/WALK 지원을 확인하고 일반·휠체어·유모차·부상, 추천 이유·출처·정보 없음·동행 기본값/칩과 지도·모바일 흐름을 이어서 점검한다. #30 포함 기능도 사용자 요청으로 활성화했다. 새 세션의 supportsUnknownAccessibilityInclusion=true를 확인한 후 ISSUE30_FRONTEND_HANDOFF.md의 전체 PUT→새 revision POST 순서로 연결한다. #72 미병합 상태에서는 이 브랜치에서 실행해야 한다.
+브라우저 점검자는 우선 `POST /api/sessions`의 4개 권역(HAEUNDAE·SEOMYEON·GWANGALLI·NAMPO)/WALK 지원을 확인하고 일반·휠체어·유모차·부상, 추천 이유·출처·정보 없음·동행 기본값/칩과 지도·모바일 흐름을 이어서 점검한다. #30 포함 기능도 사용자 요청으로 활성화했다. 새 세션의 supportsUnknownAccessibilityInclusion=true를 확인한 후 ISSUE30_FRONTEND_HANDOFF.md의 전체 PUT→새 revision POST 순서로 연결한다. #72는 develop에 병합됐으므로 최신 develop에서 실행한다. 프론트 주소는 `http://127.0.0.1:5173`(`--host 127.0.0.1 --port 5173`)이다.
 
 ## 선행 입력
 

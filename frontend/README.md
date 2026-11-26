@@ -30,7 +30,9 @@ npm ci
 npm run dev
 ```
 
-개발 서버 주소: http://localhost:5173/
+개발 서버 주소: http://localhost:5173/ (옵션 없이 실행했을 때 Vite 기본값)
+
+제출·시연 안내([SUBMISSION_RUN](../docs/SUBMISSION_RUN.md))는 주소를 맞추기 위해 `npm run dev -- --host 127.0.0.1 --port 5173`으로 실행하고 http://127.0.0.1:5173 을 연다.
 
 ## 백엔드 API 프록시
 
