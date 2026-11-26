@@ -1,7 +1,7 @@
 {
   "description": "코스 시나리오 평가셋 초안 (AI-REQ-01 DB 미존재 장소 0건, AI-REQ-05 하드 제약 위반 0건, AC-010·AC-011). 입력은 조건 프로필을 직접 넣어 AI 추출과 분리한다. 실행은 실제 해운대 적재 DB로 한다.",
   "version": "draft-2026-11-16",
-  "status": "초안 — 김영무·이찬용 검토 전",
+  "status": "초안 — 김영무(#53)·이찬용 검토 완료, 실제 DB 실행 전",
   "referenceNow": "2026-11-12T10:00:00+09:00",
   "referenceNowNote": "조건 추출 평가셋과 같은 기준 시각. 방문일은 2026-11-14(토)·2026-11-15(일)·2026-11-16(월).",
   "conventions": [
@@ -67,7 +67,7 @@
         "timeWindow": {"value": {"startAt": "2026-11-15T10:00:00+09:00", "endAt": "2026-11-15T14:00:00+09:00"}, "source": "USER", "strength": "HARD"},
         "companions": {"value": {"type": "FAMILY", "count": 3, "hasInfant": true}, "source": "USER", "strength": "SOFT"}
       },
-      "expected": {"outcome": "SUCCESS_OR_INSUFFICIENT", "savedProfile": {"mobility": {"value": ["STROLLER"], "source": "DEFAULT", "strength": "HARD"}}},
+      "expected": {"outcome": "SUCCESS_OR_INSUFFICIENT", "savedProfile": {"mobility": {"value": ["STROLLER"], "source": "DEFAULT", "strength": "HARD"}}, "extraChecks": ["stroller 정보가 없는 장소는 excludedUnknown에 집계"]},
       "notes": "이동제약은 넣지 않는다. 서버가 유모차를 DEFAULT로 적용하고 그 조건으로 검사해야 한다.",
       "result": null
     },

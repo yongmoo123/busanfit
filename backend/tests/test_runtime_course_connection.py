@@ -35,7 +35,8 @@ def test_runtime_entry_connects_actual_adapters_course_and_detail(stored, monkey
         assert caps['supportedTransports'] == ['WALK']
         assert set(caps['supportedProfileFields']) == {'area','timeWindow','transport','mobility','companions','excludedCategories'}
         assert caps['supportsUnknownAccessibilityInclusion']
-        assert not any(caps[key] for key in ('supportsWeather','supportsCourseAdjustment'))
+        assert caps['supportsCourseAdjustment']
+        assert not caps['supportsWeather']
         sid = session['sessionId']
         profile = ready(mobility)
         profile['companions'] = {'value': {'type':'FAMILY','count':3,'hasInfant':False},'source':'USER','strength':'SOFT'}
@@ -62,6 +63,7 @@ def test_runtime_entry_connects_actual_adapters_course_and_detail(stored, monkey
         assert regenerated.status_code == 200 and regenerated.json()['course']['validation']['status'] == 'PASSED'
         assert client.delete(f'/api/sessions/{sid}').status_code == 204
     assert ordinary_app.state.course_service is None and ordinary_app.state.capabilities.supportedAreas == []
+    assert not ordinary_app.state.capabilities.supportsCourseAdjustment
     assert hashlib.sha256(stored[0].read_bytes()).hexdigest() == before
 
 
@@ -89,6 +91,7 @@ def test_runtime_startup_rejects_missing_or_invalid_dependencies(stored, tmp_pat
         with TestClient(app):
             pytest.fail('invalid startup must not serve requests')
     assert app.state.course_service is None and app.state.capabilities.supportedAreas == []
+    assert not app.state.capabilities.supportsCourseAdjustment
     assert not (tmp_path/'missing.sqlite3').exists()
 
 

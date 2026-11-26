@@ -1,0 +1,212 @@
+{
+  "dbSha256": "e8bd5c5142af936e819e71036a7919fa0c847a707dceec94d9b5e6a4a219a6fc",
+  "actualDbAndTravel": true,
+  "syntheticModelIntents": true,
+  "actualLlmCalls": 0,
+  "hardViolations": 0,
+  "missingPlaceIds": 0,
+  "results": [
+    {
+      "area": "HAEUNDAE",
+      "operation": "REMOVE",
+      "status": "SUCCESS",
+      "items": 5,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "MODIFIED"
+    },
+    {
+      "area": "HAEUNDAE",
+      "operation": "REPLACE",
+      "status": "NOT_APPLIED",
+      "items": 6,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "PRESERVED"
+    },
+    {
+      "area": "HAEUNDAE",
+      "operation": "EXTEND_STAY",
+      "status": "SUCCESS",
+      "items": 6,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "MODIFIED"
+    },
+    {
+      "area": "HAEUNDAE",
+      "operation": "UNCLEAR",
+      "status": "NEEDS_INPUT",
+      "items": 6,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "PRESERVED"
+    },
+    {
+      "area": "HAEUNDAE",
+      "operation": "EXTEND_TOO_LONG",
+      "status": "NOT_APPLIED",
+      "items": 6,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "PRESERVED"
+    },
+    {
+      "area": "SEOMYEON",
+      "operation": "REMOVE",
+      "status": "SUCCESS",
+      "items": 5,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "MODIFIED"
+    },
+    {
+      "area": "SEOMYEON",
+      "operation": "REPLACE",
+      "status": "NOT_APPLIED",
+      "items": 6,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "PRESERVED"
+    },
+    {
+      "area": "SEOMYEON",
+      "operation": "EXTEND_STAY",
+      "status": "SUCCESS",
+      "items": 6,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "MODIFIED"
+    },
+    {
+      "area": "SEOMYEON",
+      "operation": "UNCLEAR",
+      "status": "NEEDS_INPUT",
+      "items": 6,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "PRESERVED"
+    },
+    {
+      "area": "SEOMYEON",
+      "operation": "EXTEND_TOO_LONG",
+      "status": "NOT_APPLIED",
+      "items": 6,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "PRESERVED"
+    },
+    {
+      "area": "GWANGALLI",
+      "operation": "REMOVE",
+      "status": "SUCCESS",
+      "items": 5,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "MODIFIED"
+    },
+    {
+      "area": "GWANGALLI",
+      "operation": "REPLACE",
+      "status": "NOT_APPLIED",
+      "items": 6,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "PRESERVED"
+    },
+    {
+      "area": "GWANGALLI",
+      "operation": "EXTEND_STAY",
+      "status": "NOT_APPLIED",
+      "items": 6,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "PRESERVED"
+    },
+    {
+      "area": "GWANGALLI",
+      "operation": "UNCLEAR",
+      "status": "NEEDS_INPUT",
+      "items": 6,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "PRESERVED"
+    },
+    {
+      "area": "GWANGALLI",
+      "operation": "EXTEND_TOO_LONG",
+      "status": "NOT_APPLIED",
+      "items": 6,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "PRESERVED"
+    },
+    {
+      "area": "NAMPO",
+      "operation": "REMOVE",
+      "status": "SUCCESS",
+      "items": 5,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "MODIFIED"
+    },
+    {
+      "area": "NAMPO",
+      "operation": "REPLACE",
+      "status": "NOT_APPLIED",
+      "items": 6,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "PRESERVED"
+    },
+    {
+      "area": "NAMPO",
+      "operation": "EXTEND_STAY",
+      "status": "NOT_APPLIED",
+      "items": 6,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "PRESERVED"
+    },
+    {
+      "area": "NAMPO",
+      "operation": "UNCLEAR",
+      "status": "NEEDS_INPUT",
+      "items": 6,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "PRESERVED"
+    },
+    {
+      "area": "NAMPO",
+      "operation": "EXTEND_TOO_LONG",
+      "status": "NOT_APPLIED",
+      "items": 6,
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "auditedCourse": "PRESERVED"
+    }
+  ],
+  "date": "2026-11-25",
+  "testedBaseDevelop": "b890e88",
+  "testedWorkingTreeModified": true,
+  "fullPytest": {
+    "passed": 1663,
+    "warnings": 1,
+    "seconds": 25.82
+  },
+  "contract": {
+    "operations": 7,
+    "schemas": 37,
+    "examples": 28,
+    "policyCases": 15,
+    "sourceSync": "PASS"
+  },
+  "limitations": [
+    "Model intent was synthetic; actual LLM calls: 0.",
+    "All four real-data replacements were NOT_APPLIED because the fixed slot had no feasible replacement.",
+    "Extension succeeded in HAEUNDAE/SEOMYEON and was NOT_APPLIED in GWANGALLI/NAMPO.",
+    "Rejected/question responses audit the preserved original course; success responses audit the modified course.",
+    "Actual model evaluation of 20 adjustment phrases and frontend integration are pending."
+  ]
+}

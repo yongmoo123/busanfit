@@ -2025,6 +2025,140 @@
           }
         }
       }
+    },
+    "/api/courses/{courseId}/adjust": {
+      "post": {
+        "operationId": "adjustCourse",
+        "summary": "코스 부분 수정 (FR-015, capability 기본 비활성)",
+        "tags": [
+          "Course"
+        ],
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdjustmentRequest"
+              },
+              "examples": {
+                "request": {
+                  "value": {
+                    "sessionId": "11111111-1111-4111-8111-111111111111",
+                    "expectedProfileRevision": 1,
+                    "message": "3번에 15분 더"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "수정 적용/추가 질문/미적용. profileRevision 유지, 현재 전체 코스 반환.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdjustmentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "기존 오류 봉투; 프로필·코스·TTL 미변경.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "기존 오류 봉투; 프로필·코스·TTL 미변경.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "기존 오류 봉투; 프로필·코스·TTL 미변경.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "course-conflict": {
+                    "value": {
+                      "error": {
+                        "code": "COURSE_CONFLICT",
+                        "message": "코스가 변경되었습니다. 최신 코스를 확인해 주세요.",
+                        "retryable": false,
+                        "details": []
+                      },
+                      "requestId": "99999999-9999-4999-8999-999999999999"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "기존 오류 봉투; 프로필·코스·TTL 미변경.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "기존 오류 봉투; 프로필·코스·TTL 미변경.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "기존 오류 봉투; 프로필·코스·TTL 미변경.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "기존 오류 봉투; 프로필·코스·TTL 미변경.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2706,7 +2840,9 @@
                   "NOT_FOUND",
                   "RATE_LIMITED",
                   "AI_UNAVAILABLE",
-                  "INTERNAL_ERROR"
+                  "INTERNAL_ERROR",
+                  "COURSE_CONFLICT",
+                  "COURSE_NOT_FOUND"
                 ]
               },
               "message": {
@@ -3682,6 +3818,197 @@
             "$ref": "#/components/schemas/CourseInsufficient"
           }
         ]
+      },
+      "AdjustmentRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "sessionId": {
+            "format": "uuid",
+            "title": "Sessionid",
+            "type": "string"
+          },
+          "expectedProfileRevision": {
+            "minimum": 1,
+            "title": "Expectedprofilerevision",
+            "type": "integer"
+          },
+          "message": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sessionId",
+          "expectedProfileRevision",
+          "message"
+        ],
+        "title": "AdjustmentRequest",
+        "type": "object"
+      },
+      "AdjustmentChanges": {
+        "additionalProperties": false,
+        "properties": {
+          "removedItemIds": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Removeditemids",
+            "type": "array"
+          },
+          "replacedItems": {
+            "items": {
+              "$ref": "#/components/schemas/ReplacedItem"
+            },
+            "title": "Replaceditems",
+            "type": "array"
+          },
+          "timeChangedItemIds": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Timechangeditemids",
+            "type": "array"
+          }
+        },
+        "title": "AdjustmentChanges",
+        "type": "object"
+      },
+      "AdjustmentQuestion": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "pattern": "^(adjustment\\.(target|minutes|message|followUp)|profile\\.(area|timeWindow|transport|mobility|budget|indoorPreference|companions|excludedCategories|preferenceTags))$",
+            "title": "Field",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "message"
+        ],
+        "title": "AdjustmentQuestion",
+        "type": "object"
+      },
+      "ReplacedItem": {
+        "additionalProperties": false,
+        "properties": {
+          "oldItemId": {
+            "title": "Olditemid",
+            "type": "string"
+          },
+          "newItemId": {
+            "title": "Newitemid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "oldItemId",
+          "newItemId"
+        ],
+        "title": "ReplacedItem",
+        "type": "object"
+      },
+      "AdjustmentResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "suggestions": {
+            "items": {
+              "$ref": "#/components/schemas/Suggestion"
+            },
+            "maxItems": 3,
+            "title": "Suggestions",
+            "type": "array"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "title": "Warnings",
+            "type": "array"
+          },
+          "excludedUnknown": {
+            "$ref": "#/components/schemas/ExcludedUnknown"
+          },
+          "sessionExpiresAt": {
+            "format": "date-time",
+            "title": "Sessionexpiresat",
+            "type": "string"
+          },
+          "requestId": {
+            "format": "uuid",
+            "title": "Requestid",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "SUCCESS",
+              "NEEDS_INPUT",
+              "NOT_APPLIED"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "profileRevision": {
+            "minimum": 1,
+            "title": "Profilerevision",
+            "type": "integer"
+          },
+          "course": {
+            "$ref": "#/components/schemas/Course"
+          },
+          "changes": {
+            "$ref": "#/components/schemas/AdjustmentChanges"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/AdjustmentQuestion"
+            },
+            "maxItems": 2,
+            "title": "Questions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "suggestions",
+          "warnings",
+          "excludedUnknown",
+          "sessionExpiresAt",
+          "requestId",
+          "status",
+          "profileRevision",
+          "course"
+        ],
+        "title": "AdjustmentResponse",
+        "type": "object"
+      },
+      "ExcludedUnknown": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "minimum": 0,
+            "title": "Count",
+            "type": "integer"
+          },
+          "fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Fields",
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "fields"
+        ],
+        "title": "ExcludedUnknown",
+        "type": "object"
       }
     }
   }

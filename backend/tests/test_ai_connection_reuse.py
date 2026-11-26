@@ -149,6 +149,7 @@ def test_runtime_connection_and_ai_pool_share_lifespan_and_both_close(stored, mo
     from app.application.extraction import AIConditionExtractor
     from app.constraints.chat_parser import ChatRuleParser
     from app.main import create_app
+    from app.application.profile_support import configured_areas
     monkeypatch.setenv('BUSANFIT_DB_PATH', str(stored[0]))
     provider = CountingProvider(httpx.MockTransport(lambda request: response()))
     ai = AIService(provider)
@@ -158,7 +159,7 @@ def test_runtime_connection_and_ai_pool_share_lifespan_and_both_close(stored, mo
         async with app.router.lifespan_context(app):
             assert app.state.course_service is not None
             assert app.state.course_connection.repository.read_only
-            assert app.state.capabilities.supportedAreas == ['HAEUNDAE']
+            assert app.state.capabilities.supportedAreas == configured_areas()
             for _ in range(2):
                 assert (await call(ai)).data.count == 1
             assert len(provider.clients) == 1 and not provider.clients[0].is_closed
