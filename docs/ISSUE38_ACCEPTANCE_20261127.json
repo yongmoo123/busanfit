@@ -1,0 +1,154 @@
+{
+  "date": "2026-11-27",
+  "testedBase": "bd252ee",
+  "workingTreeModified": true,
+  "realDbSha256": "e8bd5c5142af936e819e71036a7919fa0c847a707dceec94d9b5e6a4a219a6fc",
+  "provider": "synthetic timeout, 0.01s per attempt",
+  "externalApiCalls": 0,
+  "faultCounters": {
+    "syntheticProvider": true,
+    "externalApiCalls": 0,
+    "attempts": {
+      "extract": 12,
+      "explain": 2,
+      "modify": 2
+    },
+    "cancelled": {
+      "extract": 12,
+      "explain": 2,
+      "modify": 2
+    }
+  },
+  "AC002": {
+    "result": "PASS_IN_CONTROLLED_ENVIRONMENT",
+    "browser": [
+      "시간 누락: 질문1개·코스 만들기 비활성",
+      "지역 누락: 질문1개·코스 만들기 비활성",
+      "지역 답변 후 READY 및 코스 만들기 활성"
+    ]
+  },
+  "AC007": {
+    "result": "PASS_SUPPORTED_SCOPE",
+    "serverSuggestionCount": 1,
+    "adjustmentExamplesCount": 3,
+    "chipPolicy": "User confirmed only server suggestions are limited to3",
+    "browser": [
+      "오막집 삭제",
+      "부우사안13:00~14:10, 수림횟집15:23~16:33 유지",
+      "연결 이동1+2분 대신3분 재계산",
+      "삭제 결과 표시"
+    ],
+    "syntheticReschedule": {
+      "cases": [
+        {
+          "case": "AD-09",
+          "status": "NOT_APPLIED",
+          "verdict": "PASS",
+          "intentSource": "expected synthetic intent",
+          "modelCalls": 0
+        },
+        {
+          "case": "AD-10",
+          "status": "SUCCESS",
+          "verdict": "PASS",
+          "intentSource": "expected synthetic intent",
+          "modelCalls": 0
+        },
+        {
+          "case": "AD-11",
+          "status": "NEEDS_INPUT",
+          "verdict": "PASS",
+          "intentSource": "expected synthetic intent",
+          "modelCalls": 0
+        }
+      ],
+      "syntheticOnly": true,
+      "actualLlmCalls": 0,
+      "scope": "AC-007 rescheduling, separate from AI-REQ-07 interpretation accuracy"
+    },
+    "realLlmIntentEvidence": "PR100 author results16/19 (16/20 including excluded), reviewed independently"
+  },
+  "AC012": {
+    "result": "PASS_FAULT_INJECTION",
+    "browser": [
+      "시간 초과 안내 표시",
+      "규칙 추출 READY 후 코스 생성",
+      "추천 이유 템플릿 문장·대체 안내 표시",
+      "단순 삭제 규칙 대체 안내"
+    ]
+  },
+  "limitations": [
+    "No actual LLM or Kakao SDK calls performed.",
+    "Acceptance checked issue96 candidate working tree; final develop confirmation follows merge."
+  ],
+  "explanationRealDbEvidence": {
+    "dbSha256": "e8bd5c5142af936e819e71036a7919fa0c847a707dceec94d9b5e6a4a219a6fc",
+    "results": [
+      {
+        "area": "HAEUNDAE",
+        "status": "SUCCESS",
+        "items": 3,
+        "reasonMethod": "LLM",
+        "syntheticModelCalls": 1,
+        "actualLlmCalls": 0
+      },
+      {
+        "area": "SEOMYEON",
+        "status": "SUCCESS",
+        "items": 3,
+        "reasonMethod": "LLM",
+        "syntheticModelCalls": 1,
+        "actualLlmCalls": 0
+      },
+      {
+        "area": "GWANGALLI",
+        "status": "SUCCESS",
+        "items": 3,
+        "reasonMethod": "LLM",
+        "syntheticModelCalls": 1,
+        "actualLlmCalls": 0
+      },
+      {
+        "area": "NAMPO",
+        "status": "SUCCESS",
+        "items": 3,
+        "reasonMethod": "LLM",
+        "syntheticModelCalls": 1,
+        "actualLlmCalls": 0
+      }
+    ],
+    "actualLlmCalls": 0,
+    "provider": "FactProvider (synthetic verified-fact selection)"
+  },
+  "frontendWarningFollowup": {
+    "testedBase": "3a0a5a6",
+    "frontendWorkingTreeModified": true,
+    "scenario": "course explanation fallback then remove fallback",
+    "bothNoticesVisible": true,
+    "browserConsoleErrors": [],
+    "lint": "PASS",
+    "build": "PASS",
+    "faultCounters": {
+      "syntheticProvider": true,
+      "externalApiCalls": 0,
+      "attempts": {
+        "extract": 2,
+        "explain": 2,
+        "modify": 2
+      },
+      "cancelled": {
+        "extract": 2,
+        "explain": 2,
+        "modify": 2
+      }
+    }
+  },
+  "phase": "earlier controlled fault injection; authorized actual-model followup linked separately",
+  "liveFollowup": {
+    "evidence": "ISSUE96_LIVE_VALIDATION_20261127.json",
+    "testedCode": "259ae49",
+    "AC011": "10/10 real-LLM course requests within15s; official exclusions/repetitions separately reported",
+    "S4": "browser reason/source display verified, recording not performed",
+    "actualApiAttempts": 11
+  }
+}

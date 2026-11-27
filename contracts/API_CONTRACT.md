@@ -215,6 +215,8 @@ GitHub에 합의 버전을 커밋하고 필드·enum·상태 의미 변경은 �
 
 ## FR-012 구현 상태 (2026-11-16, 이슈 #25)
 
+2026-11-27 #96: 일반 app.main:app은 실제 DB 시작 연결 성공 후 조건 추출과 같은 AIService·실행 Repository로 ExplanationGenerator를 구성한다. 모델 미설정·실패 시에도 설명 경계를 거쳐 TEMPLATE와 AI_FALLBACK(placeIds)을 반환한다. 성공 시 확인된 사실 선택만 reasonMethod=LLM에 반영한다. 기존 시간 예산·재시도·건강 범주 경계·외부 JSON을 유지한다. 실제 LLM 포함 AC-011 시간 측정은 별도다.
+
 GET /api/places/{placeId}를 기존 PlaceResponse(place/sources/warnings/requestId)로 구현했다. 코스와 공통 변환을 사용하며 기본/접근성 출처는 합집합·중복 제거한다. 구조화 운영시간이 없으면 UNKNOWN, 원문은 description에 보존한다. 가격·접근성 미확인을 무료·이용 가능으로 바꾸지 않는다. 없는 ID는404, 저장소 장애·깨진 출처·유효하지 않은 저장 레코드는500이며 세션·LLM은 사용하지 않는다.
 
 추천 이유는 기존 CourseItem.reason/reasonMethod에 있다. 최종 검증된 장소의 확인된 사실 키1~2개를 모델이 선택하면 시스템이 문장과 숫자를 조립한다. 임의 모델 문장·가격·영업시간·출처는 채택하지 않는다. 사용자 원문·세션·전체 프로필을 보내지 않고 개요는200자로 제한한다. 실패·미확인 출력은 TEMPLATE와 AI_FALLBACK으로 대체하며, 코스의 장소·시간·검증 결과는 바꾸지 않는다. 상세 화면은 코스 항목의 이유와 PlaceResponse를 함께 사용한다. 외부 JSON 필드·enum 변경은 없고 실제 DB·LLM·화면 검증은 후속이다.

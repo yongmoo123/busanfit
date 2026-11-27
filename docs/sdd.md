@@ -407,3 +407,8 @@ COMP-02/03의 application/condition_policy.py는 부분 추출을 기존 프로�
 ## FR-018 구현 추적 (2026-11-17, 이슈 #27)
 
 동행 카테고리 점수 함수와 가중치 제안 설정을 구현해 가상 후보로 검증했다. 가족 관광·전시·공원 우대 방향은 DEC-013을 따르지만 수치·다른 동행 매핑·실내 대비 계수는 PM 미확정이다. 일반 경로에는 활성화하지 않고 기존 default_score를 유지한다. 가격·분위기·야경·활동성·인원 적합성을 추정하지 않으며 하드 필터·검증기·영유아 유모차·부상 규칙을 유지한다. [제안 표](proposals/issue-27-companion-weights.md), [구현·검증 기록](ISSUE27_COMPANION_SCORING_IMPLEMENTATION.md).
+
+
+## FR-012 실행 연결 보완 (#96, 2026-11-27)
+
+일반 app.main:app의 시작 연결이 DB·검색·계산·승인 가중치를 준비한 뒤 조건 추출과 같은 AIService 및 실행 Repository로 ExplanationGenerator를 자동 구성한다. AIService 연결 풀을 공유하고 종료/시작 실패 시 자동 생성기를 해제한다. 명시적 생성기 주입은 유지한다. API-004의 기존 검증 코스→explain(course, mobility 범주, 남은 시간) 경계·최대12초 설명 예산·재시도 정책과 TEMPLATE/AI_FALLBACK 대체를 그대로 사용한다. JSON 계약 변경은 없고 실제 모델 포함 응답시간/인수 판정은 별도 측정한다. 구현·검증은 [#96 기록](ISSUE96_RUNTIME_EXPLANATIONS.md)에 둔다.
