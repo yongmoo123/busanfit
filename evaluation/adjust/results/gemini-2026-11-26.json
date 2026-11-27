@@ -1,0 +1,411 @@
+{
+  "intentAccuracy": {
+    "correct": 16,
+    "total": 19,
+    "ratio": 0.8421052631578947
+  },
+  "excluded": [
+    "AD-16"
+  ],
+  "fallbackCases": [],
+  "latency": {
+    "llmCases": 19,
+    "maxMs": 12211.5,
+    "meanMs": 5024.7
+  },
+  "cases": [
+    {
+      "id": "AD-01",
+      "category": "빼기",
+      "actual": {
+        "op": "REMOVE",
+        "targets": [
+          2
+        ],
+        "category": null,
+        "minutes": null,
+        "field": null,
+        "followUp": []
+      },
+      "fallback": false,
+      "interpretMs": 4373.2,
+      "verdict": "PASS",
+      "manualReviewRequired": []
+    },
+    {
+      "id": "AD-02",
+      "category": "빼기",
+      "actual": {
+        "op": "REMOVE",
+        "targets": [
+          4
+        ],
+        "category": null,
+        "minutes": null,
+        "field": null,
+        "followUp": []
+      },
+      "fallback": false,
+      "interpretMs": 12211.5,
+      "verdict": "PASS",
+      "manualReviewRequired": []
+    },
+    {
+      "id": "AD-03",
+      "category": "빼기",
+      "actual": {
+        "op": "REMOVE",
+        "targets": [
+          3
+        ],
+        "category": null,
+        "minutes": null,
+        "field": null,
+        "followUp": []
+      },
+      "fallback": false,
+      "interpretMs": 2524.0,
+      "verdict": "PASS",
+      "manualReviewRequired": [
+        "REPLACE로 다른 음식점 추가"
+      ]
+    },
+    {
+      "id": "AD-04",
+      "category": "빼기",
+      "actual": {
+        "op": "PROFILE_CHANGE",
+        "targets": [],
+        "category": null,
+        "minutes": null,
+        "field": "mobility",
+        "followUp": [
+          {
+            "op": "REMOVE",
+            "targets": [
+              4
+            ],
+            "category": null,
+            "minutes": null,
+            "field": null
+          }
+        ]
+      },
+      "fallback": false,
+      "interpretMs": 5050.9,
+      "verdict": "FAIL",
+      "manualReviewRequired": [
+        "이동제약에 INJURY를 몰래 추가",
+        "1~3번 변경"
+      ]
+    },
+    {
+      "id": "AD-05",
+      "category": "바꾸기",
+      "actual": {
+        "op": "REPLACE",
+        "targets": [
+          1
+        ],
+        "category": "CAFE",
+        "minutes": null,
+        "field": null,
+        "followUp": []
+      },
+      "fallback": false,
+      "interpretMs": 7101.7,
+      "verdict": "PASS",
+      "manualReviewRequired": []
+    },
+    {
+      "id": "AD-06",
+      "category": "바꾸기",
+      "actual": {
+        "op": "REPLACE",
+        "targets": [
+          2
+        ],
+        "category": "ATTRACTION",
+        "minutes": null,
+        "field": null,
+        "followUp": []
+      },
+      "fallback": false,
+      "interpretMs": 4947.4,
+      "verdict": "FAIL",
+      "manualReviewRequired": []
+    },
+    {
+      "id": "AD-07",
+      "category": "바꾸기",
+      "actual": {
+        "op": "REPLACE",
+        "targets": [
+          3
+        ],
+        "category": "CAFE",
+        "minutes": null,
+        "field": null,
+        "followUp": []
+      },
+      "fallback": false,
+      "interpretMs": 4252.6,
+      "verdict": "PASS",
+      "manualReviewRequired": []
+    },
+    {
+      "id": "AD-08",
+      "category": "바꾸기",
+      "actual": {
+        "op": "REPLACE",
+        "targets": [
+          4
+        ],
+        "category": "OTHER",
+        "minutes": null,
+        "field": null,
+        "followUp": []
+      },
+      "fallback": false,
+      "interpretMs": 4235.2,
+      "verdict": "FAIL",
+      "manualReviewRequired": [
+        "'조용한'을 하드 조건으로 확정"
+      ]
+    },
+    {
+      "id": "AD-09",
+      "category": "체류 늘리기",
+      "actual": {
+        "op": "EXTEND_STAY",
+        "targets": [
+          1
+        ],
+        "category": null,
+        "minutes": 30,
+        "field": null,
+        "followUp": []
+      },
+      "fallback": false,
+      "interpretMs": 5460.0,
+      "verdict": "PASS",
+      "manualReviewRequired": [
+        "시간창을 넘긴 코스",
+        "다른 장소를 말없이 빼거나 바꿈"
+      ]
+    },
+    {
+      "id": "AD-10",
+      "category": "체류 늘리기",
+      "actual": {
+        "op": "EXTEND_STAY",
+        "targets": [
+          2
+        ],
+        "category": null,
+        "minutes": 15,
+        "field": null,
+        "followUp": []
+      },
+      "fallback": false,
+      "interpretMs": 4700.8,
+      "verdict": "PASS",
+      "manualReviewRequired": [
+        "3·4번 장소 교체",
+        "1번 시각 변경"
+      ]
+    },
+    {
+      "id": "AD-11",
+      "category": "체류 늘리기",
+      "actual": {
+        "op": "EXTEND_STAY",
+        "targets": [
+          3
+        ],
+        "category": null,
+        "minutes": null,
+        "field": null,
+        "followUp": []
+      },
+      "fallback": false,
+      "interpretMs": 4478.9,
+      "verdict": "PASS",
+      "manualReviewRequired": [
+        "늘릴 시간을 지어냄(예: 30분)"
+      ]
+    },
+    {
+      "id": "AD-12",
+      "category": "실내로",
+      "actual": {
+        "op": "INDOOR",
+        "targets": [],
+        "category": null,
+        "minutes": null,
+        "field": null,
+        "followUp": []
+      },
+      "fallback": false,
+      "interpretMs": 5153.4,
+      "verdict": "PASS",
+      "manualReviewRequired": []
+    },
+    {
+      "id": "AD-13",
+      "category": "실내로",
+      "actual": {
+        "op": "INDOOR",
+        "targets": [
+          4
+        ],
+        "category": null,
+        "minutes": null,
+        "field": null,
+        "followUp": []
+      },
+      "fallback": false,
+      "interpretMs": 4837.1,
+      "verdict": "PASS",
+      "manualReviewRequired": []
+    },
+    {
+      "id": "AD-14",
+      "category": "실내로",
+      "actual": {
+        "op": "INDOOR",
+        "targets": [],
+        "category": null,
+        "minutes": null,
+        "field": null,
+        "followUp": []
+      },
+      "fallback": false,
+      "interpretMs": 5874.3,
+      "verdict": "PASS",
+      "manualReviewRequired": [
+        "SOFT 선호로만 처리하고 4번 유지"
+      ]
+    },
+    {
+      "id": "AD-15",
+      "category": "정보 없음 포함",
+      "actual": {
+        "op": "INCLUDE_UNKNOWN",
+        "targets": [],
+        "category": null,
+        "minutes": null,
+        "field": null,
+        "followUp": []
+      },
+      "fallback": false,
+      "interpretMs": 3628.2,
+      "verdict": "PASS",
+      "manualReviewRequired": []
+    },
+    {
+      "id": "AD-16",
+      "category": "정보 없음 포함",
+      "verdict": "EXCLUDED",
+      "reason": "직전 제안 문맥(lastSuggestion)을 해석기에 넘기는 경로가 없다. FR-013 수락은 채팅이 아니라 명시적 동의 화면으로 처리한다(DEC-033, #30)."
+    },
+    {
+      "id": "AD-17",
+      "category": "해석 불가",
+      "actual": {
+        "op": "UNCLEAR",
+        "targets": [],
+        "category": null,
+        "minutes": null,
+        "field": null,
+        "followUp": []
+      },
+      "fallback": false,
+      "interpretMs": 4795.2,
+      "verdict": "PASS",
+      "manualReviewRequired": [
+        "임의 장소 삭제·교체"
+      ]
+    },
+    {
+      "id": "AD-18",
+      "category": "해석 불가",
+      "actual": {
+        "op": "REMOVE",
+        "targets": [
+          5
+        ],
+        "category": null,
+        "minutes": null,
+        "field": null,
+        "followUp": []
+      },
+      "fallback": false,
+      "interpretMs": 5203.3,
+      "verdict": "PASS",
+      "manualReviewRequired": [
+        "4번 등 다른 장소 삭제"
+      ]
+    },
+    {
+      "id": "AD-19",
+      "category": "여러 변경",
+      "actual": {
+        "op": "REMOVE",
+        "targets": [
+          2
+        ],
+        "category": null,
+        "minutes": null,
+        "field": null,
+        "followUp": [
+          {
+            "op": "INDOOR",
+            "targets": [],
+            "category": null,
+            "minutes": null,
+            "field": null
+          }
+        ]
+      },
+      "fallback": false,
+      "interpretMs": 1691.1,
+      "verdict": "PASS",
+      "manualReviewRequired": [
+        "INDOOR 요청을 확인 질문 없이 버림",
+        "두 연산을 한 번에 적용"
+      ]
+    },
+    {
+      "id": "AD-20",
+      "category": "조건 변경",
+      "actual": {
+        "op": "PROFILE_CHANGE",
+        "targets": [],
+        "category": null,
+        "minutes": null,
+        "field": "timeWindow",
+        "followUp": []
+      },
+      "fallback": false,
+      "interpretMs": 4950.5,
+      "verdict": "PASS",
+      "manualReviewRequired": [
+        "EXTEND_STAY로 특정 장소 체류만 늘림",
+        "확인 없이 코스 재생성"
+      ]
+    }
+  ],
+  "runDate": "2026-11-26T15:36:21.892132+09:00",
+  "codeRevision": "9a0636894ca2b2fbeae5cc3ebac0f23350294277",
+  "workingTreeModified": true,
+  "datasetVersion": "draft-2026-11-16",
+  "provider": "gemini",
+  "modelVersion": "gemini-3.5-flash-lite",
+  "syntheticOnly": true,
+  "delaySeconds": 6.0,
+  "llmAccuracyMeasured": true,
+  "scope": "intent only (AI-REQ-07); AC-007 rescheduling recorded separately",
+  "mustNotChecks": "manual review required; excluded from automatic verdict",
+  "rescoredNote": "2026-11-26: 같은 실행의 저장된 해석 결과를 사례 최상위 acceptable을 읽도록 고친 채점기로 다시 채점함(LLM 재호출 없음)"
+}
