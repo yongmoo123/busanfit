@@ -23,7 +23,7 @@
 
 ## 현재 주요 결정 (상세: docs/DECISIONS.md)
 - DB: SQLite. 좌표는 latitude/longitude REAL, 반경 검색은 사각형 필터 후 하버사인. DB 파일은 커밋하지 않음 (DEC-005)
-- 스프린트 2 범위: 해운대, 도보(WALK)만 지원. 대중교통(PUBLIC)·자차(CAR, 일정이 빠듯하면 가장 먼저 축소)·다른 권역은 스프린트 3 (DEC-001, 008, 010)
+- 제출본 범위: 4개 권역(해운대·서면·광안리·남포), 도보(WALK)만 지원. DB는 v3 `busanfit_v3.sqlite3`(630곳). 대중교통(PUBLIC)·자차(CAR)·날씨의 코스 반영·고정 일정은 향후 과제 (DEC-028, 032, 036)
 - 오류: 잘못된 JSON 400, 검증 실패 422 (DEC-004)
 - 가상 예시 데이터를 실제 부산 데이터로 사용하거나 제출하지 않는다.
 
@@ -32,14 +32,22 @@
 - `frontend/` — 배진호 / `pipelines/` — 수집·적재 / `evaluation/` — 평가 입력·정답·결과
 - `contracts/` — API 계약과 검사 / `docs/` — 기준 문서와 기록
 
-## 명령 (저장소 루트, Python 3.12)
+## 명령 (저장소 루트, Python 3.12 — CI는 3.11·3.12 검사)
+Windows PowerShell 기준. 제출용 전체 안내는 `docs/SUBMISSION_RUN.md`(DEC-031).
 ```text
 python -m venv .venv
-.venv/Scripts/python.exe -m pip install -r backend/requirements-lock.txt      # Linux/macOS: .venv/bin/python
-.venv/Scripts/python.exe -m uvicorn app.main:app --app-dir backend --reload --no-access-log
-.venv/Scripts/python.exe contracts/validate_contract.py
-.venv/Scripts/python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m pip install -r backend/requirements-lock.txt      # Linux/macOS: .venv/bin/python
+npm.cmd --prefix frontend ci                                                       # Linux/macOS: npm
+
+$env:BUSANFIT_DB_PATH = (Resolve-Path data/share/busanfit_v3.sqlite3).Path         # 필수. 없으면 서버가 시작하지 않음
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 --no-access-log
+npm.cmd --prefix frontend run dev -- --host 127.0.0.1 --port 5173                 # 다른 터미널
+
+.\.venv\Scripts\python.exe contracts/validate_contract.py
+.\.venv\Scripts\python.exe contracts/validate_source_sync.py
+.\.venv\Scripts\python.exe -m pytest -q
 ```
+- 서버는 `.env`를 자동으로 읽지 않는다. Gemini 키는 셸 환경변수로 넣거나 `uvicorn ... --env-file backend/.env`로 넘긴다. 키가 없으면 규칙 파서로 동작한다.
 
 ## 작업 규칙
 - 브랜치: develop에서 `feature/FR-xxx-<내용>` 또는 `docs/DEC-xxx-<내용>`. PR은 develop으로. 저장소 기본 브랜치가 main이므로 대상을 명시한다(예: `gh pr create --base develop`).
