@@ -94,8 +94,8 @@ export default function CourseTimeline({
           </p>
         )}
         {isMock && <p>가상 응답</p>}
-        {visibleWarnings.map((warning) => (
-          <p key={warning.code}>{warning.message}</p>
+        {visibleWarnings.map((warning, index) => (
+          <p key={`${warning.code}-${index}`}>{warning.message}</p>
         ))}
         {controls}
         {excludedUnknown.count > 0 && (
@@ -199,8 +199,8 @@ export default function CourseTimeline({
         <p>정보가 없어 제외된 장소가 {excludedUnknown.count}곳 있어요.</p>
       )}
 
-      {visibleWarnings.map((warning) => (
-        <p key={warning.code}>{warning.message}</p>
+      {visibleWarnings.map((warning, index) => (
+        <p key={`${warning.code}-${index}`}>{warning.message}</p>
       ))}
     </section>
   )

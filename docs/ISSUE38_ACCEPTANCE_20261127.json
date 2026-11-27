@@ -120,5 +120,28 @@
     ],
     "actualLlmCalls": 0,
     "provider": "FactProvider (synthetic verified-fact selection)"
+  },
+  "frontendWarningFollowup": {
+    "testedBase": "3a0a5a6",
+    "frontendWorkingTreeModified": true,
+    "scenario": "course explanation fallback then remove fallback",
+    "bothNoticesVisible": true,
+    "browserConsoleErrors": [],
+    "lint": "PASS",
+    "build": "PASS",
+    "faultCounters": {
+      "syntheticProvider": true,
+      "externalApiCalls": 0,
+      "attempts": {
+        "extract": 2,
+        "explain": 2,
+        "modify": 2
+      },
+      "cancelled": {
+        "extract": 2,
+        "explain": 2,
+        "modify": 2
+      }
+    }
   }
 }
