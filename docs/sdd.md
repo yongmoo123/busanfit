@@ -240,12 +240,6 @@ API-005 부분 수정 설계(AC-007·DEC-024·025·027): 세션 메모리에 마
 
 COMP-03 추출 근거 검사(FR-002·004, AI-REQ-06): JSON/업무 스키마 검증 뒤, 세션 병합 전에 현재 사용자 원문과 High 필드를 대조한다. 종료 근거 없는 timeWindow와 가족의 근거 없는 인원·영유아 여부는 미입력으로 돌리고 기존 DEC-021·022 확인 정책으로 처리한다. 완성 companions·부분 companionHints를 함께 검사하고 기존 USER 값·원문 비저장 원칙을 유지한다. 프롬프트만으로 추측 방지를 보장하지 않는다. 세부 범위·검증은 [#84 구현 참고](ISSUE84_EXTRACTION_EVIDENCE.md)로 분리한다.
 
-FR-009 구현 보완: CourseService가 CandidateRetriever·TravelTimeProvider·PlaceRepository를 주입받아 CourseScheduler와 CourseValidator를 호출한다. 실제 검색/이동시간을 구현하지 않고 가짜 포트로 먼저 검증했다. 스케줄러는 DB·LLM을 호출하지 않고 검증기는 Repository에서 장소 사실을 다시 확인한다. 배치 초안 후 최대 3회 수리·재검증, 마지막 사실 재검사, API 반환 전 세션 revision/만료 재검사를 수행한다. 코스 경로·필드와 장소 2~6곳 제한은 기존 Course 계약을 유지한다. [#23 연결·검증 기록](ISSUE23_COURSES_IMPLEMENTATION.md).
-
-FR-005·006 보완: config/defaults.json을 서버 기본 체류시간 함수와 카드 안내가 공유한다. application/profile_support.py는 실제 후보 검색 연결·필드 검증 완료를 받은 뒤 지원 범위를 만드는 구성 경계이며 기본 앱은 비활성이다. #22의 검색·항목별 판정과 #23 스케줄러를 새로 구현하지 않았다. [이슈 #21 구현·후속 연결 기록](ISSUE21_DEFAULTS_IMPLEMENTATION.md).
-
-이슈 #20 구현: 추출 Provider는 취소 가능한 Gemini generateContent REST 어댑터이며 JSON 스키마·업무 의미를 검증한다. 실패 시 각 10초·1회 재시도 후 ChatRuleParser로 대체하고 COMP-02가 정책·revision을 처리한다. 기준 한국 날짜를 프롬프트에 제공하며 평가 시에는 평가셋 referenceNow를 고정한다. DEC-022의 영유아 질문 표시 이력·부분 동행은 메모리 세션에만 저장한다. 프론트는 실제 chat/profile API를 순차 호출한다. 일반 capabilities 활성화는 #21·#22의 기존 합의를 유지한다. [실행·검증 기록](ISSUE20_CHAT_IMPLEMENTATION.md).
-
 - System Prompt 목적: 용도별 3종으로 분리한다. ① 추출: "부산 놀거리 코스 서비스의 조건 분석기" 역할로, 지정 JSON 스키마의 필드만 채우고 언급 없는 필드는 null, 장소 추천 금지, "꼭·절대·못" 표현은 strength=HARD. ② 수정 해석: 코스 요약과 메시지를 받아 ChangeOp(REMOVE·REPLACE·EXTEND_STAY·INDOOR·INCLUDE_UNKNOWN) 하나로만 응답. 수정이 여러 개면 첫 번째만 만들고 나머지는 확인 질문으로 넘긴다(DEC-024). 조건 자체를 바꾸는 요청은 ChangeOp 대신 조건 변경으로 분류해 추출 경로로 보낸다(DEC-025). ③ 설명: 제공된 장소 필드만 근거로 1~2문장 작성, 새 장소·가격·시간 언급 금지.
 
 - 검색 대상 데이터/Chunk 전략: 문서 청크 대신 구조화 DB 레코드를 사용한다. 장소 1개 = 컨텍스트 1단위(이름, 카테고리, 개요 200자 이내, 접근성 등급, 운영시간, 실내 여부)로 구성한다.
@@ -388,27 +382,3 @@ FR-007·008 구현(#22): `retrieval/PlaceRetriever`가 CandidateRetriever를 구
 | AI-REQ-05 | UC-003 | COMP-07 | CourseValidator | API-004 | SD-01 | TC-028, AI-TC-05 | Draft |
 
 *※ 초기 설계 단계에서는 미정 요소를 비워둘 수 있으며, 구현·테스트가 진행되면서 API/Class/Test Case 매핑을 보완합니다.*
-
-## 구현 보완 기록 — FR-002·006·018 / DEC-019~021 (2026-11-11)
-
-COMP-02/03의 application/condition_policy.py는 부분 추출을 기존 프로필과 병합하고 미확인 항목을 세션 내부 pending_fields에 유지한다. 외부 응답 필드는 늘리지 않는다. 질문은 최대 2개이며 코스 진입은 SessionStore.begin_course의 최신 revision·READY 검사를 거친다. 실제 코스 엔진은 아직 미연결이다. AIService·규칙 파서·유모차 정규화는 PR #17, 계약·HTTP 연결은 PR #13으로 구분한다. 구현 상세와 단독/통합 검증, 활성화 계획은 [구현 기록](ISSUE6_8_IMPLEMENTATION.md)을 참조한다. PM의 DEC-019~021은 확정이며 결정 기록 PR #18·SDD 정책 상세 PR #40의 병합 상태와 구분한다.
-
-
-## FR-012 구현 추적 (2026-11-16)
-
-이슈 #25의 COMP-08/API-006을 구현했다. 검증된 최종 코스에서만 구조화 근거를 선택하고 시스템이1~2문장·숫자를 조립한다. 실패 시TEMPLATE/AI_FALLBACK을 사용한다. 사용자 원문·세션·전체 프로필은 설명에 보내지 않으며 개요는200자로 제한한다. GET /api/places/{placeId}는 기존 PlaceResponse로 장소·출처·정보 없음·공공데이터 고지를 반환하며 없는 장소404와 저장소 오류500을 구분한다. 코스와 상세의 Place/Source 변환을 공통화했다. 실제 DB·모델·UI-04 연결과 인수 검증은 후속이다. [구현·검증 기록](ISSUE25_EXPLANATIONS_IMPLEMENTATION.md).
-
-
-## FR-014 ① 구현 추적 (2026-11-17)
-
-이슈 #26 서버 제안 생성을 구현했다. 최종 적용 프로필의 DEFAULT·값 있음·capabilities 지원 항목에서 기존 카드 EDIT_PROFILE을 최대 3개 만든다. 클릭으로 값을 자동 변경하거나 하드 제약을 완화하지 않으며 사용자 카드 저장 후 새 revision으로 재생성한다. 체류시간은 이번 범위에서 제외했다. 정보 없음·날씨·부분 수정 및 프론트 칩·화면 캡처는 후속이다. [구현·검증·인계 기록](ISSUE26_SUGGESTIONS_IMPLEMENTATION.md).
-
-
-## FR-018 구현 추적 (2026-11-17, 이슈 #27)
-
-동행 카테고리 점수 함수와 가중치 제안 설정을 구현해 가상 후보로 검증했다. 가족 관광·전시·공원 우대 방향은 DEC-013을 따르지만 수치·다른 동행 매핑·실내 대비 계수는 PM 미확정이다. 일반 경로에는 활성화하지 않고 기존 default_score를 유지한다. 가격·분위기·야경·활동성·인원 적합성을 추정하지 않으며 하드 필터·검증기·영유아 유모차·부상 규칙을 유지한다. [제안 표](proposals/issue-27-companion-weights.md), [구현·검증 기록](ISSUE27_COMPANION_SCORING_IMPLEMENTATION.md).
-
-
-## FR-012 실행 연결 보완 (#96, 2026-11-27)
-
-일반 app.main:app의 시작 연결이 DB·검색·계산·승인 가중치를 준비한 뒤 조건 추출과 같은 AIService 및 실행 Repository로 ExplanationGenerator를 자동 구성한다. AIService 연결 풀을 공유하고 종료/시작 실패 시 자동 생성기를 해제한다. 명시적 생성기 주입은 유지한다. API-004의 기존 검증 코스→explain(course, mobility 범주, 남은 시간) 경계·최대12초 설명 예산·재시도 정책과 TEMPLATE/AI_FALLBACK 대체를 그대로 사용한다. JSON 계약 변경은 없고 실제 모델 포함 응답시간/인수 판정은 별도 측정한다. 구현·검증은 [#96 기록](ISSUE96_RUNTIME_EXPLANATIONS.md)에 둔다.
