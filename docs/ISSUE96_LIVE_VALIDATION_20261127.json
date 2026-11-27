@@ -1,0 +1,600 @@
+{
+  "runDate": "2026-11-27T15:12:55.141546+09:00",
+  "model": "gemini-3.5-flash-lite",
+  "actualLlmMeasured": true,
+  "codeRevision": "259ae492951ff565a1f58948df778130cd8d1f02",
+  "pr102MergedAtRun": false,
+  "workingTreeModified": false,
+  "dbSha256": "e8bd5c5142af936e819e71036a7919fa0c847a707dceec94d9b5e6a4a219a6fc",
+  "datasetVersion": "draft-2026-11-16",
+  "referenceNow": "2026-11-12T10:00:00+09:00",
+  "officialExecuted": 9,
+  "officialExcluded": [
+    "CS-06"
+  ],
+  "llmIncludedRuns": 10,
+  "within15Seconds": 10,
+  "within15SecondsRatio": 1.0,
+  "performanceTargetMet": true,
+  "meanMs": 1460.903,
+  "maxMs": 1883.301,
+  "allMeasuredPlacesUseLlm": true,
+  "actualApiAttempts": 10,
+  "scope": "HTTP end-to-end loopback, real DB/travel + Gemini EXPLAIN; official exclusions and repeated CS01 listed separately",
+  "cases": [
+    {
+      "id": "CS-01",
+      "kind": "OFFICIAL",
+      "state": "PASS",
+      "status": "SUCCESS",
+      "responseMs": 1661.613,
+      "within15Seconds": true,
+      "llmAttempted": true,
+      "attempts": [
+        {
+          "purpose": "explain",
+          "attempt": "1",
+          "retry_reason": "NONE",
+          "outcome": "SUCCESS",
+          "detail": "NONE",
+          "provider_ms": "1500.000",
+          "validation_ms": "0.000",
+          "elapsed_ms": "1500.000"
+        }
+      ],
+      "warningCodes": [
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ],
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "items": 3,
+      "llmItems": 3,
+      "templateItems": 0,
+      "reasonSamples": [
+        {
+          "placeId": "tourapi-kor:2861189",
+          "name": "부우사안",
+          "reason": "식사 장소로 이용할 수 있는 음식점이에요. 70분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:2512488",
+          "name": "오막집",
+          "reason": "식사 장소로 이용할 수 있는 음식점이에요. 70분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:4095461",
+          "name": "수림횟집",
+          "reason": "식사 장소로 이용할 수 있는 음식점이에요. 70분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        }
+      ]
+    },
+    {
+      "id": "CS-02",
+      "kind": "OFFICIAL",
+      "state": "PASS",
+      "status": "SUCCESS",
+      "responseMs": 1360.801,
+      "within15Seconds": true,
+      "llmAttempted": true,
+      "attempts": [
+        {
+          "purpose": "explain",
+          "attempt": "1",
+          "retry_reason": "NONE",
+          "outcome": "SUCCESS",
+          "detail": "NONE",
+          "provider_ms": "1204.000",
+          "validation_ms": "0.000",
+          "elapsed_ms": "1204.000"
+        }
+      ],
+      "warningCodes": [
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ],
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "items": 2,
+      "llmItems": 2,
+      "templateItems": 0,
+      "reasonSamples": [
+        {
+          "placeId": "tourapi-kor:135827",
+          "name": "동백섬횟집",
+          "reason": "식사 장소로 이용할 수 있는 음식점이에요. 70분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:2512488",
+          "name": "오막집",
+          "reason": "식사 장소로 이용할 수 있는 음식점이에요. 70분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        }
+      ]
+    },
+    {
+      "id": "CS-03",
+      "kind": "OFFICIAL",
+      "state": "PASS",
+      "status": "SUCCESS",
+      "responseMs": 1585.024,
+      "within15Seconds": true,
+      "llmAttempted": true,
+      "attempts": [
+        {
+          "purpose": "explain",
+          "attempt": "1",
+          "retry_reason": "NONE",
+          "outcome": "SUCCESS",
+          "detail": "NONE",
+          "provider_ms": "1344.000",
+          "validation_ms": "0.000",
+          "elapsed_ms": "1344.000"
+        }
+      ],
+      "warningCodes": [
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ],
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "items": 3,
+      "llmItems": 3,
+      "templateItems": 0,
+      "reasonSamples": [
+        {
+          "placeId": "tourapi-kor:688610",
+          "name": "아미산",
+          "reason": "식사 장소로 이용할 수 있는 음식점이에요. 장소의 휠체어 이용 가능 항목이 확인돼 있으며, 이동 경로의 접근성은 별도 확인이 필요해요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:2350092",
+          "name": "더베이101",
+          "reason": "관광 장소를 둘러보는 일정으로 배치했어요. 장소의 휠체어 이용 가능 항목이 확인돼 있으며, 이동 경로의 접근성은 별도 확인이 필요해요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:128810",
+          "name": "동백공원",
+          "reason": "공원을 둘러보는 일정으로 배치했어요. 장소의 휠체어 이용 가능 항목이 확인돼 있으며, 이동 경로의 접근성은 별도 확인이 필요해요.",
+          "reasonMethod": "LLM"
+        }
+      ]
+    },
+    {
+      "id": "CS-04",
+      "kind": "OFFICIAL",
+      "state": "PASS",
+      "status": "SUCCESS",
+      "responseMs": 1467.889,
+      "within15Seconds": true,
+      "llmAttempted": true,
+      "attempts": [
+        {
+          "purpose": "explain",
+          "attempt": "1",
+          "retry_reason": "NONE",
+          "outcome": "SUCCESS",
+          "detail": "NONE",
+          "provider_ms": "1312.000",
+          "validation_ms": "0.000",
+          "elapsed_ms": "1312.000"
+        }
+      ],
+      "warningCodes": [
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ],
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "items": 3,
+      "llmItems": 3,
+      "templateItems": 0,
+      "reasonSamples": [
+        {
+          "placeId": "tourapi-kor:128810",
+          "name": "동백공원",
+          "reason": "공원을 둘러보는 일정으로 배치했어요. 장소의 유모차 이용 가능 항목이 확인돼 있으며, 이동 경로의 접근성은 별도 확인이 필요해요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:987810",
+          "name": "해운대 동백섬",
+          "reason": "공원을 둘러보는 일정으로 배치했어요. 장소의 유모차 이용 가능 항목이 확인돼 있으며, 이동 경로의 접근성은 별도 확인이 필요해요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:1918263",
+          "name": "누리마루 APEC하우스",
+          "reason": "전시를 둘러볼 수 있는 장소예요. 장소의 유모차 이용 가능 항목이 확인돼 있으며, 이동 경로의 접근성은 별도 확인이 필요해요.",
+          "reasonMethod": "LLM"
+        }
+      ]
+    },
+    {
+      "id": "CS-05",
+      "kind": "OFFICIAL",
+      "state": "PASS",
+      "status": "SUCCESS",
+      "responseMs": 1320.513,
+      "within15Seconds": true,
+      "llmAttempted": true,
+      "attempts": [
+        {
+          "purpose": "explain",
+          "attempt": "1",
+          "retry_reason": "NONE",
+          "outcome": "SUCCESS",
+          "detail": "NONE",
+          "provider_ms": "1172.000",
+          "validation_ms": "0.000",
+          "elapsed_ms": "1172.000"
+        }
+      ],
+      "warningCodes": [
+        "INJURY_RULES",
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ],
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "items": 2,
+      "llmItems": 2,
+      "templateItems": 0,
+      "reasonSamples": [
+        {
+          "placeId": "tourapi-kor:128810",
+          "name": "동백공원",
+          "reason": "공원을 둘러보는 일정으로 배치했어요. 60분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:987810",
+          "name": "해운대 동백섬",
+          "reason": "공원을 둘러보는 일정으로 배치했어요. 119분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        }
+      ]
+    },
+    {
+      "id": "CS-06",
+      "kind": "OFFICIAL",
+      "state": "EXCLUDED",
+      "unsupportedFields": [
+        "indoorPreference"
+      ]
+    },
+    {
+      "id": "CS-07",
+      "kind": "OFFICIAL",
+      "state": "PASS",
+      "status": "SUCCESS",
+      "responseMs": 1667.009,
+      "within15Seconds": true,
+      "llmAttempted": true,
+      "attempts": [
+        {
+          "purpose": "explain",
+          "attempt": "1",
+          "retry_reason": "NONE",
+          "outcome": "SUCCESS",
+          "detail": "NONE",
+          "provider_ms": "1500.000",
+          "validation_ms": "0.000",
+          "elapsed_ms": "1500.000"
+        }
+      ],
+      "warningCodes": [
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ],
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "items": 4,
+      "llmItems": 4,
+      "templateItems": 0,
+      "reasonSamples": [
+        {
+          "placeId": "tourapi-kor:2381567",
+          "name": "문탠로드",
+          "reason": "관광 장소를 둘러보는 일정으로 배치했어요. 60분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:2789488",
+          "name": "미포정거장",
+          "reason": "관광 장소를 둘러보는 일정으로 배치했어요. 60분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:3027700",
+          "name": "청사포 기찻길",
+          "reason": "관광 장소를 둘러보는 일정으로 배치했어요. 60분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:2784330",
+          "name": "미포항",
+          "reason": "공원을 둘러보는 일정으로 배치했어요. 60분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        }
+      ]
+    },
+    {
+      "id": "CS-08",
+      "kind": "OFFICIAL",
+      "state": "PASS",
+      "status": "INSUFFICIENT_PLACES",
+      "responseMs": 113.949,
+      "within15Seconds": true,
+      "llmAttempted": false,
+      "attempts": [],
+      "warningCodes": [
+        "INSUFFICIENT_PLACES",
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ]
+    },
+    {
+      "id": "CS-09",
+      "kind": "OFFICIAL",
+      "state": "PASS",
+      "status": "SUCCESS",
+      "responseMs": 1883.301,
+      "within15Seconds": true,
+      "llmAttempted": true,
+      "attempts": [
+        {
+          "purpose": "explain",
+          "attempt": "1",
+          "retry_reason": "NONE",
+          "outcome": "SUCCESS",
+          "detail": "NONE",
+          "provider_ms": "1640.000",
+          "validation_ms": "0.000",
+          "elapsed_ms": "1640.000"
+        }
+      ],
+      "warningCodes": [
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ],
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "items": 6,
+      "llmItems": 6,
+      "templateItems": 0,
+      "reasonSamples": [
+        {
+          "placeId": "tourapi-kor:2861189",
+          "name": "부우사안",
+          "reason": "식사 장소로 이용할 수 있는 음식점이에요. 70분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:135827",
+          "name": "동백섬횟집",
+          "reason": "식사 장소로 이용할 수 있는 음식점이에요. 70분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:2512488",
+          "name": "오막집",
+          "reason": "식사 장소로 이용할 수 있는 음식점이에요. 70분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:4095461",
+          "name": "수림횟집",
+          "reason": "식사 장소로 이용할 수 있는 음식점이에요. 70분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:2860851",
+          "name": "싱싱뽈락회 해운대본점",
+          "reason": "식사 장소로 이용할 수 있는 음식점이에요. 70분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:2891814",
+          "name": "류센소 본점",
+          "reason": "식사 장소로 이용할 수 있는 음식점이에요. 70분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        }
+      ]
+    },
+    {
+      "id": "CS-10",
+      "kind": "OFFICIAL",
+      "state": "PASS",
+      "status": "SUCCESS",
+      "responseMs": 1316.651,
+      "within15Seconds": true,
+      "llmAttempted": true,
+      "attempts": [
+        {
+          "purpose": "explain",
+          "attempt": "1",
+          "retry_reason": "NONE",
+          "outcome": "SUCCESS",
+          "detail": "NONE",
+          "provider_ms": "1219.000",
+          "validation_ms": "0.000",
+          "elapsed_ms": "1219.000"
+        }
+      ],
+      "warningCodes": [
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ],
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "items": 2,
+      "llmItems": 2,
+      "templateItems": 0,
+      "reasonSamples": [
+        {
+          "placeId": "tourapi-kor:2789488",
+          "name": "미포정거장",
+          "reason": "관광 장소를 둘러보는 일정으로 배치했어요. 60분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:3027700",
+          "name": "청사포 기찻길",
+          "reason": "관광 장소를 둘러보는 일정으로 배치했어요. 60분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        }
+      ]
+    },
+    {
+      "id": "SUP-01",
+      "kind": "REPEAT_CS01",
+      "state": "PASS",
+      "status": "SUCCESS",
+      "responseMs": 1172.616,
+      "within15Seconds": true,
+      "llmAttempted": true,
+      "attempts": [
+        {
+          "purpose": "explain",
+          "attempt": "1",
+          "retry_reason": "NONE",
+          "outcome": "SUCCESS",
+          "detail": "NONE",
+          "provider_ms": "1000.000",
+          "validation_ms": "0.000",
+          "elapsed_ms": "1000.000"
+        }
+      ],
+      "warningCodes": [
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ],
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "items": 3,
+      "llmItems": 3,
+      "templateItems": 0,
+      "reasonSamples": [
+        {
+          "placeId": "tourapi-kor:2861189",
+          "name": "부우사안",
+          "reason": "식사 장소로 이용할 수 있는 음식점이에요. 70분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:2512488",
+          "name": "오막집",
+          "reason": "식사 장소로 이용할 수 있는 음식점이에요. 70분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:4095461",
+          "name": "수림횟집",
+          "reason": "식사 장소로 이용할 수 있는 음식점이에요. 70분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        }
+      ]
+    },
+    {
+      "id": "SUP-02",
+      "kind": "REPEAT_CS01",
+      "state": "PASS",
+      "status": "SUCCESS",
+      "responseMs": 1173.614,
+      "within15Seconds": true,
+      "llmAttempted": true,
+      "attempts": [
+        {
+          "purpose": "explain",
+          "attempt": "1",
+          "retry_reason": "NONE",
+          "outcome": "SUCCESS",
+          "detail": "NONE",
+          "provider_ms": "1000.000",
+          "validation_ms": "0.000",
+          "elapsed_ms": "1000.000"
+        }
+      ],
+      "warningCodes": [
+        "PRICE_UNKNOWN",
+        "ROUTE_ACCESSIBILITY_UNVERIFIED",
+        "TRAVEL_SCOPE"
+      ],
+      "hardViolations": 0,
+      "missingPlaceIds": 0,
+      "items": 3,
+      "llmItems": 3,
+      "templateItems": 0,
+      "reasonSamples": [
+        {
+          "placeId": "tourapi-kor:2861189",
+          "name": "부우사안",
+          "reason": "식사 장소로 이용할 수 있는 음식점이에요. 70분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:2512488",
+          "name": "오막집",
+          "reason": "식사 장소로 이용할 수 있는 음식점이에요. 70분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        },
+        {
+          "placeId": "tourapi-kor:4095461",
+          "name": "수림횟집",
+          "reason": "식사 장소로 이용할 수 있는 음식점이에요. 70분 머물도록 일정을 배치했어요.",
+          "reasonMethod": "LLM"
+        }
+      ]
+    }
+  ],
+  "acceptanceComplete": false,
+  "s4": {
+    "verified": true,
+    "provider": "actual Gemini, same existing configuration",
+    "additionalModelAttempts": 1,
+    "attempts": [
+      {
+        "purpose": "explain",
+        "attempt": "1",
+        "retry_reason": "NONE",
+        "outcome": "SUCCESS",
+        "detail": "NONE",
+        "provider_ms": "1562.000",
+        "validation_ms": "0.000",
+        "elapsed_ms": "1562.000"
+      }
+    ],
+    "inputMode": "condition card PUT then course POST; no EXTRACT call",
+    "syntheticProfile": "HAEUNDAE, 2026-11-28 13:00-17:00, WALK default",
+    "placesChecked": [
+      "부우사안",
+      "오막집",
+      "수림횟집"
+    ],
+    "visibleReason": "식사 장소로 이용할 수 있는 음식점이에요. 70분 머물도록 일정을 배치했어요.",
+    "sourceAndUnknownNoticesVisible": true,
+    "browserConsoleErrors": [],
+    "limits": [
+      "Kakao SDK/map was not part of S4 verification; no frontend key was loaded.",
+      "Verified on PR102 candidate, not merged develop."
+    ]
+  },
+  "actualApiAttemptsIncludingS4": 11
+}

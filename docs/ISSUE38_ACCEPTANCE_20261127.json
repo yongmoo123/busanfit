@@ -79,7 +79,6 @@
   },
   "limitations": [
     "No actual LLM or Kakao SDK calls performed.",
-    "Actual LLM full course latency AC-011 and S4 live model evidence need separate authorized run after #96 merge.",
     "Acceptance checked issue96 candidate working tree; final develop confirmation follows merge."
   ],
   "explanationRealDbEvidence": {
@@ -143,5 +142,13 @@
         "modify": 2
       }
     }
+  },
+  "phase": "earlier controlled fault injection; authorized actual-model followup linked separately",
+  "liveFollowup": {
+    "evidence": "ISSUE96_LIVE_VALIDATION_20261127.json",
+    "testedCode": "259ae49",
+    "AC011": "10/10 real-LLM course requests within15s; official exclusions/repetitions separately reported",
+    "S4": "browser reason/source display verified, recording not performed",
+    "actualApiAttempts": 11
   }
 }
