@@ -332,34 +332,34 @@ FR-002·004·018의 동행 보완은 [DEC-022](DECISIONS.md#dec-022-영유아-�
 
 | 요구사항 ID | Use Case       | 설계 요소                 | Test Case | 상태  |
 |-------------|----------------|---------------------------|-----------|-------|
-| FR-001      | UC-001         | COMP-01, COMP-02          | TC-001    | Draft |
-| FR-002      | UC-001         | COMP-03, COMP-09          | TC-002    | Draft |
-| FR-003      | UC-001         | COMP-03                   | TC-003    | Draft |
-| FR-004      | UC-001         | COMP-03, COMP-01          | TC-004    | Draft |
-| FR-005      | UC-001, UC-002 | COMP-03, COMP-01          | TC-005    | Draft |
-| FR-006      | UC-002         | COMP-01, COMP-02          | TC-006    | Draft |
-| FR-007      | UC-003         | COMP-04, COMP-10          | TC-007    | Draft |
-| FR-008      | UC-003, UC-006 | COMP-04, COMP-11          | TC-008    | Draft |
-| FR-009      | UC-003         | COMP-05, COMP-06, COMP-07 | TC-009    | Draft |
-| FR-010      | UC-003         | COMP-05                   | TC-010    | Draft |
-| FR-011      | UC-004         | COMP-01                   | TC-011    | Draft |
-| FR-012      | UC-003, UC-006 | COMP-08, COMP-09          | TC-012    | Draft |
-| FR-013      | UC-005         | COMP-02, COMP-04          | TC-013    | Draft |
-| FR-014      | UC-005         | COMP-02, COMP-01          | TC-014    | Draft |
-| FR-015      | UC-005         | COMP-03, COMP-05, COMP-07 | TC-015    | Draft |
-| FR-016      | UC-003         | COMP-12, COMP-04          | TC-016    | Draft |
-| FR-017      | UC-004         | COMP-10, COMP-01          | TC-017    | Draft |
-| FR-018      | UC-001, UC-003 | COMP-03, COMP-05          | TC-018    | Draft |
-| FR-019      | \-             | COMP-01, COMP-02          | TC-019    | Draft |
-| FR-020      | UC-007         | COMP-11, COMP-10          | TC-020    | Draft |
-| NFR-001     | \-             | Architecture / COMP-02    | TC-021    | Draft |
-| NFR-002     | \-             | COMP-09, COMP-02          | TC-022    | Draft |
-| NFR-003     | \-             | COMP-02 (세션 관리)       | TC-023    | Draft |
-| NFR-006     | \-             | COMP-09                   | TC-024    | Draft |
-| NFR-009     | UC-006, UC-007 | COMP-10, COMP-11          | TC-025    | Draft |
-| AI-REQ-01   | UC-003         | COMP-07, COMP-08          | TC-026    | Draft |
-| AI-REQ-04   | UC-001         | COMP-03                   | TC-027    | Draft |
-| AI-REQ-05   | UC-003         | COMP-07                   | TC-028    | Draft |
+| FR-001      | UC-001         | COMP-01, COMP-02          | TC-001    | 구현 |
+| FR-002      | UC-001         | COMP-03, COMP-09          | TC-002    | 구현 |
+| FR-003      | UC-001         | COMP-03                   | TC-003    | 구현 |
+| FR-004      | UC-001         | COMP-03, COMP-01          | TC-004    | 구현 |
+| FR-005      | UC-001, UC-002 | COMP-03, COMP-01          | TC-005    | 구현 (기본 이동수단 도보, DEC-028) |
+| FR-006      | UC-002         | COMP-01, COMP-02          | TC-006    | 구현 |
+| FR-007      | UC-003         | COMP-04, COMP-10          | TC-007    | 부분 구현 (예산 상한은 향후, DEC-028) |
+| FR-008      | UC-003, UC-006 | COMP-04, COMP-11          | TC-008    | 구현 (역 경유 조건은 대중교통과 함께 향후) |
+| FR-009      | UC-003         | COMP-05, COMP-06, COMP-07 | TC-009    | 부분 구현 (도보만, 대중교통·자차 향후, DEC-028) |
+| FR-010      | UC-003         | COMP-05                   | TC-010    | 향후 (DEC-036) |
+| FR-011      | UC-004         | COMP-01                   | TC-011    | 구현 |
+| FR-012      | UC-003, UC-006 | COMP-08, COMP-09          | TC-012    | 구현 (LLM 추천 이유 실행 앱 연결 #96) |
+| FR-013      | UC-005         | COMP-02, COMP-04          | TC-013    | 구현 (명시적 동의, DEC-033) |
+| FR-014      | UC-005         | COMP-02, COMP-01          | TC-014    | 부분 구현 (①② 구현, ③ 날씨 향후, DEC-036) |
+| FR-015      | UC-005         | COMP-03, COMP-05, COMP-07 | TC-015    | 구현 (빼기·바꾸기·체류 늘리기, 실내로는 향후) |
+| FR-016      | UC-003         | COMP-12, COMP-04          | TC-016    | 부분 구현 (판정 모듈만, 코스 반영 향후, DEC-036) |
+| FR-017      | UC-004         | COMP-10, COMP-01          | TC-017    | 향후 (DEC-028) |
+| FR-018      | UC-001, UC-003 | COMP-03, COMP-05          | TC-018    | 구현 (DEC-029) |
+| FR-019      | \-             | COMP-01, COMP-02          | TC-019    | 향후 (DEC-028) |
+| FR-020      | UC-007         | COMP-11, COMP-10          | TC-020    | 구현 (수동 배치 적재, 주기 갱신·배포는 향후) |
+| NFR-001     | \-             | Architecture / COMP-02    | TC-021    | 구현 (측정 결과는 테스트 보고서) |
+| NFR-002     | \-             | COMP-09, COMP-02          | TC-022    | 구현 |
+| NFR-003     | \-             | COMP-02 (세션 관리)       | TC-023    | 구현 |
+| NFR-006     | \-             | COMP-09                   | TC-024    | 구현 |
+| NFR-009     | UC-006, UC-007 | COMP-10, COMP-11          | TC-025    | 구현 |
+| AI-REQ-01   | UC-003         | COMP-07, COMP-08          | TC-026    | 구현 |
+| AI-REQ-04   | UC-001         | COMP-03                   | TC-027    | 구현 (평가 결과는 테스트 보고서) |
+| AI-REQ-05   | UC-003         | COMP-07                   | TC-028    | 구현 (평가 결과는 테스트 보고서) |
 
 # 11. 승인 (Approval)
 
