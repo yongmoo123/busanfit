@@ -115,6 +115,10 @@ Software Design Document (SDD)
 
 그림 4-1(b). 도메인 모델 클래스 다이어그램 — 제약 프로필, 코스, 장소, 조정 제안·변경 연산
 
+![](images/sdd-4-1-class-course-engine.png)
+
+그림 4-1(c). 코스 생성 핵심 모듈 클래스 다이어그램 (제출본 코드 기준) — CourseService가 CandidateRetriever·CourseScheduler·CourseValidator·TravelTimeProvider·PlaceRepository 인터페이스에만 의존하고, 추천 이유는 ExplanationGenerator가 AIService를 통해 만든다. 원본: `diagrams/sdd-4-1-class-course-engine.mmd`
+
 *관련 요구사항: FR-002, FR-003, FR-005, FR-007~FR-010, FR-012, FR-014, FR-015, NFR-006*
 
 *관련 Use Case: UC-001, UC-002, UC-003, UC-005*
@@ -124,6 +128,10 @@ Software Design Document (SDD)
 ![](images/sdd/media/fig4_sequence1.png)
 
 그림 4-2. SD-01 조건 입력부터 코스 생성까지 (UC-001 → UC-002 → UC-003)
+
+![](images/sdd-4-2-sd01-course-generation.png)
+
+그림 4-2(b). SD-01 중 코스 생성 부분 (UC-003, 제출본 코드 기준) — 후보 검색, 정보 없는 장소 포함 동의 시 재확인(DEC-033), 배치·검증·재구성(최대 3회), 추천 이유 생성(실패 시 템플릿)·응답. 날씨는 코스 생성에 연결하지 않았다(DEC-036). 원본: `diagrams/sdd-4-2-sd01-course-generation.mmd`
 
 *관련 Use Case: UC-001, UC-002, UC-003 관련 요구사항: FR-001~FR-009, FR-012, FR-016, AI-REQ-01, AI-REQ-02, AI-REQ-05*
 
