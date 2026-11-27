@@ -41,7 +41,7 @@ SDD 6장 API 표는 개요만 두고, 필드·상태·오류의 상세는 API �
 3. 리뷰: 요구사항 변경은 PM + 해당 구현 담당, 설계·API 변경은 영향받는 담당자 전원.
 4. **코드가 요구사항·설계·API와 달라지는 PR은 해당 문서 수정을 같은 PR에 포함한다.** 문서 수정이 빠지면 리뷰에서 반려한다.
 5. 병합 후 `DECISIONS.md`의 "반영 위치" 체크박스를 표시한다.
-6. **구현 기록(무엇을 어떻게 구현·검증했는지)은 SRS·SDD에 넣지 않는다.** PR 본문과 `docs/ISSUExx_*_IMPLEMENTATION.md`에 남긴다. SRS·SDD는 요구사항·설계·API가 실제로 바뀔 때만 고친다. 이미 들어간 구현 기록 단락은 v1.0 정리 때 해당 문서로 옮긴다(2026-11-20).
+6. **구현 기록(무엇을 어떻게 구현·검증했는지)은 SRS·SDD에 넣지 않는다.** PR 본문과 `docs/ISSUExx_*_IMPLEMENTATION.md`에 남긴다. SRS·SDD는 요구사항·설계·API가 실제로 바뀔 때만 고친다. 이미 들어간 구현 기록 단락은 v1.0 정리 때 해당 문서로 옮긴다(2026-11-20). → 2026-11-27 [SRS_SDD_IMPLEMENTATION_NOTES.md](SRS_SDD_IMPLEMENTATION_NOTES.md)로 옮김.
 
 ## 4. ID 규칙
 
