@@ -17,6 +17,6 @@ python -m uvicorn app.explanation_demo:fallback_app --app-dir backend --port 800
 python evaluation/explanations/run.py --output evaluation/explanations/results/synthetic-2026-11-16.json
 ```
 
-첫 앱도 실제 LLM이 아니라 SyntheticExplanationProvider입니다. 두 번째 앱은 모델 미설정 실패를 주입합니다. DB·검색·이동시간은 모두 가상입니다. 일반 앱에는 가짜 제공자를 자동 등록하지 않습니다. 실제 연결은 같은 Repository를 사용하는 CourseService·ExplanationGenerator를 `create_app(course_service=..., place_repository=..., explanation_generator=...)`로 주입합니다. 모델은 기존 환경변수와 `AIService(configured_provider())`로 연결할 수 있으나 실제 모델 평가는 별도로 수행해야 합니다.
+첫 앱도 실제 LLM이 아니라 SyntheticExplanationProvider입니다. 두 번째 앱은 모델 미설정 실패를 주입합니다. DB·검색·이동시간은 모두 가상입니다. 일반 앱에는 가짜 제공자를 자동 등록하지 않습니다. 일반 `app.main:app`은 DB 시작 연결에 성공하면 조건 추출과 같은 AIService 및 실행 Repository로 ExplanationGenerator를 자동 구성한다(#96). 같은 AIService의 연결 수명주기를 공유하고 종료/시작 실패 시 자동 생성기를 해제한다. 명시적으로 주입한 생성기는 보존한다. 모델 미설정·실패·예산 소진 시 TEMPLATE와 AI_FALLBACK을 반환하며 키/.env를 새로 읽거나 다른 모델을 만들지 않는다. 별도 주입 앱의 실제 연결은 같은 Repository를 사용하는 CourseService·ExplanationGenerator를 `create_app(course_service=..., place_repository=..., explanation_generator=...)`로 주입합니다. 모델은 기존 환경변수와 `AIService(configured_provider())`로 연결할 수 있으나 실제 모델 평가는 별도로 수행해야 합니다.
 
 장소 상세 GET `/api/places/{placeId}`는 LLM 없이 공통 Place/Source 변환을 사용합니다. [전체 실행·검증·후속 기록](../../../docs/ISSUE25_EXPLANATIONS_IMPLEMENTATION.md).

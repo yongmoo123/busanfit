@@ -16,6 +16,7 @@ from app.api.places import router as place_router
 from app.ai.service import AIService
 from app.api.adjustments import router as adjustment_router
 from app.application.adjustment_interpreter import AdjustmentInterpreter
+from app.explanations.generator import ExplanationGenerator
 
 
 def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1, extractor=None,
@@ -53,10 +54,17 @@ def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1
                         candidate_search_connected=True, verified_fields=frozenset(INITIAL_FIELDS),
                         mobility_verified=True, unknown_accessibility_verified=True,
                         course_adjustment_verified=True))
+                    runtime_explainer = explanation_generator
+                    if runtime_explainer is None:
+                        shared_ai = getattr(condition_extractor, 'ai', None)
+                        if not isinstance(shared_ai, AIService):
+                            raise ValueError('runtime explanations require the extractor AIService')
+                        runtime_explainer = ExplanationGenerator(shared_ai, prepared.repository)
                     # Publish support only after DB, exclusions, weights and provider validate.
                     app.state.course_connection = prepared
                     app.state.course_service = prepared.service
                     app.state.place_repository = prepared.repository
+                    app.state.explanation_generator = runtime_explainer
                     app.state.capabilities = capabilities
                 task = asyncio.create_task(cleanup())
                 yield
@@ -70,6 +78,7 @@ def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1
                     app.state.course_connection = None
                     app.state.course_service = None
                     app.state.place_repository = None
+                    app.state.explanation_generator = explanation_generator
                     app.state.capabilities = build_profile_capabilities()
 
     app = FastAPI(
@@ -78,7 +87,7 @@ def create_app(store: SessionStore | None = None, *, cleanup_interval: float = 1
         description=("세션 생성·종료·조건 카드 전체 교체를 지원합니다. "
                      + ("조건 채팅·규칙 대체 처리를 지원합니다. " if condition_extractor is not None else
                         "조건 채팅을 사용할 수 없습니다. ")
-                     + "일반 서버는 설정된 DB로 4개 권역(해운대·서면·광안리·남포)·도보 코스와 장소 상세를 지원합니다. 실제 지원 범위는 세션 응답의 capabilities를 따릅니다. Gemini는 환경변수 설정 시 추출에 연결되며, 추천 이유는 설명 생성기 주입 시 연결됩니다."),
+                     + "일반 서버는 설정된 DB로 4개 권역(해운대·서면·광안리·남포)·도보 코스와 장소 상세를 지원합니다. 실제 지원 범위는 세션 응답의 capabilities를 따릅니다. 조건 추출·추천 이유는 같은 AIService를 사용하며, 모델 미설정·실패 시 규칙·템플릿과 대체 안내를 반환합니다."),
         debug=False,
         lifespan=lifespan,
     )
